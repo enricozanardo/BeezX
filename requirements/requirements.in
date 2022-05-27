@@ -1,0 +1,14 @@
+loguru
+pytest
+requests
+p2pnetwork
+pycryptodome
+flask
+flask_classful
+waitress
+python-dotenv
+pytest-asyncio
+jsonpickle
+matplotlib
+ray
+gputil
