@@ -5,8 +5,10 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from loguru import logger
 
+from beez.transaction.Transaction import Transaction
+
 if TYPE_CHECKING:
-    from beez.Types import WalletAddress
+    from beez.Types import WalletAddress, PublicKeyString
 
 from beez.BeezUtils import BeezUtils
 
@@ -26,7 +28,7 @@ class Wallet():
         self.address : WalletAddress = 'bz' + h.hexdigest()[0:42]
         logger.info(f"Address: {self.address}")
 
-
+    
     def fromKey(self, file):
         key = ''
         with open(file, 'r') as keyfile:
@@ -40,8 +42,8 @@ class Wallet():
 
         return signature.hex()
 
-    
+    def publicKeyString(self) -> PublicKeyString:
+        publicKeyString: PublicKeyString = self.keyPair.publickey(
+        ).exportKey('PEM').decode('utf-8')
 
-
-if __name__ == "__main__":
-    wallet = Wallet()
+        return publicKeyString

@@ -25,7 +25,7 @@ class Transaction():
         self.timestamp = time.time()
         self.signature = '' # guarantee that only the owner can perform this tx
         
-        logger.info(f"Transaction generated..")
+        logger.info(f"Transaction of type: {self.type.name} generated..")
 
     def sign(self, signature):
         self.signature = signature
@@ -36,3 +36,6 @@ class Transaction():
             return True
         else:
             return False
+
+    # TODO: get a consistent representation of the signed transaction
+    
