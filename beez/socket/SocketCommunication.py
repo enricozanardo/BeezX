@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from beez.Types import Address
+    from beez.node.BeezNode import BeezNode
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
@@ -41,11 +42,28 @@ class SocketCommunication(Node):
          # connect to the first node
             self.connect_with_node(FIRST_SERVER_IP, P_2_P_PORT)
     
-    def startSocketCommunication(self):
+    def startSocketCommunication(self, beezNode: BeezNode):
+        self.beezNode = beezNode
         self.start()
         self.peerDiscoveryHandler.start()
         self.connectToFirstNode()
 
-
+    # Broadcast the message to alle the nodes
     def broadcast(self, message: str):
         self.send_to_nodes(message)
+
+    # Send the message to a specific node
+    def send(self, receiver: Node, message: str):
+        self.send_to_node(receiver, message)
+
+    # Callback method of receiving requests from nodes
+    def inbound_node_connected(self, connectedNode: Node):
+        logger.info(
+            f"inbound connection (some node wants to connect to this node)")
+        # self.peerDiscoveryHandler.handshake(connectedNode)
+
+    # Callback method of sending requests to nodes
+    def outbound_node_connected(self, connectedNode: Node):
+        logger.info(
+            f"outbound connection (this node wants to connect to other node)")
+        # self.peerDiscoveryHandler.handshake(connectedNode)

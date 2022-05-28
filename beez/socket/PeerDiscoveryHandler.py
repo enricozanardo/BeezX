@@ -59,11 +59,18 @@ class PeerDiscoveryHandler():
 
             time.sleep(INTERVALS)
 
-    
+    # send a message to a specific node
+    def handshake(self, connectedNode: Node):
+        """
+        exchange of information between nodes.
+        """
+        handshakeMessage = self.handshakeMessage() # create the message of type DISCOVERY
+        self.socketCommunication.send(connectedNode, handshakeMessage)
 
+        
     def handshakeMessage(self):
         """
-        Define the content of the message that will be shared between peers.
+        Define the specific content of the Discovery message that will be shared between peers.
         Here, what is important is to share the knowed peers
         """
         ownConnector = self.socketCommunication.socketConnector
@@ -76,3 +83,6 @@ class PeerDiscoveryHandler():
         encodedMessage: str = BeezUtils.encode(message)
 
         return encodedMessage
+
+    
+    
