@@ -45,7 +45,7 @@ class PeerDiscoveryHandler():
         while True:
             logger.info(f"Current connections:")
             for connection in self.socketCommunication.ownConnections:
-                logger.info(f"Peer: {str(connection.ip)}:{str(connection.ip)}")
+                logger.info(f"Peer: {str(connection.ip)}:{str(connection.port)}")
 
             time.sleep(INTERVALS)
 
