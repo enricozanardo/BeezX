@@ -60,6 +60,8 @@ class BeezNode():
         # already exist in the transaction pool
         transactionExist = self.transactionPool.transactionExists(transaction)
 
+        logger.info(f"transactionExist?: {transactionExist}")
+
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 
@@ -67,6 +69,8 @@ class BeezNode():
 
         # already exist in the transaction pool
         transactionExist = self.transactionPool.transactionExists(challengeTx)
+
+        logger.info(f"transactionExist?: {transactionExist}")
 
         logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
 
