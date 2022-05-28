@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
 from beez.BeezUtils import BeezUtils
+from beez.socket.MessageType import MessageType
 
 load_dotenv()  # load .env
 LOCAL_TEST_IP = '192.168.1.209'
@@ -76,4 +77,8 @@ class SocketCommunication(Node):
     def node_message(self, connectedNode: Node, message: Message):
         message = BeezUtils.decode(json.dumps(message))
 
-        logger.info(f"...manage the message {message}")
+        logger.info(f"...manage the message {message.messageType}")
+
+        if message.messageType == MessageType.DISCOVERY.name:
+            # handle the DISCOVERY
+            logger.info(f"...manage the message {message}")
