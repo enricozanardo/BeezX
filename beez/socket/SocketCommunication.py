@@ -4,14 +4,17 @@ import os
 from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, List
+import json
 
 
 if TYPE_CHECKING:
     from beez.Types import Address
     from beez.node.BeezNode import BeezNode
+    from beez.socket.Message import Message
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
+from beez.BeezUtils import BeezUtils
 
 load_dotenv()  # load .env
 LOCAL_TEST_IP = '192.168.1.209'
@@ -67,3 +70,10 @@ class SocketCommunication(Node):
         logger.info(
             f"outbound connection (this node wants to connect to other node)")
         self.peerDiscoveryHandler.handshake(connectedNode)
+
+    # Once connected send a message
+    # this is automatically provided by the library
+    def node_message(self, connectedNode: Node, message: Message):
+        message = BeezUtils.decode(json.dumps(message))
+
+        logger.info(f"...manage the message {message}")
