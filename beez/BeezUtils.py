@@ -1,6 +1,7 @@
 from Crypto.Hash import SHA256
 import json
 import jsonpickle
+from loguru import logger
 
 class BeezUtils():
 
@@ -16,7 +17,8 @@ class BeezUtils():
 
     @staticmethod
     def encode(objectToEncode):
-        return jsonpickle.encode(objectToEncode, unpicklable=True)
+        encodedObject = jsonpickle.encode(objectToEncode, unpicklable=True)
+        return encodedObject
 
     @staticmethod
     def decode(encodedObject):

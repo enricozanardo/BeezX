@@ -1,7 +1,12 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from loguru import logger
+
+if TYPE_CHECKING:
+    from beez.Types import WalletAddress
 
 from beez.BeezUtils import BeezUtils
 
@@ -18,7 +23,7 @@ class Wallet():
 
     def generateAddress(self):
         h = SHA256.new(self.keyPair.public_key().exportKey().hex().encode('utf-8'))
-        self.address = 'bz' + h.hexdigest()[0:42]
+        self.address : WalletAddress = 'bz' + h.hexdigest()[0:42]
         logger.info(f"Address: {self.address}")
 
 
