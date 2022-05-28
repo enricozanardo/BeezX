@@ -77,8 +77,9 @@ class SocketCommunication(Node):
     def node_message(self, connectedNode: Node, message: Message):
         message = BeezUtils.decode(json.dumps(message))
 
-        logger.info(f"...manage the message {message.messageType}")
+        logger.info(f"messagetype? {message.messageType}")
 
         if message.messageType == MessageType.DISCOVERY.name:
             # handle the DISCOVERY
-            logger.info(f"...manage the message {message}")
+            logger.info(f"manage the message {message.messageType}")
+            self.peerDiscoveryHandler.handleMessage(message)

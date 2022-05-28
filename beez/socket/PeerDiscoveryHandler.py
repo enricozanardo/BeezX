@@ -84,5 +84,25 @@ class PeerDiscoveryHandler():
 
         return encodedMessage
 
-    
-    
+    def handleMessage(self, message: MessageOwnConnections):
+        peerSocketConnector = message.senderConnector
+        peerConnectionList: List[SocketConnector] = message.ownConnections
+        newPeer = True
+
+        for connection in self.socketCommunication.ownConnections:
+            if connection.equals(peerSocketConnector):
+                # the node is itself
+                newPeer = False
+        
+        if newPeer == True:
+           # if is not itself add to the list of peers
+           self.socketCommunication.ownConnections.append(peerSocketConnector)  
+
+        # Check if in the peersPeerList there are new peers and connect to them
+        for connectionPeer in peerConnectionList:
+            peerKnow = False
+            for connection in self.socketCommunication.ownConnections:
+                if connection.equals(connectionPeer):
+                    peerKnow == True
+            if not peerKnow and not connectionPeer.equals(self.socketCommunication.socketConnector):
+                self.socketCommunication.connect_with_node(connectionPeer.ip, connectionPeer.port)
