@@ -17,6 +17,8 @@ from beez.BeezUtils import BeezUtils
 from beez.wallet.Wallet import Wallet
 from beez.socket.SocketCommunication import SocketCommunication
 from beez.api.NodeAPI import NodeAPI
+from beez.transaction.TransactionPool import TransactionPool
+from beez.challenge.Keeper import Keeper
 
 class BeezNode():
 
@@ -25,6 +27,8 @@ class BeezNode():
         self.ip = self.getIP()
         self.port = int(P_2_P_PORT)
         self.wallet = Wallet()
+        self.transactionPool = TransactionPool()
+        self.keeper = Keeper()
         if key is not None:
             self.wallet.fromKey(key)
 
@@ -50,12 +54,20 @@ class BeezNode():
     # Manage requests that come from the NodeAPI
     def handleTransaction(self, transaction: Transaction):
 
+        # TODO: is valid?
         logger.info(f"Manage the transaction ID: {transaction.id}")
+
+        # already exist in the transaction pool
+        transactionExist = self.transactionPool.transactionExists(transaction)
 
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 
         logger.info(f"Manage the challenge ID: {challengeTx.id}")
+
+        # already exist in the transaction pool
+        transactionExist = self.transactionPool.transactionExists(challengeTx)
+
         logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
 
         sharedfunction = challengeTx.challenge.sharedFunction
