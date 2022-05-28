@@ -1,7 +1,6 @@
 from __future__ import annotations
 from flask_classful import FlaskView, route
 from flask import Flask, jsonify, request
-from ray import method
 from waitress import serve
 from loguru import logger
 from typing import TYPE_CHECKING
