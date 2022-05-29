@@ -13,3 +13,4 @@ class Challenge():
     def __init__(self, sharedFunction: Callable[[], Any]):
         self.sharedFunction = sharedFunction
 
+

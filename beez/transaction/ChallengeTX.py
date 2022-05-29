@@ -18,3 +18,21 @@ class ChallengeTX(Transaction):
     def __init__(self, senderWalletAddress: WalletAddress, receiverWalletAddress: WalletAddress, amount: int, type: TransactionType, challenge: Challenge):
         super().__init__(senderWalletAddress, receiverWalletAddress, amount, type)
         self.challenge = challenge
+
+    
+    def toJson(self):
+        jsonBlock = {}
+        jsonBlock['id'] = self.id
+        jsonBlock['senderWalletAddress'] = self.senderWalletAddress
+        jsonBlock['receiverWalletAddress'] = self.receiverWalletAddress
+        jsonBlock['amount'] = self.amount
+        jsonBlock['type'] = self.type.name
+        jsonBlock['timestamp'] = self.timestamp
+        jsonBlock['signature'] = self.signature
+        jsonBlock['challenge'] = {
+            "workers": ["w1", "w2"],
+            "enrolment": "Mon 30.06.2022@23:59"
+        }
+        
+        
+        return jsonBlock

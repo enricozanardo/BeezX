@@ -6,6 +6,7 @@ import pathlib
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
+    from beez.transaction.ChallengeTX import ChallengeTX
 
 from beez.BeezUtils import BeezUtils
 
@@ -14,19 +15,22 @@ class Keeper():
     keeps track of the prizes of each Challenge 
     """
     def __init__(self):
-        self.prizes : Dict[ChallengeID : Prize] = {}
+        self.challenges : Dict[ChallengeID : ChallengeTX] = {}
         
-    def set(self, challengeID: ChallengeID, prize: Prize):
-        if challengeID in self.prizes.keys():
+    def set(self, challengeTX: ChallengeTX):
+        challengeID = challengeTX.id
+        prize = challengeTX.amount
+
+        if challengeID in self.challenges.keys():
             # Challenge already created!
             logger.warning(f"Challenge already created")
         else:
             logger.info(f"Challenge id: {challengeID} of {prize} tokens kept.")
-            self.prizes[challengeID] = prize
+            self.challenges[challengeID] = challengeTX
     
-    def get(self, challengeID: ChallengeID) -> Option[Prize]:
-        if challengeID in self.prizes.keys():
-            return self.prizes[challengeID]
+    def get(self, challengeID: ChallengeID) -> Option[ChallengeTX]:
+        if challengeID in self.challenges.keys():
+            return self.challenges[ChallengeTX]
         else:
             return None
 

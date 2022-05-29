@@ -6,6 +6,7 @@ from loguru import logger
 from typing import TYPE_CHECKING
 import os
 from dotenv import load_dotenv
+import json
 
 load_dotenv()  # load .env
 
@@ -77,4 +78,45 @@ class NodeAPI(FlaskView):
         response = {'message': 'Received challenge'}
 
         return jsonify(response), 201
+
+    
+    @route("/transactionpool", methods=['GET'])
+    def transactionPool(self):
+        # Implement this
+        logger.info(
+            f"Send all the transactions that are on the transaction pool")
+        transactions = {}
+
+        # logger.info(f"Transactions: {node.transactionPool.transactions}")
+
+        for idx, tx in enumerate(beezNode.transactionPool.transactions):
+            logger.info(f"Transaction: {idx} : {tx.id}")
+            logger.info(f"Transaction: {idx} : {tx}")
+            transactions[idx] = tx.toJson()
+
+        # logger.info(f"Transactions to Json: {transactions}")
+
+        return jsonify(transactions), 200
+    
+    @route("/challenges", methods=['GET'])
+    def challenges(self):
+        # Implement this
+        logger.info(
+            f"Send all the challenges that are on the Keeper")
+        
+        json_challenges = {}
+
+        # json_challenges = json.dumps(beezNode.keeper.challenges) 
+        challenges = beezNode.keeper.challenges
+
+        for challengeID, challengeTx in challenges.items():
+            cTx : ChallengeTX = challengeTx
+
+            logger.info(f"{cTx.toJson()}")
+            json_challenges[challengeID] = cTx.toJson()
+
+        # logger.info(f"Challenges: {beezNode.keeper.challenges}")
+
+        return jsonify(json_challenges), 200
+
 

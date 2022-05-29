@@ -9,8 +9,12 @@ def test_node():
 
     localIP = "192.168.1.61"
 
+    logger.info(f"Node info: CPU:{beezNode.cpus}, GPU: {beezNode.gpus}")
+
     beezNode.startP2P()
     beezNode.startAPI()
+
+   
 
     # assert beezNode.ip == localIP
     assert beezNode.wallet != None

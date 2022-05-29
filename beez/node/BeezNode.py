@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import socket
 from loguru import logger
+import GPUtil
 
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from beez.Types import Address
     from beez.transaction.Transaction import Transaction
     from beez.transaction.ChallengeTX import ChallengeTX
+    
 
 from beez.BeezUtils import BeezUtils
 from beez.wallet.Wallet import Wallet
@@ -19,6 +21,9 @@ from beez.socket.SocketCommunication import SocketCommunication
 from beez.api.NodeAPI import NodeAPI
 from beez.transaction.TransactionPool import TransactionPool
 from beez.challenge.Keeper import Keeper
+from beez.socket.MessageTransaction import MessageTransation
+from beez.socket.MessageType import MessageType
+from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 
 class BeezNode():
 
@@ -29,6 +34,8 @@ class BeezNode():
         self.wallet = Wallet()
         self.transactionPool = TransactionPool()
         self.keeper = Keeper()
+        self.gpus = GPUtil.getGPUs()
+        self.cpus = os.cpu_count()
         if key is not None:
             self.wallet.fromKey(key)
 
@@ -62,6 +69,19 @@ class BeezNode():
 
         logger.info(f"transactionExist?: {transactionExist}")
 
+        if not transactionExist:
+            # logger.info(f"add to the pool!!!")
+            self.transactionPool.addTransaction(transaction)
+            # Propagate the transaction to other peers
+            message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
+
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
+        
+        # TODO: check if is time to forge
+
+
+
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 
@@ -71,6 +91,17 @@ class BeezNode():
         transactionExist = self.transactionPool.transactionExists(challengeTx)
 
         logger.info(f"transactionExist?: {transactionExist}")
+
+        if not transactionExist:
+             # logger.info(f"add to the pool!!!")
+            self.keeper.set(challengeTx)
+            # Propagate the transaction to other peers
+            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
+
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
+
+        # TODO: check if is time to forge
 
         logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
 

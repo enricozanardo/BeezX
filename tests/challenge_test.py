@@ -59,7 +59,7 @@ def test_send_challenge_transaction():
     # Define the challenge
     challenge = Challenge(sum)
 
-    postChallengeTransaction(senderWalletAddress, receiverWalletAddress, amount, type, challenge)
+    postChallengeTransaction(senderWalletAddress, senderWalletAddress, amount, type, challenge)
 
     # assert beezNode.ip == localIP
     assert 5 == 5

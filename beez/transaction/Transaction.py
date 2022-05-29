@@ -30,6 +30,17 @@ class Transaction():
     def sign(self, signature):
         self.signature = signature
 
+    def toJson(self):
+        jsonBlock = {}
+        jsonBlock['id'] = self.id
+        jsonBlock['senderWalletAddress'] = self.senderWalletAddress
+        jsonBlock['receiverWalletAddress'] = self.receiverWalletAddress
+        jsonBlock['amount'] = self.amount
+        jsonBlock['type'] = self.type.name
+        jsonBlock['timestamp'] = self.timestamp
+        jsonBlock['signature'] = self.signature
+
+        return jsonBlock
 
     def equals(self, transaction: Transaction):
         if self.id == transaction.id:
