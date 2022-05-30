@@ -61,7 +61,6 @@ class BeezNode():
     # Manage requests that come from the NodeAPI
     def handleTransaction(self, transaction: Transaction):
 
-        # TODO: is valid?
         logger.info(f"Manage the transaction ID: {transaction.id}")
 
         data = transaction.payload()
@@ -72,25 +71,26 @@ class BeezNode():
         signatureValid = Wallet.signatureValid(
             data, signature, signaturePublicKey)
 
-        logger.info(f"Signature?: {signatureValid}")
-
         # already exist in the transaction pool
         transactionExist = self.transactionPool.transactionExists(transaction)
 
         logger.info(f"transactionExist?: {transactionExist}")
 
-        if not transactionExist:
+        if not transactionExist and signatureValid:
             # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
             # Propagate the transaction to other peers
             message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
 
             encodedMessage = BeezUtils.encode(message)
+
             self.p2p.broadcast(encodedMessage)
         
-        # TODO: check if is time to forge
-
-
+            # check if is time to forge a new Block
+            forgingRequired = self.transactionPool.forgerRequired()
+            if forgingRequired == True:
+                logger.info(f"Forger required")
+                # self.forge()
 
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
@@ -114,7 +114,7 @@ class BeezNode():
         logger.info(f"challengeTransactionExist?: {challengeTransactionExist}")
 
         if not challengeTransactionExist:
-             # logger.info(f"add to the pool!!!")
+             # logger.info(f"add to the keeper!!!")
             self.keeper.set(challengeTx)
             # Propagate the transaction to other peers
             message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
@@ -122,15 +122,21 @@ class BeezNode():
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
 
-        # TODO: check if is time to forge
+        # check if is time to forge a new Block
+            forgingRequired = self.transactionPool.forgerRequired()
+            if forgingRequired == True:
+                logger.info(f"Forger required")
+                # self.forge()
 
-        logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
+        
 
-        sharedfunction = challengeTx.challenge.sharedFunction
-        logger.info(f"challenge function: {type(sharedfunction)}")
-        result = sharedfunction(2,3)
+        # logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
 
-        logger.info(f"result: {result}")
+        # sharedfunction = challengeTx.challenge.sharedFunction
+        # logger.info(f"challenge function: {type(sharedfunction)}")
+        # result = sharedfunction(2,3)
+
+        # logger.info(f"result: {result}")
 
 
 

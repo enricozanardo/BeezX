@@ -1,10 +1,13 @@
 from __future__ import annotations
+from curses import beep
 from p2pnetwork.node import Node
 import os
 from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, List
 import json
+
+
 
 
 if TYPE_CHECKING:
@@ -16,6 +19,8 @@ from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
 from beez.BeezUtils import BeezUtils
 from beez.socket.MessageType import MessageType
+from beez.transaction.Transaction import Transaction
+from beez.transaction.ChallengeTX import ChallengeTX
 
 load_dotenv()  # load .env
 LOCAL_TEST_IP = '192.168.1.209'
@@ -83,3 +88,15 @@ class SocketCommunication(Node):
             # handle the DISCOVERY
             logger.info(f"manage the message {message.messageType}")
             self.peerDiscoveryHandler.handleMessage(message)
+
+        elif message.messageType == MessageType.TRANSACTION:
+            # handle the TRANSACTION
+            logger.info(f"A Transaction Message will be broadcasted!! {message.messageType}")
+            # transaction : Transaction = message.transaction
+            # self.beezNode.handleTransaction(transaction)
+
+        elif message.messageType == MessageType.CHALLENGE.name:
+            # handle the CHALLENGE
+            logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
+            # challengeTransaction : ChallengeTX  = message.challenge
+            # self.beezNode.handleChallengeTX(challengeTransaction)
