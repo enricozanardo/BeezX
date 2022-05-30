@@ -74,8 +74,6 @@ class BeezNode():
         # already exist in the transaction pool
         transactionExist = self.transactionPool.transactionExists(transaction)
 
-        logger.info(f"transactionExist?: {transactionExist}")
-
         if not transactionExist and signatureValid:
             # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
@@ -105,13 +103,9 @@ class BeezNode():
         signatureValid = Wallet.signatureValid(
             data, signature, signaturePublicKey)
 
-        logger.info(f"Signature?: {signatureValid}")
-
         # already exist in the keeper
         # transactionExist = self.transactionPool.transactionExists(challengeTx)
         challengeTransactionExist = self.keeper.challegeExists(challengeTx.id)
-
-        logger.info(f"challengeTransactionExist?: {challengeTransactionExist}")
 
         if not challengeTransactionExist and signatureValid:
              # logger.info(f"add to the keeper!!!")
@@ -122,7 +116,7 @@ class BeezNode():
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
 
-        # check if is time to forge a new Block
+            # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
             if forgingRequired == True:
                 logger.info(f"Forger required")
@@ -130,13 +124,13 @@ class BeezNode():
 
         
 
-        # logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
+            # logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
 
-        # sharedfunction = challengeTx.challenge.sharedFunction
-        # logger.info(f"challenge function: {type(sharedfunction)}")
-        # result = sharedfunction(2,3)
+            # sharedfunction = challengeTx.challenge.sharedFunction
+            # logger.info(f"challenge function: {type(sharedfunction)}")
+            # result = sharedfunction(2,3)
 
-        # logger.info(f"result: {result}")
+            # logger.info(f"result: {result}")
 
 
 
