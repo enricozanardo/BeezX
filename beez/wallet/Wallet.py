@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
@@ -14,6 +14,7 @@ from beez.BeezUtils import BeezUtils
 from beez.challenge.Challenge import Challenge
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
+from beez.block.Block import Block
 
 class Wallet():
     """
@@ -81,5 +82,16 @@ class Wallet():
         challengeTransaction.sign(signature)
 
         return challengeTransaction
+
+    # Manage Block creation
+    def createBlock(self, transactions: List[Transaction], lastHash: str, blockCounter: int) -> Block:
+        block = Block(transactions, lastHash,
+                      self.publicKeyString(), blockCounter)
+
+        signature = self.sign(block.payload())
+
+        block.sign(signature)  # sign the Block
+
+        return block
     
     

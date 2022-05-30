@@ -12,7 +12,9 @@ from beez.BeezUtils import BeezUtils
 
 class Keeper():
     """
-    keeps track of the prizes of each Challenge 
+    keeps track of each Challenge.
+    Every time that a block is added to the Blockchain, the Keeper will update the challenge based
+    on the transactions accured.
     """
     def __init__(self):
         self.challenges : Dict[ChallengeID : ChallengeTX] = {}
@@ -36,6 +38,13 @@ class Keeper():
 
     def challegeExists(self, challengeID: ChallengeID) -> bool:
         if challengeID in self.challenges.keys():
+            return True
+        else:
+            return False
+
+    def update(self, challengeID: ChallengeID) -> bool:
+        if challengeID in self.challenges.keys():
+            # Update the challenge!!!
             return True
         else:
             return False

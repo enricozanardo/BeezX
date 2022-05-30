@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
     from beez.Types import SharedFunction
-
+    
+from beez.challenge.ChallengeState import ChallengeState
 
 class Challenge():
     """
@@ -12,5 +13,6 @@ class Challenge():
 
     def __init__(self, sharedFunction: Callable[[], Any]):
         self.sharedFunction = sharedFunction
+        self.state = ChallengeState.OPENED.name
 
 

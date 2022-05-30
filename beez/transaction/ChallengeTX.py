@@ -30,7 +30,8 @@ class ChallengeTX(Transaction):
         jsonBlock['signature'] = self.signature
         jsonBlock['challenge'] = {
             "workers": ["w1", "w2"],
-            "enrolment": "Mon 30.06.2022@23:59"
+            "enrolment": "Mon 30.06.2022@23:59",
+            "state": self.challenge.state 
         }
         
         
