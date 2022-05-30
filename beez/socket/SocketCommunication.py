@@ -98,5 +98,6 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.CHALLENGE.name:
             # handle the CHALLENGE
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
-            challengeTransaction : ChallengeTX  = message.challenge
-            self.beezNode.handleChallengeTX(challengeTransaction)
+            logger.info(f"{message}")
+            # challengeTransaction : ChallengeTX  = message.challenge
+            # self.beezNode.handleChallengeTX(challengeTransaction)
