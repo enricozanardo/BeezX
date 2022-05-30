@@ -99,5 +99,5 @@ class SocketCommunication(Node):
             # handle the CHALLENGE
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
             logger.info(f"{message.challengeTx}")
-            # challengeTransaction : ChallengeTX  = message.challenge
-            # self.beezNode.handleChallengeTX(challengeTransaction)
+            challengeTransaction : ChallengeTX  = message.challengeTx
+            self.beezNode.handleChallengeTX(challengeTransaction)
