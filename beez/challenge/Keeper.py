@@ -18,6 +18,11 @@ class Keeper():
     """
     def __init__(self):
         self.challenges : Dict[ChallengeID : ChallengeTX] = {}
+
+
+    def start(self):
+        # TODO: init a thread that periodically check the states of the challenges
+        pass
         
     def set(self, challengeTX: ChallengeTX):
         challengeID = challengeTX.id
