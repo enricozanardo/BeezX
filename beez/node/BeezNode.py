@@ -64,6 +64,16 @@ class BeezNode():
         # TODO: is valid?
         logger.info(f"Manage the transaction ID: {transaction.id}")
 
+        data = transaction.payload()
+        signature = transaction.signature
+        signaturePublicKey = transaction.senderPublicKey
+
+        # # # is valid?
+        signatureValid = Wallet.signatureValid(
+            data, signature, signaturePublicKey)
+
+        logger.info(f"Signature?: {signatureValid}")
+
         # already exist in the transaction pool
         transactionExist = self.transactionPool.transactionExists(transaction)
 
@@ -87,12 +97,23 @@ class BeezNode():
 
         logger.info(f"Manage the challenge ID: {challengeTx.id}")
 
-        # already exist in the transaction pool
-        transactionExist = self.transactionPool.transactionExists(challengeTx)
+        data = challengeTx.payload()
+        signature = challengeTx.signature
+        signaturePublicKey = challengeTx.senderPublicKey
 
-        logger.info(f"transactionExist?: {transactionExist}")
+        # # # is valid?
+        signatureValid = Wallet.signatureValid(
+            data, signature, signaturePublicKey)
 
-        if not transactionExist:
+        logger.info(f"Signature?: {signatureValid}")
+
+        # already exist in the keeper
+        # transactionExist = self.transactionPool.transactionExists(challengeTx)
+        challengeTransactionExist = self.keeper.challegeExists(challengeTx.id)
+
+        logger.info(f"challengeTransactionExist?: {challengeTransactionExist}")
+
+        if not challengeTransactionExist:
              # logger.info(f"add to the pool!!!")
             self.keeper.set(challengeTx)
             # Propagate the transaction to other peers

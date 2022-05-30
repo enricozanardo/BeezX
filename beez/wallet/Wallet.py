@@ -5,12 +5,15 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from loguru import logger
 
-from beez.transaction.Transaction import Transaction
 
 if TYPE_CHECKING:
     from beez.Types import WalletAddress, PublicKeyString
-
+    from beez.transaction.TransactionType import TransactionType
+    
 from beez.BeezUtils import BeezUtils
+from beez.challenge.Challenge import Challenge
+from beez.transaction.Transaction import Transaction
+from beez.transaction.ChallengeTX import ChallengeTX
 
 class Wallet():
     """
@@ -21,7 +24,6 @@ class Wallet():
         self.keyPair = RSA.generate(1024)
         self.generateAddress()
         logger.info(f"A Wallet is generated")
-
 
     def generateAddress(self):
         h = SHA256.new(self.keyPair.public_key().exportKey().hex().encode('utf-8'))
@@ -42,8 +44,42 @@ class Wallet():
 
         return signature.hex()
 
+    @staticmethod
+    def signatureValid(data, signature, publicKeyString: PublicKeyString) -> bool:
+        signature = bytes.fromhex(signature)
+        dataHash = BeezUtils.hash(data)
+        publicKey = RSA.importKey(publicKeyString)
+        # providing the pubKey is able to validate the signature
+        signatureSchemeObject = PKCS1_v1_5.new(publicKey)
+        signatureValid = signatureSchemeObject.verify(dataHash, signature)
+
+        return signatureValid
+
     def publicKeyString(self) -> PublicKeyString:
         publicKeyString: PublicKeyString = self.keyPair.publickey(
         ).exportKey('PEM').decode('utf-8')
 
         return publicKeyString
+
+    # Manage Transaction 
+    def createTransaction(self, receiver: PublicKeyString, amount, type: TransactionType) -> Transaction:
+        transaction = Transaction(
+            self.publicKeyString(), receiver, amount, type)
+        signature = self.sign(transaction.payload())
+        transaction.sign(signature)
+
+        return transaction
+
+    # Manage ChallengeTransation
+    def createChallengeTransaction(self, amount, type: TransactionType, challenge: Challenge) -> ChallengeTX:
+       
+        challengeTransaction = ChallengeTX(
+            self.publicKeyString(), self.publicKeyString(), amount, type, challenge)
+
+        signature = self.sign(challengeTransaction.payload())
+
+        challengeTransaction.sign(signature)
+
+        return challengeTransaction
+    
+    

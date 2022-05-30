@@ -10,7 +10,7 @@ from beez.transaction.TransactionType import TransactionType
 from beez.wallet.Wallet import Wallet
 from beez.node.BeezNode import BeezNode
 from beez.BeezUtils import BeezUtils
-from beez.Types import WalletAddress
+from beez.Types import PublicKeyString, WalletAddress
 
 load_dotenv()  # load .env
 
@@ -32,9 +32,9 @@ URI = os.environ.get("FIRST_SERVER_IP", default="192.168.1.61")
 #     assert tx.type == TransactionType.TRANSFER
 
 
-def postTransaction(senderWalletAddress: WalletAddress, receiverWalletAddress: WalletAddress, amount, txType: TransactionType):
+def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType: TransactionType):
 
-    tx = Transaction(senderWalletAddress, receiverWalletAddress, amount, txType) 
+    tx = senderWallet.createTransaction(receiverWallet.publicKeyString(), amount, txType) 
     url = f"http://{URI}:{NODE_API_PORT}/transaction"
 
     package = {'transaction': BeezUtils.encode(tx)}
@@ -54,7 +54,7 @@ def test_send_transaction():
     amount = 10
     type = TransactionType.TRANSFER
 
-    postTransaction(senderWalletAddress, receiverWalletAddress, amount, type)
+    postTransaction(AliceWallet, BobWallet, amount, type)
 
     # assert beezNode.ip == localIP
     assert 5 == 5

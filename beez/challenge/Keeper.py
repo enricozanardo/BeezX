@@ -34,4 +34,10 @@ class Keeper():
         else:
             return None
 
+    def challegeExists(self, challengeID: ChallengeID) -> bool:
+        if challengeID in self.challenges.keys():
+            return True
+        else:
+            return False
+
     # TODO: Generate the rewarding function!!!

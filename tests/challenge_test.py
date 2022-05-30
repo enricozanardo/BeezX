@@ -18,9 +18,9 @@ NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
 URI = os.environ.get("FIRST_SERVER_IP", default="192.168.1.61")
 
 
-def postChallengeTransaction(senderWalletAddress: WalletAddress, receiverWalletAddress: WalletAddress, amount, txType: TransactionType, challenge: Challenge):
+def postChallengeTransaction(senderWallet: Wallet, amount, txType: TransactionType, challenge: Challenge):
 
-    tx = ChallengeTX(senderWalletAddress, receiverWalletAddress, amount, txType, challenge) 
+    tx = senderWallet.createChallengeTransaction(amount, txType, challenge) 
     url = f"http://{URI}:{NODE_API_PORT}/challenge"
 
     package = {'challenge': BeezUtils.encode(tx)}
@@ -49,8 +49,6 @@ def test_send_challenge_transaction():
     AliceWallet = Wallet()
     BobWallet = Wallet()
 
-    senderWalletAddress = AliceWallet.address
-    receiverWalletAddress = BobWallet.address
     amount = 10
     type = TransactionType.CHALLENGE
 
@@ -59,7 +57,7 @@ def test_send_challenge_transaction():
     # Define the challenge
     challenge = Challenge(sum)
 
-    postChallengeTransaction(senderWalletAddress, senderWalletAddress, amount, type, challenge)
+    postChallengeTransaction(AliceWallet, amount, type, challenge)
 
     # assert beezNode.ip == localIP
     assert 5 == 5

@@ -8,23 +8,22 @@ from loguru import logger
 
 if TYPE_CHECKING:
     from .TransactionType import TransactionType
-    from beez.Types import WalletAddress
+    from beez.Types import WalletAddress, PublicKeyString
 
 from beez.transaction.Transaction import Transaction
 from beez.challenge.Challenge import Challenge
 
 class ChallengeTX(Transaction):
 
-    def __init__(self, senderWalletAddress: WalletAddress, receiverWalletAddress: WalletAddress, amount: int, type: TransactionType, challenge: Challenge):
-        super().__init__(senderWalletAddress, receiverWalletAddress, amount, type)
+    def __init__(self, senderPublicKey: PublicKeyString, receiverPublicKey: PublicKeyString, amount: int, type: TransactionType, challenge: Challenge):
+        super().__init__(senderPublicKey, receiverPublicKey, amount, type)
         self.challenge = challenge
 
-    
     def toJson(self):
         jsonBlock = {}
         jsonBlock['id'] = self.id
-        jsonBlock['senderWalletAddress'] = self.senderWalletAddress
-        jsonBlock['receiverWalletAddress'] = self.receiverWalletAddress
+        jsonBlock['senderPublicKey'] = self.senderPublicKey
+        jsonBlock['receiverPublicKey'] = self.receiverPublicKey
         jsonBlock['amount'] = self.amount
         jsonBlock['type'] = self.type.name
         jsonBlock['timestamp'] = self.timestamp

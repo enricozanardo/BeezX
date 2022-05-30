@@ -112,7 +112,7 @@ class NodeAPI(FlaskView):
         for challengeID, challengeTx in challenges.items():
             cTx : ChallengeTX = challengeTx
 
-            logger.info(f"{cTx.toJson()}")
+            # logger.info(f"{cTx.toJson()}")
             json_challenges[challengeID] = cTx.toJson()
 
         # logger.info(f"Challenges: {beezNode.keeper.challenges}")

@@ -16,9 +16,9 @@ class Transaction():
     A Transaction represent the data that will spread betweeen network's peers
     """
 
-    def __init__(self, senderWalletAddress: WalletAddress, receiverWalletAddress: WalletAddress, amount: int, type: TransactionType):
-        self.senderWalletAddress = senderWalletAddress
-        self.receiverWalletAddress = receiverWalletAddress
+    def __init__(self, senderPublicKey: PublicKeyString, receiverPublicKey: PublicKeyString, amount: int, type: TransactionType):
+        self.senderPublicKey = senderPublicKey
+        self.receiverPublicKey = receiverPublicKey
         self.amount = amount
         self.type = type
         self.id = uuid.uuid1().hex
@@ -33,8 +33,8 @@ class Transaction():
     def toJson(self):
         jsonBlock = {}
         jsonBlock['id'] = self.id
-        jsonBlock['senderWalletAddress'] = self.senderWalletAddress
-        jsonBlock['receiverWalletAddress'] = self.receiverWalletAddress
+        jsonBlock['senderPublicKey'] = self.senderPublicKey
+        jsonBlock['receiverPublicKey'] = self.receiverPublicKey
         jsonBlock['amount'] = self.amount
         jsonBlock['type'] = self.type.name
         jsonBlock['timestamp'] = self.timestamp
@@ -48,5 +48,9 @@ class Transaction():
         else:
             return False
 
-    # TODO: get a consistent representation of the signed transaction
-    
+    # get a consistent representation of the signed transaction
+    def payload(self):
+        jsonRepresentation = copy.deepcopy(self.toJson())
+        jsonRepresentation['signature'] = ''
+
+        return jsonRepresentation
