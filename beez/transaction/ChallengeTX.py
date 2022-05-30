@@ -15,7 +15,7 @@ from beez.challenge.Challenge import Challenge
 
 class ChallengeTX(Transaction):
 
-    def __init__(self, senderPublicKey: PublicKeyString, receiverPublicKey: PublicKeyString, amount: int, type: TransactionType, challenge: Challenge):
+    def __init__(self, senderPublicKey: PublicKeyString, receiverPublicKey: PublicKeyString, amount: int, type: TransactionType.name, challenge: Challenge):
         super().__init__(senderPublicKey, receiverPublicKey, amount, type)
         self.challenge = challenge
 
@@ -25,7 +25,7 @@ class ChallengeTX(Transaction):
         jsonBlock['senderPublicKey'] = self.senderPublicKey
         jsonBlock['receiverPublicKey'] = self.receiverPublicKey
         jsonBlock['amount'] = self.amount
-        jsonBlock['type'] = self.type.name
+        jsonBlock['type'] = self.type
         jsonBlock['timestamp'] = self.timestamp
         jsonBlock['signature'] = self.signature
         jsonBlock['challenge'] = {

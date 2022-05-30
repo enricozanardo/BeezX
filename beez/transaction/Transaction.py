@@ -16,7 +16,7 @@ class Transaction():
     A Transaction represent the data that will spread betweeen network's peers
     """
 
-    def __init__(self, senderPublicKey: PublicKeyString, receiverPublicKey: PublicKeyString, amount: int, type: TransactionType):
+    def __init__(self, senderPublicKey: PublicKeyString, receiverPublicKey: PublicKeyString, amount: int, type: TransactionType.name):
         self.senderPublicKey = senderPublicKey
         self.receiverPublicKey = receiverPublicKey
         self.amount = amount
@@ -25,7 +25,7 @@ class Transaction():
         self.timestamp = time.time()
         self.signature = '' # guarantee that only the owner can perform this tx
         
-        logger.info(f"Transaction of type: {self.type.name} generated..")
+        logger.info(f"Transaction of type: {self.type} generated..")
 
     def sign(self, signature):
         self.signature = signature
@@ -36,7 +36,7 @@ class Transaction():
         jsonBlock['senderPublicKey'] = self.senderPublicKey
         jsonBlock['receiverPublicKey'] = self.receiverPublicKey
         jsonBlock['amount'] = self.amount
-        jsonBlock['type'] = self.type.name
+        jsonBlock['type'] = self.type
         jsonBlock['timestamp'] = self.timestamp
         jsonBlock['signature'] = self.signature
 

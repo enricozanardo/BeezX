@@ -113,7 +113,7 @@ class BeezNode():
 
         logger.info(f"challengeTransactionExist?: {challengeTransactionExist}")
 
-        if not challengeTransactionExist:
+        if not challengeTransactionExist and signatureValid:
              # logger.info(f"add to the keeper!!!")
             self.keeper.set(challengeTx)
             # Propagate the transaction to other peers

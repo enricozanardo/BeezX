@@ -89,7 +89,7 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             self.peerDiscoveryHandler.handleMessage(message)
 
-        elif message.messageType == MessageType.TRANSACTION:
+        elif message.messageType == MessageType.TRANSACTION.name:
             # handle the TRANSACTION
             logger.info(f"A Transaction Message will be broadcasted!! {message.messageType}")
             # transaction : Transaction = message.transaction

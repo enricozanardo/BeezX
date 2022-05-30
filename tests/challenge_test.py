@@ -50,7 +50,7 @@ def test_send_challenge_transaction():
     BobWallet = Wallet()
 
     amount = 10
-    type = TransactionType.CHALLENGE
+    type = TransactionType.CHALLENGE.name
 
   
 

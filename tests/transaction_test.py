@@ -52,7 +52,7 @@ def test_send_transaction():
     senderWalletAddress = AliceWallet.address
     receiverWalletAddress = BobWallet.address
     amount = 10
-    type = TransactionType.TRANSFER
+    type = TransactionType.TRANSFER.name
 
     postTransaction(AliceWallet, BobWallet, amount, type)
 
