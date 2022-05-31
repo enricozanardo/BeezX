@@ -238,9 +238,18 @@ class BeezNode():
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
 
-    def handleKeeper(self, keeper: Keeper):
+    def handleKeeper(self, receivedKeeper: Keeper):
         # sync keeper between peers in the network
-        logger.info(f"Update the keeper!!!")
-        pass
+        logger.info(f"Update the local keeper!!!")
+        localKeeperCopy: Keeper = copy.deepcopy(self.blockchain.keeper)
+
+        for idx, challengeTx in receivedKeeper.challenges.items():
+            challengeExists = localKeeperCopy.challegeExists(id)
+            if not challengeExists:
+                # Add the challenge to the local keeper
+                localKeeperCopy.set(challengeTx)
+        self.blockchain.keeper = localKeeperCopy
+
+        
 
     
