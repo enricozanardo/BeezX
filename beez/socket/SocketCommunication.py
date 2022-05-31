@@ -102,17 +102,11 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.CHALLENGE.name:
             # handle the CHALLENGE
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
-            logger.info(f"{message.challengeTx}")
             challengeTransaction : ChallengeTX  = message.challengeTx
             self.beezNode.handleChallengeTX(challengeTransaction)
         
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
-            logger.info(f"{message.block}")
-            # TODO: Generate a BlockTransaction!!!
             blockTransaction : BlockTX  = message.block
-
-            logger.info(f"{blockTransaction.id}")
-
-            # self.beezNode.handleBlockTX(blockTransaction)
+            self.beezNode.handleBlockTX(blockTransaction)
