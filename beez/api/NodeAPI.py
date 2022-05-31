@@ -107,7 +107,8 @@ class NodeAPI(FlaskView):
         json_challenges = {}
 
         # json_challenges = json.dumps(beezNode.keeper.challenges) 
-        challenges = beezNode.keeper.challenges
+    
+        challenges = beezNode.blockchain.keeper.challenges
 
         for challengeID, challengeTx in challenges.items():
             cTx : ChallengeTX = challengeTx
@@ -118,5 +119,10 @@ class NodeAPI(FlaskView):
         # logger.info(f"Challenges: {beezNode.keeper.challenges}")
 
         return jsonify(json_challenges), 200
-
+        
+    @route("/blockchain", methods=['GET'])
+    def blockchain(self):
+        # TODO: Implement this
+        logger.info(f"Blockchain called...")
+        return beezNode.blockchain.toJson(), 200
 

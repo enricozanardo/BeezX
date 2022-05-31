@@ -24,7 +24,7 @@ class Block():
 
     @staticmethod
     def genesis() -> Block:
-        genesisBlock = Block([], 'Hello Beez! 🐝 ', 'Author: Enrico Zanardo 🤙🏽', 0)
+        genesisBlock = Block([], 'Hello Beez! 🐝', 'Author: Enrico Zanardo 🤙🏽', 0)
         genesisBlock.timestamp = 0 # every node will start with the same genesis Block
         return genesisBlock
 

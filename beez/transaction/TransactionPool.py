@@ -1,8 +1,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
+from loguru import logger
+
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
+    from beez.transaction.ChallengeTX import ChallengeTX
 
 class TransactionPool():
     """
@@ -15,6 +18,13 @@ class TransactionPool():
     def addTransaction(self, transaction: Transaction):
         # logger.info(f"transaction to add: {transaction.id}")
         self.transactions.append(transaction)
+
+
+    def challengeExists(self, challengeTx: ChallengeTX):
+        for tx in self.transactions:
+            if tx.id == challengeTx.id:
+                return True
+        return False
 
     def transactionExists(self, transaction: Transaction):
         for tx in self.transactions:

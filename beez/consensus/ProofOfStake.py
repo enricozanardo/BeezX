@@ -21,9 +21,9 @@ class ProofOfStake():
 
     def setGenesisNodeStake(self):
         currentPath = pathlib.Path().resolve()
-        # logger.info(f"currentPath: {currentPath}")
+        logger.info(f"currentPath: {currentPath}")
 
-        genisisPublicKey = open(f"{currentPath}/src/beez/keys/genesisPublicKey.pem", 'r').read()
+        genisisPublicKey = open(f"{currentPath}/beez/keys/genesisPublicKey.pem", 'r').read()
         # TODO: check if exist!!!
         # logger.info(f"GenesisublicKey: {genisisPublicKey}")
         # give to the genesis staker 1 stake to allow him to forge the initial Block
@@ -63,7 +63,7 @@ class ProofOfStake():
 
         return winnerLot 
 
-    
+
     def forger(self, lastBlockHash: str):
         lots = self.validatorLots(lastBlockHash)
         winnerLot: Lot = self.winnerLot(lots, lastBlockHash)

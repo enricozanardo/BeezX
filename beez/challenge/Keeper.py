@@ -1,8 +1,6 @@
 from __future__ import annotations
-from optparse import Option
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Dict, Optional
 from loguru import logger
-import pathlib
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
@@ -35,7 +33,7 @@ class Keeper():
             logger.info(f"Challenge id: {challengeID} of {prize} tokens kept.")
             self.challenges[challengeID] = challengeTX
     
-    def get(self, challengeID: ChallengeID) -> Option[ChallengeTX]:
+    def get(self, challengeID: ChallengeID) -> Optional[ChallengeTX]:
         if challengeID in self.challenges.keys():
             return self.challenges[ChallengeTX]
         else:
@@ -49,7 +47,10 @@ class Keeper():
 
     def update(self, challengeID: ChallengeID) -> bool:
         if challengeID in self.challenges.keys():
-            # Update the challenge!!!
+            logger.info(f"Update the challenge!!!")
+            challegeTX = self.get(challengeID)
+            if challegeTX:
+                logger.info(f"{challegeTX.state}")
             return True
         else:
             return False

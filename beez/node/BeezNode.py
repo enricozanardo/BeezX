@@ -20,10 +20,10 @@ from beez.wallet.Wallet import Wallet
 from beez.socket.SocketCommunication import SocketCommunication
 from beez.api.NodeAPI import NodeAPI
 from beez.transaction.TransactionPool import TransactionPool
-from beez.challenge.Keeper import Keeper
 from beez.socket.MessageTransaction import MessageTransation
 from beez.socket.MessageType import MessageType
 from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
+from beez.block.Blockchain import Blockchain
 
 class BeezNode():
 
@@ -33,9 +33,9 @@ class BeezNode():
         self.port = int(P_2_P_PORT)
         self.wallet = Wallet()
         self.transactionPool = TransactionPool()
-        self.keeper = Keeper()
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
+        self.blockchain = Blockchain()
         if key is not None:
             self.wallet.fromKey(key)
 
@@ -105,11 +105,13 @@ class BeezNode():
 
         # already exist in the keeper
         # transactionExist = self.transactionPool.transactionExists(challengeTx)
-        challengeTransactionExist = self.keeper.challegeExists(challengeTx.id)
+        # challengeTransactionExist = self.keeper.challegeExists(challengeTx.id)
+        challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
 
         if not challengeTransactionExist and signatureValid:
              # logger.info(f"add to the keeper!!!")
-            self.keeper.set(challengeTx)
+            # self.keeper.set(challengeTx)
+            self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
             message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
 
