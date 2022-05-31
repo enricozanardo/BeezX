@@ -157,7 +157,7 @@ class BeezNode():
             self.transactionPool.removeFromPool(block.transactions)
 
             # broadcast the block to the network
-            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK, block)
+            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
             
