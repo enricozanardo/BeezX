@@ -168,7 +168,8 @@ class Blockchain():
         # check if the keeper is updated!
         isUpdated = True
         for tx in block.transactions:
-            
+            logger.info(f"Check for challenges: {tx.type}")
+
             if tx.type == TransactionType.CHALLENGE.name:
                 logger.info(f"Check if this challege is in the Keeper")
                 challengeTx : ChallengeTX = tx
