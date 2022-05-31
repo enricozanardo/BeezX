@@ -24,6 +24,7 @@ from beez.socket.MessageTransaction import MessageTransation
 from beez.socket.MessageType import MessageType
 from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.Blockchain import Blockchain
+from beez.socket.MessageBlock import MessageBlock
 
 class BeezNode():
 
@@ -156,6 +157,9 @@ class BeezNode():
             self.transactionPool.removeFromPool(block.transactions)
 
             # broadcast the block to the network
+            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK, block)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
             
         else:
             logger.info(f"I'm not the forger")  
