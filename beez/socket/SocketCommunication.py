@@ -14,6 +14,8 @@ if TYPE_CHECKING:
     from beez.Types import Address
     from beez.node.BeezNode import BeezNode
     from beez.socket.Message import Message
+    from beez.transaction.BlockTX import BlockTX
+    from beez.block.Block import Block
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
@@ -21,6 +23,8 @@ from beez.BeezUtils import BeezUtils
 from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
+
+
 
 load_dotenv()  # load .env
 LOCAL_TEST_IP = '192.168.1.209'
@@ -107,5 +111,8 @@ class SocketCommunication(Node):
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
             logger.info(f"{message.block}")
             # TODO: Generate a BlockTransaction!!!
-            # blockTransaction : BlockTX  = message.block
+            blockTransaction : BlockTX  = message.block
+
+            logger.info(f"{blockTransaction.id}")
+
             # self.beezNode.handleBlockTX(blockTransaction)
