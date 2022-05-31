@@ -108,7 +108,7 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
-            blockTX : BlockTX = message.block
+            block : Block = message.block
 
-            logger.info(f"{type(blockTX)}")
-            self.beezNode.handleBlock(blockTX)
+            logger.info(f"{type(block)}")
+            self.beezNode.handleBlock(block)
