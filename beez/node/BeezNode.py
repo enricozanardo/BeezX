@@ -95,8 +95,8 @@ class BeezNode():
                 logger.info(f"Forger required")
                 self.forge()
 
-    def handleBlock(self, block: Block):
-        logger.info(f"Manage the Block ID: {block.id}")
+    def handleBlock(self, block):
+        logger.info(f"Manage the Block ID: {block}")
 
 
 
