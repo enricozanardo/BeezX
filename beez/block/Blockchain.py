@@ -88,3 +88,18 @@ class Blockchain():
             self.accountStateModel.updateBalance(sender, -amount)
             # second update the receiver balance
             self.accountStateModel.updateBalance(receiver, amount)
+
+        
+    def transactionExist(self, transaction: Transaction):
+        # TODO: Find a better solution to check if a transaction already exist into the blockchain!
+        for block in self.blocks:
+            for blockTransaction in block.transactions:
+                if transaction.equals(blockTransaction):
+                    return True
+        return False
+
+    def nextForger(self):
+        lastBlockHash = BeezUtils.hash(self.blocks[-1].payload()).hexdigest()
+        nextForger = self.pos.forger(lastBlockHash)
+
+        return nextForger

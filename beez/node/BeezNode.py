@@ -74,7 +74,10 @@ class BeezNode():
         # already exist in the transaction pool
         transactionExist = self.transactionPool.transactionExists(transaction)
 
-        if not transactionExist and signatureValid:
+        # already exist in the Blockchain
+        transactionInBlock = self.blockchain.transactionExist(transaction)
+
+        if not transactionExist and not transactionInBlock and signatureValid:
             # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
             # Propagate the transaction to other peers
@@ -88,7 +91,7 @@ class BeezNode():
             forgingRequired = self.transactionPool.forgerRequired()
             if forgingRequired == True:
                 logger.info(f"Forger required")
-                # self.forge()
+                self.forge()
 
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
@@ -104,11 +107,12 @@ class BeezNode():
             data, signature, signaturePublicKey)
 
         # already exist in the keeper
-        # transactionExist = self.transactionPool.transactionExists(challengeTx)
-        # challengeTransactionExist = self.keeper.challegeExists(challengeTx.id)
         challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
 
-        if not challengeTransactionExist and signatureValid:
+        # already exist in the Blockchain
+        transactionInBlock = self.blockchain.transactionExist(challengeTx)
+
+        if not challengeTransactionExist and not transactionInBlock and signatureValid:
              # logger.info(f"add to the keeper!!!")
             # self.keeper.set(challengeTx)
             self.transactionPool.addTransaction(challengeTx)
@@ -122,7 +126,7 @@ class BeezNode():
             forgingRequired = self.transactionPool.forgerRequired()
             if forgingRequired == True:
                 logger.info(f"Forger required")
-                # self.forge()
+                self.forge()
 
         
 
@@ -135,4 +139,17 @@ class BeezNode():
             # logger.info(f"result: {result}")
 
 
+    def forge(self):
+        logger.info(f"Forger called")
+        # Elect the next forger
+        forger = self.blockchain.nextForger()
 
+        forgerString = str(forger).strip()
+        thisWalletString = str(self.wallet.publicKeyString()).strip()
+
+        if forgerString == thisWalletString:
+            logger.info(f"I'm the next forger")
+        else:
+            logger.info(f"I'm not the forger")  
+
+        
