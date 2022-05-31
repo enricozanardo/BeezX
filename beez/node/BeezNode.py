@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 import socket
 from loguru import logger
 import GPUtil
+import copy
 
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
@@ -15,7 +16,6 @@ if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
     from beez.block.Block import Block
     
-
 from beez.BeezUtils import BeezUtils
 from beez.wallet.Wallet import Wallet
 from beez.socket.SocketCommunication import SocketCommunication
@@ -26,6 +26,10 @@ from beez.socket.MessageType import MessageType
 from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.Blockchain import Blockchain
 from beez.socket.MessageBlock import MessageBlock
+from beez.socket.MessageBlockchain import MessageBlockchain
+from beez.socket.MessageKeeper import MessageKeeper
+from beez.challenge.Keeper import Keeper
+from beez.socket.Message import Message
 
 class BeezNode():
 
@@ -114,16 +118,27 @@ class BeezNode():
         if not blockCountValid:
             # ask to peers their state of the blockchain
             logger.info("Request the updated version of the Blockchain")
-            # self.requestChain()
+            self.requestChain()
 
         if not lastKeeperData:
             # ask to peers their state of the keeper
             logger.info("Request the updated version of the Keeper")
             # self.requestKeeper()
 
+    def requestChain(self):
+        # The node will send a message to request the updated Blockchain
+        message = Message(self.p2p.socketConnector, MessageType.BLOCKCHAINREQUEST.name)
+        encodedMessage = BeezUtils.encode(message)
 
+        self.p2p.broadcast(encodedMessage)
+        
+    def requestKeeper(self):
+        # The node will send a message to request the updated Keeper
+        message = Message(self.p2p.socketConnector, MessageType.BLOCKCHAINREQUEST.name)
+        encodedMessage = BeezUtils.encode(message)
 
-
+        self.p2p.broadcast(encodedMessage)
+        
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 
         logger.info(f"Manage the challenge ID: {challengeTx.id}")
@@ -193,4 +208,39 @@ class BeezNode():
         else:
             logger.info(f"I'm not the forger")  
 
+
+    
+    def handleBlockchainRequest(self, requestingNode: BeezNode):
+        # send the updated version of the blockchain to the node that made the request
+        message = MessageBlockchain(self.p2p.socketConnector, MessageType.BLOCKCHAIN, self.blockchain)
+        encodedMessage = BeezUtils.encode(message)
+        self.p2p.send(requestingNode, encodedMessage)
         
+
+    def handleKeeperRequest(self, requestingNode: BeezNode):
+        # send the updated version of the keeper to the node that made the request
+        message = MessageKeeper(self.p2p.socketConnector, MessageType.KEEPER, self.blockchain.keeper)
+        encodedMessage = BeezUtils.encode(message)
+        self.p2p.send(requestingNode, encodedMessage)
+
+    def handleBlockchain(self, blockchain: Blockchain):
+        # sync blockchain between peers in the network
+        logger.info(f"Iterate on the blockchain until to sync the local blockchain with the received one")
+        localBlockchainCopy = copy.deepcopy(self.blockchain)
+        localBlockCount = len(localBlockchainCopy.blocks)
+        receivedChainBlockCount = len(blockchain.blocks)
+
+        if localBlockCount <= receivedChainBlockCount:
+            for blockNumber, block in enumerate(blockchain.blocks):
+                # we are interested only on blocks that are not in our blockchain
+                if blockNumber >= localBlockCount:
+                    localBlockchainCopy.addBlock(block)
+                    self.transactionPool.removeFromPool(block.transactions)
+            self.blockchain = localBlockchainCopy
+
+    def handleKeeper(self, keeper: Keeper):
+        # sync keeper between peers in the network
+        logger.info(f"Update the keeper!!!")
+        pass
+
+    

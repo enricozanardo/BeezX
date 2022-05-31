@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, List
 import json
+from beez.block.Blockchain import Blockchain
+from beez.challenge.Keeper import Keeper
 
 
 
@@ -109,3 +111,27 @@ class SocketCommunication(Node):
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
             block : Block = message.block
             self.beezNode.handleBlock(block)
+
+        elif message.messageType == MessageType.BLOCKCHAINREQUEST.name:
+            # handle the BLOCKCHAINREQUEST
+            logger.info(f"A BLOCKCHAINREQUEST Message will be broadcasted!! {message.messageType}")
+            # this message do not contain any object
+            self.beezNode.handleBlockchainRequest(connectedNode)
+
+        elif message.messageType == MessageType.KEEPERREQUEST.name:
+            # handle the KEEPERREQUEST
+            logger.info(f"A KEEPERREQUEST Message will be broadcasted!! {message.messageType}")
+            # this message do not contain any object
+            self.beezNode.handleKeeperRequest(connectedNode)
+
+        elif message.messageType == MessageType.BLOCKCHAIN.name:
+            # handle the BLOCKCHAIN
+            logger.info(f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.messageType}")
+            blockchain : Blockchain = message.blockchain
+            self.beezNode.handleBlockchain(blockchain)
+
+        elif message.messageType == MessageType.KEEPER.name:
+            # handle the KEEPER
+            logger.info(f"A KEEPER Message will be sent to the requester peer!! {message.messageType}")
+            keeper : Keeper = message.keeper
+            self.beezNode.handleKeeper(keeper)
