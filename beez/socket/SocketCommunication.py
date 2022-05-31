@@ -108,7 +108,7 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
-            blockTransaction : BlockTX  = message
+            blockTransaction : Block  = message.block
 
             logger.info(f"{type(blockTransaction)}")
             self.beezNode.handleBlockTX(blockTransaction)
