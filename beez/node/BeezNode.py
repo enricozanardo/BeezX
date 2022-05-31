@@ -123,7 +123,7 @@ class BeezNode():
         if not lastKeeperData:
             # ask to peers their state of the keeper
             logger.info("Request the updated version of the Keeper")
-            # self.requestKeeper()
+            self.requestKeeper()
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain
@@ -134,7 +134,7 @@ class BeezNode():
         
     def requestKeeper(self):
         # The node will send a message to request the updated Keeper
-        message = Message(self.p2p.socketConnector, MessageType.BLOCKCHAINREQUEST.name)
+        message = Message(self.p2p.socketConnector, MessageType.KEEPERREQUEST.name)
         encodedMessage = BeezUtils.encode(message)
 
         self.p2p.broadcast(encodedMessage)
