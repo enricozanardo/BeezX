@@ -212,14 +212,14 @@ class BeezNode():
     
     def handleBlockchainRequest(self, requestingNode: BeezNode):
         # send the updated version of the blockchain to the node that made the request
-        message = MessageBlockchain(self.p2p.socketConnector, MessageType.BLOCKCHAIN, self.blockchain)
+        message = MessageBlockchain(self.p2p.socketConnector, MessageType.BLOCKCHAIN.name, self.blockchain)
         encodedMessage = BeezUtils.encode(message)
         self.p2p.send(requestingNode, encodedMessage)
         
 
     def handleKeeperRequest(self, requestingNode: BeezNode):
         # send the updated version of the keeper to the node that made the request
-        message = MessageKeeper(self.p2p.socketConnector, MessageType.KEEPER, self.blockchain.keeper)
+        message = MessageKeeper(self.p2p.socketConnector, MessageType.KEEPER.name, self.blockchain.keeper)
         encodedMessage = BeezUtils.encode(message)
         self.p2p.send(requestingNode, encodedMessage)
 

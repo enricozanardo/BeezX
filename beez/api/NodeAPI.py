@@ -91,7 +91,6 @@ class NodeAPI(FlaskView):
 
         for idx, tx in enumerate(beezNode.transactionPool.transactions):
             logger.info(f"Transaction: {idx} : {tx.id}")
-            logger.info(f"Transaction: {idx} : {tx}")
             transactions[idx] = tx.toJson()
 
         # logger.info(f"Transactions to Json: {transactions}")
