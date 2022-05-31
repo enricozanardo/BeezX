@@ -153,8 +153,10 @@ class BeezNode():
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
             # clean the transaction pool
+            self.transactionPool.removeFromPool(block.transactions)
 
             # broadcast the block to the network
+            
         else:
             logger.info(f"I'm not the forger")  
 

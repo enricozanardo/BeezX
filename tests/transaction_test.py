@@ -4,6 +4,7 @@ from loguru import logger
 import os
 from dotenv import load_dotenv
 import requests
+import pathlib
 
 from beez.transaction.Transaction import Transaction
 from beez.transaction.TransactionType import TransactionType
@@ -16,20 +17,6 @@ load_dotenv()  # load .env
 
 NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
 URI = os.environ.get("FIRST_SERVER_IP", default="192.168.1.61")
-
-
-# def test_transaction():
-#     AliceWallet = Wallet()
-#     BobWallet = Wallet()
-
-#     senderWalletAddress = AliceWallet.address
-#     receiverWalletAddress = BobWallet.address
-#     amount = 10
-#     type = TransactionType.TRANSFER
-      
-#     tx = Transaction(senderWalletAddress, receiverWalletAddress, amount, type)
-
-#     assert tx.type == TransactionType.TRANSFER
 
 
 def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType: TransactionType):
@@ -45,21 +32,21 @@ def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType
 
 def test_send_transaction():
 
+    # Import the alice private key
+    currentPath = pathlib.Path().resolve()
+    alicePrivateKeyPath = f"{currentPath}/beez/keys/alicePrivateKey.pem"
+
     # Generate a standard transaction
     AliceWallet = Wallet()
-    BobWallet = Wallet()
+    AliceWallet.fromKey(alicePrivateKeyPath)
 
-    senderWalletAddress = AliceWallet.address
-    receiverWalletAddress = BobWallet.address
+    # Generate a standard transaction
+    BobWallet = Wallet()
     
-    
-    amountEx = 50
-    amountTr = 10
-    typeExchange = TransactionType.EXCHANGE.name
+    amount = 12
     typeTransfer = TransactionType.TRANSFER.name
 
-    postTransaction(AliceWallet, BobWallet, amountEx, typeExchange)
-    postTransaction(AliceWallet, BobWallet, amountTr, typeTransfer)
-
+    postTransaction(AliceWallet, BobWallet, amount, typeTransfer)
+  
     # assert beezNode.ip == localIP
     assert 5 == 5

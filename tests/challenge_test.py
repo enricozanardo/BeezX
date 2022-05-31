@@ -3,6 +3,7 @@ from loguru import logger
 import os
 from dotenv import load_dotenv
 import requests
+import pathlib
 
 from beez.transaction.Transaction import Transaction
 from beez.transaction.TransactionType import TransactionType
@@ -44,15 +45,19 @@ def sum(a: int,b: int):
 
 
 def test_send_challenge_transaction():
+    # Before to test Alice wallet must have some Tokens into the wallet!
+    # Run exchange_transcation_test before!!!
+
+    # Import the alice private key
+    currentPath = pathlib.Path().resolve()
+    alicePrivateKeyPath = f"{currentPath}/beez/keys/alicePrivateKey.pem"
 
     # Generate a standard transaction
     AliceWallet = Wallet()
-    BobWallet = Wallet()
+    AliceWallet.fromKey(alicePrivateKeyPath)
 
     amount = 10
     type = TransactionType.CHALLENGE.name
-
-  
 
     # Define the challenge
     challenge = Challenge(sum)

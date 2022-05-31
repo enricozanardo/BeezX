@@ -35,13 +35,15 @@ def test_exchange_transaction():
     # Import the genesis private key
     currentPath = pathlib.Path().resolve()
 
-    genesisPrivateKeyPath = f"{currentPath}/beez/keys/alicePrivateKey.pem"
+    genesisPrivateKeyPath = f"{currentPath}/beez/keys/genesisPrivateKey.pem"
+    alicePrivateKeyPath = f"{currentPath}/beez/keys/alicePrivateKey.pem"
 
     GenesisWallet = Wallet()
     GenesisWallet.fromKey(genesisPrivateKeyPath)
     AliceWallet = Wallet()
+    AliceWallet.fromKey(alicePrivateKeyPath)
     
-    amountEx = 50
+    amountEx = 500
 
     typeExchange = TransactionType.EXCHANGE.name
 

@@ -3,11 +3,15 @@ from typing import TYPE_CHECKING, List
 import time
 import copy
 
+from loguru import logger
+
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
     from beez.transaction.ChallengeTX import ChallengeTX
     from beez.wallet.Wallet import Wallet
     from beez.Types import WalletAddress, PublicKeyString
+
+from beez.transaction.TransactionType import TransactionType
 
 class Block():
     """
@@ -39,7 +43,11 @@ class Block():
         transactions = []
 
         for tx in self.transactions:
-            transactions.append(tx.toJson())
+            if tx.type == TransactionType.CHALLENGE:
+                challengeTx: ChallengeTX = tx
+                transactions.append(challengeTx.toJson())
+            else:
+                transactions.append(tx.toJson())
 
         jsonBlock['transactions'] = transactions
 

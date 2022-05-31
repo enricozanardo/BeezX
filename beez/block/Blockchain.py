@@ -49,8 +49,11 @@ class Blockchain():
             self.executeTransaction(transaction)
     
     def executeTransaction(self, transaction: Transaction):
+        logger.info(f"Execute transaction of type: {transaction.type}")
+
         # case of Stake transaction [involve POS]
         if transaction.type == TransactionType.STAKE.name:
+            logger.info(f"STAKE")
             sender = transaction.senderPublicKey
             receiver = transaction.receiverPublicKey
             if sender == receiver:
@@ -60,14 +63,17 @@ class Blockchain():
 
         # case of Challenge transaction [involve Keeper]
         elif transaction.type == TransactionType.CHALLENGE.name:
-            sender = transaction.senderPublicKey
+            logger.info(f"CHALLENGE")
+            # cast the kind of transaction
+            challengeTX: ChallengeTX = transaction
+
+
+            sender = challengeTX.senderPublicKey
             receiver = transaction.receiverPublicKey
+            amount = challengeTX.amount
             if sender == receiver:
-                # cast the kind of transaction
-                challengeTX: ChallengeTX = transaction
                 # Check with the Challenge Keeper
                 challengeExists = self.keeper.challegeExists(challengeTX.id)
-
                 if not challengeExists:
                     # Add the challenge to the Keeper and keep store the tokens to the keeper!
                     self.keeper.set(challengeTX) 
@@ -81,6 +87,7 @@ class Blockchain():
 
         else:
             # case of [TRANSACTION]
+            logger.info(f"OTHER")
             sender = transaction.senderPublicKey
             receiver = transaction.receiverPublicKey
             amount: int = transaction.amount
@@ -126,7 +133,7 @@ class Blockchain():
                 coveredTransactions.append(tx)
             else:
                 logger.info(
-                    f"This transaction {tx.id} is not covered [no enogh tokes ({tx.amount}) into account {tx.receiverPublicKey}]")
+                    f"This transaction {tx.id} is not covered [no enogh tokes ({tx.amount})]")
 
         return coveredTransactions
         
@@ -138,14 +145,15 @@ class Blockchain():
 
         if transaction.type == TransactionType.EXCHANGE.name:
             # Only genesis wallet can perform an EXCHANGE transaction
-            genesisPubKeyString = str(self.genesisPubKey.pubKey).strip()
-            genesisPubKeyString = str(transaction.senderPublicKey).strip()
+            # genesisPubKeyString = str(self.genesisPubKey.pubKey).strip()
+            # genesisPubKeyString = str(transaction.senderPublicKey).strip()
 
-            if genesisPubKeyString == genesisPubKeyString:
-                logger.info(f"Do an EXCHANGE transfer")
-                return True
+            # if genesisPubKeyString == genesisPubKeyString:
+            #     logger.info(f"Do an EXCHANGE transfer")
+            #     return True
             
-            return False
+            # return False
+            return True
 
         senderBalance = self.accountStateModel.getBalance(
             transaction.senderPublicKey)
