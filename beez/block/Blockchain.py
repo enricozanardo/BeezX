@@ -162,3 +162,51 @@ class Blockchain():
             return True
         else:
             return False
+
+    
+    def lastKeeperData(self, block: Block):
+        # check if the keeper is updated!
+        isUpdated = True
+        for tx in block.transactions:
+            
+            if tx.type == TransactionType.CHALLENGE.name:
+                logger.info(f"Check if this challege is in the Keeper")
+                challengeTx : ChallengeTX = tx
+                challengeExists = self.keeper.challegeExists(tx.id)
+                if not challengeExists:
+                    isUpdated = False
+        return isUpdated
+
+    def blockCountValid(self, block: Block):
+        if self.blocks[-1].blockCount == block.blockCount - 1:
+            return True
+        else:
+            return False
+
+    def lastBlockHashValid(self, block: Block):
+        latestBlockainBlockHash = BeezUtils.hash(
+            self.blocks[-1].payload()).hexdigest()
+        if latestBlockainBlockHash == block.lastHash:
+            return True
+        else:
+            return False
+
+    def forgerValid(self, block: Block):
+        forgerPublicKey = str(self.pos.forger(block.lastHash)).strip()
+        proposedBlockForger = str(block.forger).strip()
+
+        if forgerPublicKey == proposedBlockForger:
+            return True
+        else:
+            return False
+
+    def transactionValid(self, transactions: List[Transaction]):
+        coveredTransactions = self.getCoveredTransactionSet(transactions)
+        # if the lenght are equal than nodes are not cheating
+        if len(coveredTransactions) == len(transactions):
+            return True
+        else:
+            return False
+
+
+    

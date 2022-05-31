@@ -96,7 +96,31 @@ class BeezNode():
                 self.forge()
 
     def handleBlock(self, block: Block):
-        logger.info(f"Manage the Block ID: {block.timestamp}")
+        logger.info(f"Manage the Block: {block.timestamp}")
+        forger = block.forger
+        blockHash = block.payload()
+        signature = block.signature
+
+        # checks all the possible validations!
+        blockCountValid = self.blockchain.blockCountValid(block)
+        lastKeeperData = self.blockchain.lastKeeperData(block)
+
+        lastBlockHashValid = self.blockchain.lastBlockHashValid(block)
+        forgerValid = self.blockchain.forgerValid(block)
+        transactionValid = self.blockchain.transactionValid(block.transactions)
+
+        signatureValid = Wallet.signatureValid(blockHash, signature, forger)
+
+        if not blockCountValid:
+            # ask to peers their state of the blockchain
+            logger.info("Request the updated version of the Blockchain")
+            # self.requestChain()
+
+        if not lastKeeperData:
+            # ask to peers their state of the keeper
+            logger.info("Request the updated version of the Keeper")
+            # self.requestKeeper()
+
 
 
 
