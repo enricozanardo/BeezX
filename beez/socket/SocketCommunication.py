@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from beez.Types import Address
     from beez.node.BeezNode import BeezNode
     from beez.socket.Message import Message
-    from beez.transaction.BlockTX import BlockTX
     from beez.block.Block import Block
     
 from beez.socket.SocketConnector import SocketConnector
@@ -109,6 +108,4 @@ class SocketCommunication(Node):
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
             block : Block = message.block
-
-            logger.info(f"{type(block)}")
             self.beezNode.handleBlock(block)
