@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from beez.Types import Address
     from beez.transaction.Transaction import Transaction
     from beez.transaction.ChallengeTX import ChallengeTX
-    from beez.transaction.BlockTX import BlockTX
+    from beez.block.Block import Block
     
 
 from beez.BeezUtils import BeezUtils
@@ -95,9 +95,9 @@ class BeezNode():
                 logger.info(f"Forger required")
                 self.forge()
 
-    def handleBlockTX(self, blockTx: BlockTX):
-        logger.info(f"Manage the Block ID: {blockTx.id}")
-        
+    def handleBlock(self, block: Block):
+        logger.info(f"Manage the Block ID: {block.id}")
+
 
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
