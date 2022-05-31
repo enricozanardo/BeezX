@@ -9,6 +9,7 @@ if TYPE_CHECKING:
 
 from beez.consensus.Lot import Lot
 from beez.BeezUtils import BeezUtils
+from beez.keys.GenesisPublicKey import GenesisPublicKey
 
 class ProofOfStake():
     """
@@ -20,14 +21,17 @@ class ProofOfStake():
         self.setGenesisNodeStake()
 
     def setGenesisNodeStake(self):
-        currentPath = pathlib.Path().resolve()
-        logger.info(f"currentPath: {currentPath}")
+        # currentPath = pathlib.Path().resolve()
+        # logger.info(f"currentPath: {currentPath}")
 
-        genisisPublicKey = open(f"{currentPath}/beez/keys/genesisPublicKey.pem", 'r').read()
-        # TODO: check if exist!!!
+        # genisisPublicKey = open(f"{currentPath}/beez/keys/genesisPublicKey.pem", 'r').read()
+
+        genisisPublicKey = GenesisPublicKey()
+
+
         # logger.info(f"GenesisublicKey: {genisisPublicKey}")
         # give to the genesis staker 1 stake to allow him to forge the initial Block
-        self.stakers[genisisPublicKey] = 1
+        self.stakers[genisisPublicKey.pubKey] = 1
 
     def update(self, publicKeyString: PublicKeyString, stake: Stake):
         if publicKeyString in self.stakers.keys():

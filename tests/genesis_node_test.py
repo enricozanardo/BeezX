@@ -3,14 +3,13 @@ import pathlib
 
 
 from beez.node.BeezNode import BeezNode
+from beez.keys.GenesisPublicKey import GenesisPublicKey
 
 def test_genesis_node():
     logger.info(f"start testing forger node")
     logger.info(f"based on the key used at when the blockchain starts..")
 
     currentPath = pathlib.Path().resolve()
-    # logger.info(f"currentPath: {currentPath}")
-
     genesisPrivateKeyPath = f"{currentPath}/beez/keys/genesisPrivateKey.pem"
 
     beezNode = BeezNode(genesisPrivateKeyPath)

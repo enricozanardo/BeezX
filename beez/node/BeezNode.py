@@ -149,6 +149,12 @@ class BeezNode():
 
         if forgerString == thisWalletString:
             logger.info(f"I'm the next forger")
+            # mint the new Block
+            block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
+
+            # clean the transaction pool
+
+            # broadcast the block to the network
         else:
             logger.info(f"I'm not the forger")  
 

@@ -1,11 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List
+import pathlib
 
 from loguru import logger
-
-from beez.transaction.ChallengeTX import ChallengeTX
-
-
 
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
@@ -18,6 +15,8 @@ from beez.state.AccountStateModel import AccountStateModel
 from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
 from beez.challenge.Keeper import Keeper
+from beez.transaction.ChallengeTX import ChallengeTX
+from beez.keys.GenesisPublicKey import GenesisPublicKey
 
 
 class Blockchain():
@@ -29,6 +28,7 @@ class Blockchain():
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()
         self.keeper = Keeper()
+        self.genesisPubKey = GenesisPublicKey()
 
     def toJson(self):
         jsonBlockchain = {}
@@ -103,3 +103,54 @@ class Blockchain():
         nextForger = self.pos.forger(lastBlockHash)
 
         return nextForger
+    
+    def mintBlock(self, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
+        # Check that the transaction are covered 
+        coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
+
+        # check the type of transactions and do the right action
+        self.executeTransactions(coveredTransactions)
+
+        # create the Block
+        newBlock = forgerWallet.createBlock(coveredTransactions, BeezUtils.hash(
+            self.blocks[-1].payload()).hexdigest(), len(self.blocks))
+
+        self.blocks.append(newBlock)
+
+        return newBlock
+    
+    def getCoveredTransactionSet(self, transactionsFromPool: List[Transaction]) -> List[Transaction]:
+        coveredTransactions: List[Transaction] = []
+        for tx in transactionsFromPool:
+            if self.transactionCovered(tx):
+                coveredTransactions.append(tx)
+            else:
+                logger.info(
+                    f"This transaction {tx.id} is not covered [no enogh tokes ({tx.amount}) into account {tx.receiverPublicKey}]")
+
+        return coveredTransactions
+        
+    def transactionCovered(self, transaction: Transaction):
+        """
+        check if a transaction is covered (there are enough money into the account) by the AccountStateModel
+        if the transaction is coming from the Exchange we do not check if it covered
+        """
+
+        if transaction.type == TransactionType.EXCHANGE.name:
+            # Only genesis wallet can perform an EXCHANGE transaction
+            genesisPubKeyString = str(self.genesisPubKey.pubKey).strip()
+            genesisPubKeyString = str(transaction.senderPublicKey).strip()
+
+            if genesisPubKeyString == genesisPubKeyString:
+                logger.info(f"Do an EXCHANGE transfer")
+                return True
+            
+            return False
+
+        senderBalance = self.accountStateModel.getBalance(
+            transaction.senderPublicKey)
+
+        if senderBalance >= transaction.amount:
+            return True
+        else:
+            return False
