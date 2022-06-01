@@ -10,6 +10,7 @@ import time
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
 INTERVALS = int(os.getenv('INTERVALS', LOCAL_INTERVALS))
+INTERVALS = 20
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
@@ -59,6 +60,7 @@ class Keeper():
         else:
             # new challenge! Thinkto broadcast the challenge and no more!
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept. Challenge STATE: {challenge.state}")
+
             self.challenges[challengeID] = challenge
 
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
