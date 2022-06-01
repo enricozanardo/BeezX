@@ -78,12 +78,15 @@ class Blockchain():
                 # Check with the Challenge Keeper
                 challenge : Challenge = challengeTX.challenge
                 challengeExists = self.keeper.challegeExists(challenge.id)
+                logger.info(f"challengeExists: {challengeExists}")
                 if not challengeExists:
                     # Add the challenge to the Keeper and keep store the tokens to the keeper!
+                    logger.info(f"Add challenge")
                     self.keeper.set(challenge) 
                 else:
                     # check the state and update
                     # Update the Keeper!
+                    logger.info(f"Update challenge")
                     self.keeper.update(challenge.id) 
 
                 # Update the balance of the sender!

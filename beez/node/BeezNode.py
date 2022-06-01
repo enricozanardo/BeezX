@@ -7,6 +7,8 @@ from loguru import logger
 import GPUtil
 import copy
 
+
+
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
 
@@ -14,6 +16,7 @@ if TYPE_CHECKING:
     from beez.Types import Address
     from beez.transaction.Transaction import Transaction
     from beez.transaction.ChallengeTX import ChallengeTX
+    from beez.challenge.Challenge import Challenge
     from beez.block.Block import Block
     
 from beez.BeezUtils import BeezUtils
@@ -138,10 +141,13 @@ class BeezNode():
         encodedMessage = BeezUtils.encode(message)
 
         self.p2p.broadcast(encodedMessage)
-        
+
+
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 
-        logger.info(f"Manage the challenge ID: {challengeTx.id}")
+        challenge: Challenge = challengeTx.challenge
+        
+        logger.info(f"Manage the challenge ID: {challenge.id}")
 
         data = challengeTx.payload()
         signature = challengeTx.signature
@@ -158,7 +164,7 @@ class BeezNode():
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
         if not challengeTransactionExist and not transactionInBlock and signatureValid:
-            # logger.info(f"add to the keeper!!!")
+            # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
             message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)

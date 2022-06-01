@@ -25,13 +25,13 @@ class Keeper():
         
     def set(self, challenge: Challenge):
         challengeID : ChallengeID = challenge.id
-        prize = challenge.prize
+        reward = challenge.reward
 
         if challengeID in self.challenges.keys():
             # Challenge already created!
             logger.warning(f"Challenge already created")
         else:
-            logger.info(f"Challenge id: {challengeID} of {prize} tokens kept.")
+            logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept.")
             self.challenges[challengeID] = challenge
     
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
