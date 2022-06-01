@@ -2,6 +2,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Optional
 from loguru import logger
 import copy
+import threading
+import os
+from dotenv import load_dotenv
+import time
+
+load_dotenv()  # load .env
+LOCAL_INTERVALS = 10
+INTERVALS = int(os.getenv('INTERVALS', LOCAL_INTERVALS))
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
@@ -10,6 +18,8 @@ if TYPE_CHECKING:
 
 from beez.BeezUtils import BeezUtils
 from beez.challenge.ChallengeState import ChallengeState
+
+
 
 class Keeper():
     """
@@ -20,45 +30,37 @@ class Keeper():
     def __init__(self):
         self.challenges : Dict[ChallengeID : Challenge] = {}
 
-
     def start(self):
-        # TODO: init a thread that periodically check the states of the challenges
-        pass
+        # start node threads... 
+        statusThread = threading.Thread(target=self.status, args={})
+        statusThread.start()
+
+    def status(self):
+         while True:
+            logger.info(f"challenge status....")
+            for key, value in self.challenges.items():
+                challenge: Challenge = value
+                challengeID : ChallengeID = key
+                
+                logger.info(f"Do something with challenge ID: {challengeID} on status: {challenge.state}")
+
+            # challengeStatusMessage = self.challengeStatusMessage()
+            # # Broadcast the message
+            # self.socketCommunication.broadcast(challengeStatusMessage)
+
+            time.sleep(INTERVALS)
         
     def set(self, challenge: Challenge) -> Optional[ChallengeState]:
         challengeID : ChallengeID = challenge.id
         reward = challenge.reward
 
         if challengeID in self.challenges.keys():
-            logger.info(f"Challenge already created, check for updates!!!")
-            if challenge.state == ChallengeState.CREATED.name:
-                logger.info(f"Challenge state: {challenge.state}")
-                # TODO: decide to join the challenge
-                # update the keeper
-                challenge.state = ChallengeState.ACCEPTED.name
-
-
-                self.challenges[challengeID] = challenge
-                return ChallengeState.ACCEPTED.name
-
-            elif challenge.state == ChallengeState.UPDATED.name:
-                logger.info(f"Challenge state: {challenge.state}")
-                # self.keeper.update(challenge) 
-                return ChallengeState.UPDATED.name
-            elif challenge.state == ChallengeState.CLOSED.name:
-                logger.info(f"Challenge state: {challenge.state}")
-                # self.keeper.close(challenge) 
-                return ChallengeState.CLOSED.name
+            logger.info(f"Challenge already created")
         else:
             # new challenge! Thinkto broadcast the challenge and no more!
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept. Challenge STATE: {challenge.state}")
             self.challenges[challengeID] = challenge
 
-            return challenge.state
-
-    
-        
-    
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
         if challengeID in self.challenges.keys():
             return self.challenges[challengeID]

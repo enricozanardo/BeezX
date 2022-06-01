@@ -59,6 +59,8 @@ class BeezNode():
     def startP2P(self):
         self.p2p = SocketCommunication(self.ip, self.port)
         self.p2p.startSocketCommunication(self)
+        # Start Keeper!
+        self.blockchain.keeper.start()
 
     def startAPI(self):
         self.api = NodeAPI()

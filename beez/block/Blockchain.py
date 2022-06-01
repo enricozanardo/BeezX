@@ -83,11 +83,7 @@ class Blockchain():
                 logger.info(f"challengeExists: {challengeExists}")
                 if not challengeExists:
                     # Add the challenge to the Keeper and keep store the tokens to the keeper!
-                    challengeState = self.keeper.set(challenge) 
-
-                    logger.info(f"challengeState {challengeState}")
-                    logger.info(f"is time to generate a custom transaction?????")
-
+                    self.keeper.set(challenge) 
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)

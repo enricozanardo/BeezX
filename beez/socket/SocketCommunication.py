@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, List
 import json
 from beez.block.Blockchain import Blockchain
 from beez.challenge.Keeper import Keeper
+from beez.socket.KeeperHandler import KeeperHandler
 
 
 
@@ -53,7 +54,7 @@ class SocketCommunication(Node):
         logger.info(f"Check to connect to first node {FIRST_SERVER_IP} at port {P_2_P_PORT}")
 
         if self.socketConnector.ip != FIRST_SERVER_IP or self.socketConnector.port != P_2_P_PORT:
-         # connect to the first node
+            # connect to the first node
             self.connect_with_node(FIRST_SERVER_IP, P_2_P_PORT)
     
     def startSocketCommunication(self, beezNode: BeezNode):
