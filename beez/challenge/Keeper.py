@@ -5,6 +5,7 @@ from loguru import logger
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
     from beez.transaction.ChallengeTX import ChallengeTX
+    from beez.challenge.Challenge import Challenge
 
 from beez.BeezUtils import BeezUtils
 
@@ -15,27 +16,27 @@ class Keeper():
     on the transactions accured.
     """
     def __init__(self):
-        self.challenges : Dict[ChallengeID : ChallengeTX] = {}
+        self.challenges : Dict[ChallengeID : Challenge] = {}
 
 
     def start(self):
         # TODO: init a thread that periodically check the states of the challenges
         pass
         
-    def set(self, challengeTX: ChallengeTX):
-        challengeID = challengeTX.id
-        prize = challengeTX.amount
+    def set(self, challenge: Challenge):
+        challengeID : ChallengeID = challenge.id
+        prize = challenge.prize
 
         if challengeID in self.challenges.keys():
             # Challenge already created!
             logger.warning(f"Challenge already created")
         else:
             logger.info(f"Challenge id: {challengeID} of {prize} tokens kept.")
-            self.challenges[challengeID] = challengeTX
+            self.challenges[challengeID] = challenge
     
-    def get(self, challengeID: ChallengeID) -> Optional[ChallengeTX]:
+    def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
         if challengeID in self.challenges.keys():
-            return self.challenges[ChallengeTX]
+            return self.challenges[challengeID]
         else:
             return None
 
@@ -48,11 +49,12 @@ class Keeper():
     def update(self, challengeID: ChallengeID) -> bool:
         if challengeID in self.challenges.keys():
             logger.info(f"Update the challenge!!!")
-            challegeTX = self.get(challengeID)
-            if challegeTX:
-                logger.info(f"{challegeTX.state}")
+            challege = self.get(challengeID)
+            if challege:
+                logger.info(f"{challege.state}")
             return True
         else:
+            logger.info(f"Challenge not found!!!")
             return False
 
     # TODO: Generate the rewarding function!!!

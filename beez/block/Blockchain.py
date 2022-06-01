@@ -4,10 +4,13 @@ import pathlib
 
 from loguru import logger
 
+
+
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
     from beez.Types import PublicKeyString
     from beez.wallet.Wallet import Wallet
+    from beez.challenge.Challenge import Challenge
 
 from beez.block.Block import Block
 from beez.BeezUtils import BeezUtils
@@ -17,6 +20,7 @@ from beez.transaction.TransactionType import TransactionType
 from beez.challenge.Keeper import Keeper
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
+
 
 
 class Blockchain():
@@ -72,14 +76,15 @@ class Blockchain():
             amount = challengeTX.amount
             if sender == receiver:
                 # Check with the Challenge Keeper
-                challengeExists = self.keeper.challegeExists(challengeTX.id)
+                challenge : Challenge = challengeTX.challenge
+                challengeExists = self.keeper.challegeExists(challenge.id)
                 if not challengeExists:
                     # Add the challenge to the Keeper and keep store the tokens to the keeper!
-                    self.keeper.set(challengeTX) 
+                    self.keeper.set(challenge) 
                 else:
                     # check the state and update
                     # Update the Keeper!
-                    self.keeper.update(challengeTX.id) 
+                    self.keeper.update(challenge.id) 
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)

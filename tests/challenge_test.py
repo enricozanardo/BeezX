@@ -56,13 +56,13 @@ def test_send_challenge_transaction():
     AliceWallet = Wallet()
     AliceWallet.fromKey(alicePrivateKeyPath)
 
-    amount = 10
+    reward = 10
     type = TransactionType.CHALLENGE.name
 
     # Define the challenge
-    challenge = Challenge(sum)
+    challenge = Challenge(sum, reward)
 
-    postChallengeTransaction(AliceWallet, amount, type, challenge)
+    postChallengeTransaction(AliceWallet, reward, type, challenge)
 
     # assert beezNode.ip == localIP
     assert 5 == 5

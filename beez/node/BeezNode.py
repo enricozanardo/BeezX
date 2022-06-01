@@ -158,8 +158,7 @@ class BeezNode():
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
         if not challengeTransactionExist and not transactionInBlock and signatureValid:
-             # logger.info(f"add to the keeper!!!")
-            # self.keeper.set(challengeTx)
+            # logger.info(f"add to the keeper!!!")
             self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
             message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)

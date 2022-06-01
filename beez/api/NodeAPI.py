@@ -97,27 +97,27 @@ class NodeAPI(FlaskView):
 
         return jsonify(transactions), 200
     
-    @route("/challenges", methods=['GET'])
-    def challenges(self):
-        # Implement this
-        logger.info(
-            f"Send all the challenges that are on the Keeper")
+    # @route("/challenges", methods=['GET'])
+    # def challenges(self):
+    #     # Implement this
+    #     logger.info(
+    #         f"Send all the challenges that are on the Keeper")
         
-        json_challenges = {}
+    #     json_challenges = {}
 
-        # json_challenges = json.dumps(beezNode.keeper.challenges) 
+    #     # json_challenges = json.dumps(beezNode.keeper.challenges) 
     
-        challenges = beezNode.blockchain.keeper.challenges
+    #     challenges = beezNode.blockchain.keeper.challenges
 
-        for challengeID, challengeTx in challenges.items():
-            cTx : ChallengeTX = challengeTx
+    #     for challengeID, challengeTx in challenges.items():
+    #         cTx : ChallengeTX = challengeTx
 
-            # logger.info(f"{cTx.toJson()}")
-            json_challenges[challengeID] = cTx.toJson()
+    #         # logger.info(f"{cTx.toJson()}")
+    #         json_challenges[challengeID] = cTx.toJson()
 
-        # logger.info(f"Challenges: {beezNode.keeper.challenges}")
+    #     # logger.info(f"Challenges: {beezNode.keeper.challenges}")
 
-        return jsonify(json_challenges), 200
+    #     return jsonify(json_challenges), 200
         
     @route("/blockchain", methods=['GET'])
     def blockchain(self):
