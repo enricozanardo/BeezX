@@ -110,7 +110,7 @@ class BeezNode():
 
         # checks all the possible validations!
         blockCountValid = self.blockchain.blockCountValid(block)
-        lastKeeperData = self.blockchain.lastKeeperData(block)
+        # lastKeeperData = self.blockchain.lastKeeperData(block)
 
         lastBlockHashValid = self.blockchain.lastBlockHashValid(block)
         forgerValid = self.blockchain.forgerValid(block)
@@ -123,10 +123,19 @@ class BeezNode():
             logger.info("Request the updated version of the Blockchain")
             self.requestChain()
 
-        if not lastKeeperData:
-            # ask to peers their state of the keeper
-            logger.info("Request the updated version of the Keeper")
-            self.requestKeeper()
+        # if not lastKeeperData:
+        #     # ask to peers their state of the keeper
+        #     logger.info("Request the updated version of the Keeper")
+        #     self.requestKeeper()
+
+        if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
+            self.blockchain.addBlock(block)
+            self.transactionPool.removeFromPool(block.transactions)
+
+            # broadcast the block message
+            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain

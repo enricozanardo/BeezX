@@ -85,8 +85,7 @@ class Wallet():
 
     # Manage Block creation
     def createBlock(self, transactions: List[Transaction], lastHash: str, blockCounter: int) -> Block:
-        block = Block(transactions, lastHash,
-                      self.publicKeyString(), blockCounter)
+        block = Block(transactions, lastHash, self.publicKeyString(), blockCounter)
 
         signature = self.sign(block.payload())
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Optional
 from loguru import logger
+import copy
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
@@ -46,15 +47,12 @@ class Keeper():
         else:
             return False
 
-    def update(self, challengeID: ChallengeID) -> bool:
-        if challengeID in self.challenges.keys():
-            logger.info(f"Update the challenge!!!")
-            challege = self.get(challengeID)
-            if challege:
-                logger.info(f"{challege.state}")
-            return True
-        else:
-            logger.info(f"Challenge not found!!!")
-            return False
+    def update(self, receivedChallenge: Challenge) -> bool:
+        # do a copy of the local challenge!
+        challengeExists = self.challegeExists(receivedChallenge.id)
+        if challengeExists:
+            logger.info(f"Update the local version of the Challenge")
+            self.challenges[receivedChallenge.id] = receivedChallenge
+
 
     # TODO: Generate the rewarding function!!!
