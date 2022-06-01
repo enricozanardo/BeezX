@@ -103,7 +103,7 @@ class BeezNode():
                 self.forge()
 
     def handleBlock(self, block: Block):
-        logger.info(f"Manage the Block: {block.timestamp}")
+        logger.info(f"Manage the Block: {block.blockCount}")
         forger = block.forger
         blockHash = block.payload()
         signature = block.signature
@@ -111,7 +111,7 @@ class BeezNode():
         # checks all the possible validations!
         blockCountValid = self.blockchain.blockCountValid(block)
         # lastKeeperData = self.blockchain.lastKeeperData(block)
-
+        
         lastBlockHashValid = self.blockchain.lastBlockHashValid(block)
         forgerValid = self.blockchain.forgerValid(block)
         transactionValid = self.blockchain.transactionValid(block.transactions)
@@ -129,7 +129,10 @@ class BeezNode():
         #     self.requestKeeper()
 
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
+
+            # Add the block to the Blockchain
             self.blockchain.addBlock(block)
+
             self.transactionPool.removeFromPool(block.transactions)
 
             # broadcast the block message

@@ -4,6 +4,8 @@ import pathlib
 
 from loguru import logger
 
+from beez.challenge.ChallengeState import ChallengeState
+
 
 
 if TYPE_CHECKING:
@@ -82,11 +84,18 @@ class Blockchain():
                 if not challengeExists:
                     # Add the challenge to the Keeper and keep store the tokens to the keeper!
                     self.keeper.set(challenge) 
-                # else:
-                #     # check the state and update
-                #     # Update the Keeper!
-                #     logger.info(f"Update challenge")
-                #     self.keeper.update(challenge) 
+                else:
+                    # check the state and update
+                    logger.info(f"Work on the challenge")
+                    if challenge.state == ChallengeState.CREATED:
+                        logger.info(f"Challenge state: {challenge.state}")
+                        # self.keeper.join(challenge) 
+                    elif challenge.state == ChallengeState.UPDATED:
+                        logger.info(f"Challenge state: {challenge.state}")
+                        # self.keeper.update(challenge) 
+                    elif challenge.state == ChallengeState.CLOSED:
+                        logger.info(f"Challenge state: {challenge.state}")
+                        # self.keeper.close(challenge) 
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)

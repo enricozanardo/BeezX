@@ -15,7 +15,7 @@ class Challenge():
     def __init__(self, sharedFunction: Callable[[], Any], reward: Prize):
         self.id = uuid.uuid1().hex
         self.sharedFunction = sharedFunction
-        self.state = ChallengeState.OPENED.name
+        self.state = ChallengeState.CREATED.name
         self.reward = reward
 
 
