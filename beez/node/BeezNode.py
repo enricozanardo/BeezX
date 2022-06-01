@@ -110,11 +110,7 @@ class BeezNode():
 
         # checks all the possible validations!
         blockCountValid = self.blockchain.blockCountValid(block)
-        # check if the block contain an updated version of a challenge!
-        isUpdatedChallenge = self.blockchain.blockContainUpdatedChallenge(block)
-
-        logger.info(f"isUpdatedChallenge: {isUpdatedChallenge}")
-
+    
         # lastKeeperData = self.blockchain.lastKeeperData(block)
         
         lastBlockHashValid = self.blockchain.lastBlockHashValid(block)
@@ -127,6 +123,13 @@ class BeezNode():
             # ask to peers their state of the blockchain
             logger.info("Request the updated version of the Blockchain")
             self.requestChain()
+
+        # if not isUpdatedChallenge:
+        #     # ask to peers their state of the blockchain
+        #     logger.info("Request the updated version of the Keeper")
+        #     self.requestChain()
+
+       
 
         # if not lastKeeperData:
         #     # ask to peers their state of the keeper
@@ -144,6 +147,11 @@ class BeezNode():
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
+
+            # check if the block contain an updated version of a challenge!
+            isUpdatedChallenge = self.blockchain.blockContainUpdatedChallenge(block)
+
+            logger.info(f"isUpdatedChallenge: {isUpdatedChallenge}")
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain

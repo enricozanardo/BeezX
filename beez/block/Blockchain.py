@@ -184,7 +184,6 @@ class Blockchain():
         isUpdated = True
         for tx in block.transactions:
             logger.info(f"Check for challenge: {tx.type}")
-
             if tx.type == TransactionType.CHALLENGE.name:
                 logger.info(f"Check if this challege is in the Keeper")
                 challengeTx : ChallengeTX = tx
@@ -193,7 +192,7 @@ class Blockchain():
                     # check the current status of the Challenge:
                     localChallenge = self.keeper.get(challengeTx.challenge.id)
                     logger.info(f"current status of the received TX: {challengeTx.challenge.state}")
-                    logger.info(f"current status of the Challenge: {challengeExists}")
+                    logger.info(f"current status of the Challenge: {localChallenge.state}")
                 if not challengeExists:
                     isUpdated = False
         return isUpdated
