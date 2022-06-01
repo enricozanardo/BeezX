@@ -8,9 +8,6 @@ from typing import TYPE_CHECKING, List
 import json
 from beez.block.Blockchain import Blockchain
 from beez.challenge.Keeper import Keeper
-from beez.socket.KeeperHandler import KeeperHandler
-
-
 
 
 if TYPE_CHECKING:
