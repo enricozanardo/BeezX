@@ -67,7 +67,6 @@ class Blockchain():
             # cast the kind of transaction
             challengeTX: ChallengeTX = transaction
 
-
             sender = challengeTX.senderPublicKey
             receiver = transaction.receiverPublicKey
             amount = challengeTX.amount
