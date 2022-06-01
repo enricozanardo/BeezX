@@ -9,8 +9,10 @@ class ChallengeState(Enum):
     OPENED: Peers started to work on the joined challenge
     UPDATED: The challenge has got some results and is updated 
     CLOSED: Challege closed and peers that joined the challege are rewarded
+    ACCEPTED: A peer accept to join the challenge
     """
     CREATED = "created"
     OPENED = "opened"
     UPDATED = "updated"
     CLOSED = "closed"
+    ACCEPTED = "accepted"

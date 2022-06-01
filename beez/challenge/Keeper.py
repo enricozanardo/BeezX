@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from beez.challenge.Challenge import Challenge
 
 from beez.BeezUtils import BeezUtils
+from beez.challenge.ChallengeState import ChallengeState
 
 class Keeper():
     """
@@ -24,25 +25,36 @@ class Keeper():
         # TODO: init a thread that periodically check the states of the challenges
         pass
         
-    def set(self, challenge: Challenge):
+    def set(self, challenge: Challenge) -> Optional[ChallengeState]:
         challengeID : ChallengeID = challenge.id
         reward = challenge.reward
 
         if challengeID in self.challenges.keys():
-            # Challenge already created!
-            logger.warning(f"Challenge already created")
+            logger.info(f"Challenge already created, check for updates!!!")
+            if challenge.state == ChallengeState.UPDATED:
+                logger.info(f"Challenge state: {challenge.state}")
+                # self.keeper.update(challenge) 
+                return ChallengeState.UPDATED
+            elif challenge.state == ChallengeState.CLOSED:
+                logger.info(f"Challenge state: {challenge.state}")
+                # self.keeper.close(challenge) 
+                return ChallengeState.CLOSED
         else:
+            # new challenge
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept.")
             self.challenges[challengeID] = challenge
-            # decide to join the challenge
-            self.join(challengeID)
 
-    def join(self, challengeID: ChallengeID):
-        challenge = self.challenges[challengeID]
-        logger.info(f"decide to join the challenge {challenge.id}")
-        # decide
-        # update the state
-        # send a challenge transaction
+            if challenge.state == ChallengeState.CREATED:
+                logger.info(f"Challenge state: {challenge.state}")
+                # TODO: decide to join the challenge
+                # update the keeper
+                challenge.state = ChallengeState.ACCEPTED
+                self.challenges[challengeID] = challenge
+                return ChallengeState.ACCEPTED
+
+            return challenge.state
+
+    
         
     
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:

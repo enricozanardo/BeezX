@@ -83,19 +83,11 @@ class Blockchain():
                 logger.info(f"challengeExists: {challengeExists}")
                 if not challengeExists:
                     # Add the challenge to the Keeper and keep store the tokens to the keeper!
-                    self.keeper.set(challenge) 
-                else:
-                    # check the state and update
-                    logger.info(f"Work on the challenge")
-                    if challenge.state == ChallengeState.CREATED:
-                        logger.info(f"Challenge state: {challenge.state}")
-                        # self.keeper.join(challenge) 
-                    elif challenge.state == ChallengeState.UPDATED:
-                        logger.info(f"Challenge state: {challenge.state}")
-                        # self.keeper.update(challenge) 
-                    elif challenge.state == ChallengeState.CLOSED:
-                        logger.info(f"Challenge state: {challenge.state}")
-                        # self.keeper.close(challenge) 
+                    challengeState = self.keeper.set(challenge) 
+
+                    logger.info(f"challengeState {challengeState}")
+                    logger.info(f"is time to generate a custom transaction?????")
+
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
