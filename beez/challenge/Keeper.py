@@ -37,7 +37,7 @@ class Keeper():
 
     def status(self):
          while True:
-            logger.info(f"challenge status....")
+            logger.info(f"challenge status.... {self.challenges.items()}")
             for key, value in self.challenges.items():
                 challenge: Challenge = value
                 challengeID : ChallengeID = key
