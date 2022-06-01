@@ -34,6 +34,16 @@ class Keeper():
         else:
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept.")
             self.challenges[challengeID] = challenge
+            # decide to join the challenge
+            self.join(challengeID)
+
+    def join(self, challengeID: ChallengeID):
+        challenge = self.challenges[challengeID]
+        logger.info(f"decide to join the challenge {challenge.id}")
+        # decide
+        # update the state
+        # send a challenge transaction
+        
     
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
         if challengeID in self.challenges.keys():

@@ -110,9 +110,7 @@ class BeezNode():
 
         # checks all the possible validations!
         blockCountValid = self.blockchain.blockCountValid(block)
-    
-        # lastKeeperData = self.blockchain.lastKeeperData(block)
-        
+
         lastBlockHashValid = self.blockchain.lastBlockHashValid(block)
         forgerValid = self.blockchain.forgerValid(block)
         transactionValid = self.blockchain.transactionValid(block.transactions)
@@ -123,18 +121,6 @@ class BeezNode():
             # ask to peers their state of the blockchain
             logger.info("Request the updated version of the Blockchain")
             self.requestChain()
-
-        # if not isUpdatedChallenge:
-        #     # ask to peers their state of the blockchain
-        #     logger.info("Request the updated version of the Keeper")
-        #     self.requestChain()
-
-       
-
-        # if not lastKeeperData:
-        #     # ask to peers their state of the keeper
-        #     logger.info("Request the updated version of the Keeper")
-        #     self.requestKeeper()
 
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
 
@@ -147,11 +133,6 @@ class BeezNode():
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
-
-            # check if the block contain an updated version of a challenge!
-            isUpdatedChallenge = self.blockchain.blockContainUpdatedChallenge(block)
-
-            logger.info(f"isUpdatedChallenge: {isUpdatedChallenge}")
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain
@@ -265,7 +246,7 @@ class BeezNode():
                     localBlockchainCopy.addBlock(block)
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
-
+            
     def handleKeeper(self, receivedKeeper: Keeper):
         # sync keeper between peers in the network
         logger.info(f"Update the local keeper!!!")
