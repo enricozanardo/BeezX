@@ -37,7 +37,7 @@ class Keeper():
 
     def status(self):
          while True:
-            logger.info(f"challenge status.... {self.challenges.items()}")
+            logger.info(f"challenge status.... {len(self.challenges.items())}")
             for key, value in self.challenges.items():
                 challenge: Challenge = value
                 challengeID : ChallengeID = key
@@ -50,7 +50,7 @@ class Keeper():
 
             time.sleep(INTERVALS)
         
-    def set(self, challenge: Challenge) -> Optional[ChallengeState]:
+    def set(self, challenge: Challenge):
         challengeID : ChallengeID = challenge.id
         reward = challenge.reward
 
