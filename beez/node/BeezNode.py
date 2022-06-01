@@ -110,6 +110,11 @@ class BeezNode():
 
         # checks all the possible validations!
         blockCountValid = self.blockchain.blockCountValid(block)
+        # check if the block contain an updated version of a challenge!
+        isUpdatedChallenge = self.blockchain.blockContainUpdatedChallenge(block)
+
+        logger.info(f"isUpdatedChallenge: {isUpdatedChallenge}")
+
         # lastKeeperData = self.blockchain.lastKeeperData(block)
         
         lastBlockHashValid = self.blockchain.lastBlockHashValid(block)
