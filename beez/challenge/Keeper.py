@@ -44,7 +44,7 @@ class Keeper():
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept.")
             self.challenges[challengeID] = challenge
 
-            logger.info("challenge.state: {challenge.state}")
+            logger.info(f"challenge.state: {challenge.state}")
 
             if challenge.state == ChallengeState.CREATED.name:
                 logger.info(f"Challenge state: {challenge.state}")
