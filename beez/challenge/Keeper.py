@@ -31,7 +31,17 @@ class Keeper():
 
         if challengeID in self.challenges.keys():
             logger.info(f"Challenge already created, check for updates!!!")
-            if challenge.state == ChallengeState.UPDATED.name:
+            if challenge.state == ChallengeState.CREATED.name:
+                logger.info(f"Challenge state: {challenge.state}")
+                # TODO: decide to join the challenge
+                # update the keeper
+                challenge.state = ChallengeState.ACCEPTED.name
+
+
+                self.challenges[challengeID] = challenge
+                return ChallengeState.ACCEPTED.name
+
+            elif challenge.state == ChallengeState.UPDATED.name:
                 logger.info(f"Challenge state: {challenge.state}")
                 # self.keeper.update(challenge) 
                 return ChallengeState.UPDATED.name
@@ -40,19 +50,9 @@ class Keeper():
                 # self.keeper.close(challenge) 
                 return ChallengeState.CLOSED.name
         else:
-            # new challenge
-            logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept.")
+            # new challenge! Thinkto broadcast the challenge and no more!
+            logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept. Challenge STATE: {challenge.state}")
             self.challenges[challengeID] = challenge
-
-            logger.info(f"challenge.state: {challenge.state}")
-
-            if challenge.state == ChallengeState.CREATED.name:
-                logger.info(f"Challenge state: {challenge.state}")
-                # TODO: decide to join the challenge
-                # update the keeper
-                challenge.state = ChallengeState.ACCEPTED.name
-                self.challenges[challengeID] = challenge
-                return ChallengeState.ACCEPTED.name
 
             return challenge.state
 
