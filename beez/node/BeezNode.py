@@ -208,8 +208,6 @@ class BeezNode():
         else:
             logger.info(f"I'm not the forger")  
 
-
-    
     def handleBlockchainRequest(self, requestingNode: BeezNode):
         # send the updated version of the blockchain to the node that made the request
         message = MessageBlockchain(self.p2p.socketConnector, MessageType.BLOCKCHAIN.name, self.blockchain)
