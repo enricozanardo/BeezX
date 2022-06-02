@@ -204,18 +204,12 @@ class BeezNode():
 
         if forgerString == thisWalletString:
             logger.info(f"I'm the next forger")
+
             # mint the new Block
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
-
-            # check and add the challenge to the challenges!!!
-            for tx in block.transactions:
-                logger.info(f"Transaction analyzed? {tx.type}")
-                if tx.type == TransactionType.CHALLENGE.name:
-                    logger.info(f"Transaction Challenge Do something ..................... {tx.id}")
-                    # store somewhere the challenge!!!!
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)

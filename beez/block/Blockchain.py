@@ -4,9 +4,6 @@ import pathlib
 
 from loguru import logger
 
-
-
-
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
     from beez.Types import PublicKeyString
@@ -22,6 +19,7 @@ from beez.transaction.TransactionType import TransactionType
 from beez.challenge.BeezKeeper import BeezKeeper
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
+from beez.block.Header import Header
 
 
 
@@ -88,7 +86,7 @@ class Blockchain():
                 logger.info(f"challengeExists: {challengeExists}")
 
                 if not challengeExists:
-                    # Add the challenge to the beezKeeper and keep store the tokens to the keeper!
+                    # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
                     self.beezKeeper.set(challenge)
 
                 # Update the balance of the sender!
@@ -127,8 +125,11 @@ class Blockchain():
         # check the type of transactions and do the right action
         self.executeTransactions(coveredTransactions)
 
+        # Get the updated version of the in-memory objects and create the Block Header
+        header = Header(self.beezKeeper, self.accountStateModel)
+
         # create the Block
-        newBlock = forgerWallet.createBlock(coveredTransactions, BeezUtils.hash(
+        newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
             self.blocks[-1].payload()).hexdigest(), len(self.blocks))
 
         self.blocks.append(newBlock)

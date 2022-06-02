@@ -5,6 +5,8 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from loguru import logger
 
+from beez.block.Header import Header
+
 
 if TYPE_CHECKING:
     from beez.Types import WalletAddress, PublicKeyString
@@ -84,8 +86,8 @@ class Wallet():
         return challengeTransaction
 
     # Manage Block creation
-    def createBlock(self, transactions: List[Transaction], lastHash: str, blockCounter: int) -> Block:
-        block = Block(transactions, lastHash, self.publicKeyString(), blockCounter)
+    def createBlock(self, header: Header, transactions: List[Transaction], lastHash: str, blockCounter: int) -> Block:
+        block = Block(header, transactions, lastHash, self.publicKeyString(), blockCounter)
 
         signature = self.sign(block.payload())
 

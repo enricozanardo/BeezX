@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 import time
 import copy
 
@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
     from beez.wallet.Wallet import Wallet
     from beez.Types import WalletAddress, PublicKeyString
+    from beez.block.Header import Header
 
 from beez.transaction.TransactionType import TransactionType
 
@@ -17,7 +18,8 @@ class Block():
     """
     A Block contain a list of Transaction that are validated from a Forger into the Network.
     """
-    def __init__(self, transactions: List[Transaction], lastHash: str, forger: PublicKeyString, blockCount: int):
+    def __init__(self, header: Optional[Header], transactions: List[Transaction], lastHash: str, forger: PublicKeyString, blockCount: int):
+        self.header = header
         self.transactions = transactions
         self.lastHash = lastHash
         self.forger = forger
@@ -28,7 +30,7 @@ class Block():
 
     @staticmethod
     def genesis() -> Block:
-        genesisBlock = Block([], 'Hello Beez! 🐝', 'Author: Enrico Zanardo 🤙🏽', 0)
+        genesisBlock = Block(None, [], 'Hello Beez! 🐝', 'Author: Enrico Zanardo 🤙🏽', 0)
         genesisBlock.timestamp = 0 # every node will start with the same genesis Block
         return genesisBlock
 
