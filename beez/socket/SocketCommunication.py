@@ -102,12 +102,6 @@ class SocketCommunication(Node):
             challengeTransaction : ChallengeTX  = message.challengeTx
             self.beezNode.handleChallengeTX(challengeTransaction)
 
-        elif message.messageType == MessageType.CHALLENGEUPDATE.name:
-            # handle the CHALLENGEUPDATE
-            logger.info(f"A CHALLENGEUPDATE Message will be broadcasted!! {message.messageType}")
-            challenge : Challenge = message.challenge
-            self.beezNode.handleChallengeUpdate(challenge)
-        
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
@@ -120,20 +114,8 @@ class SocketCommunication(Node):
             # this message do not contain any object
             self.beezNode.handleBlockchainRequest(connectedNode)
 
-        elif message.messageType == MessageType.KEEPERREQUEST.name:
-            # handle the KEEPERREQUEST
-            logger.info(f"A KEEPERREQUEST Message will be broadcasted!! {message.messageType}")
-            # this message do not contain any object
-            self.beezNode.handleKeeperRequest(connectedNode)
-
         elif message.messageType == MessageType.BLOCKCHAIN.name:
             # handle the BLOCKCHAIN
             logger.info(f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.messageType}")
             blockchain : Blockchain = message.blockchain
             self.beezNode.handleBlockchain(blockchain)
-
-        # elif message.messageType == MessageType.KEEPER.name:
-        #     # handle the KEEPER
-        #     logger.info(f"A KEEPER Message will be sent to the requester peer!! {message.messageType}")
-        #     beezKeeper : BeezKeeper = message.beezKeeper
-        #     self.beezNode.handleKeeper(beezKeeper)
