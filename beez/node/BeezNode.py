@@ -225,13 +225,6 @@ class BeezNode():
         encodedMessage = BeezUtils.encode(message)
         self.p2p.send(requestingNode, encodedMessage)
         
-
-    def handleKeeperRequest(self, requestingNode: BeezNode):
-        # send the updated version of the keeper to the node that made the request
-        message = MessageKeeper(self.p2p.socketConnector, MessageType.KEEPER.name, self.blockchain.beezKeeper)
-        encodedMessage = BeezUtils.encode(message)
-        self.p2p.send(requestingNode, encodedMessage)
-
     def handleBlockchain(self, blockchain: Blockchain):
         # sync blockchain between peers in the network
         logger.info(f"Iterate on the blockchain until to sync the local blockchain with the received one")
@@ -244,6 +237,10 @@ class BeezNode():
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
+                     # Update the current version of the in-memory AccountStateModel and BeezKeeper
+                    self.blockchain.accountStateModel = block.header.accountStateModel
+                    self.blockchain.beezKeeper = block.header.beezKeeper
+
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
             
