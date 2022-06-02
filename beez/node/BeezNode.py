@@ -127,10 +127,7 @@ class BeezNode():
             self.blockchain.addBlock(block)
 
             self.transactionPool.removeFromPool(block.transactions)
-            # Update the current version of the in-memory AccountStateModel and BeezKeeper
-            self.blockchain.accountStateModel = block.header.accountStateModel
-            self.blockchain.beezKeeper = block.header.beezKeeper
-
+          
             # broadcast the block message
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
