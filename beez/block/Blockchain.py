@@ -34,9 +34,12 @@ class Blockchain():
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()
         self.beezKeeper = BeezKeeper()
+        
+        self.genesisPubKey = GenesisPublicKey()
+
         # for testing...
         self.beezKeeper.start()
-        self.genesisPubKey = GenesisPublicKey()
+        self.accountStateModel.start()
 
     def toJson(self):
         jsonBlockchain = {}
