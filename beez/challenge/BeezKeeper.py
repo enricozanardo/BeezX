@@ -7,6 +7,9 @@ import os
 from dotenv import load_dotenv
 import time
 
+# for function
+import random
+
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
 INTERVALS = int(os.getenv('INTERVALS', LOCAL_INTERVALS))
@@ -83,7 +86,10 @@ class BeezKeeper():
 
         sharedfunction = challenge.sharedFunction
         # logger.info(f"challenge function: {type(sharedfunction)}")
-        result = sharedfunction(2,3)
+        inputA = random(0, 9)
+        inputB = random(0, 9)
+
+        result = sharedfunction(inputA, inputB)
 
         logger.info(f"result: {result}")
         
