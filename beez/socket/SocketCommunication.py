@@ -90,11 +90,6 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             self.peerDiscoveryHandler.handleMessage(message)
 
-        elif message.messageType == MessageType.CHALLENGES.name:
-            # handle the CHALLENGES
-            logger.info(f"manage the message {message.messageType}")
-            self.challengeHandler.handleChallengesMessage(message)
-            
         elif message.messageType == MessageType.TRANSACTION.name:
             # handle the TRANSACTION
             logger.info(f"A Transaction Message will be broadcasted!! {message.messageType}")
