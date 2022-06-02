@@ -8,9 +8,9 @@ from dotenv import load_dotenv
 
 
 from beez.socket.MessageType import MessageType
-from beez.socket.MessageChallenges import MessageChallenges
+from beez.socket.MessageChallenge import MessageChallenges
 from beez.BeezUtils import BeezUtils
-from beez.challenge.BeezKeeper import BeezKeeper
+
 
 if TYPE_CHECKING:
     from beez.socket.SocketCommunication import SocketCommunication

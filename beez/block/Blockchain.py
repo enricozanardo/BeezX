@@ -1,22 +1,17 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List
-import pathlib
 
 from loguru import logger
 
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
-    from beez.Types import PublicKeyString
     from beez.wallet.Wallet import Wallet
-    from beez.challenge.Challenge import Challenge
-    from beez.challenge.ChallengeState import ChallengeState    
 
 from beez.block.Block import Block
 from beez.BeezUtils import BeezUtils
 from beez.state.AccountStateModel import AccountStateModel
 from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
-from beez.challenge.BeezKeeper import BeezKeeper
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
 from beez.block.Header import Header
@@ -34,7 +29,6 @@ class Blockchain():
         self.genesisPubKey = GenesisPublicKey()
 
         # for testing...
-        # self.beezKeeper.start()
         # self.accountStateModel.start()
 
     def toJson(self):
@@ -73,12 +67,11 @@ class Blockchain():
             logger.info(f"CHALLENGE")
             # cast the kind of transaction
             challengeTX: ChallengeTX = transaction
-
             sender = challengeTX.senderPublicKey
             receiver = transaction.receiverPublicKey
-            amount = challengeTX.amount
             if sender == receiver:
                 # Update the balance of the sender!
+                amount = challengeTX.amount
                 self.accountStateModel.updateBalance(sender, -amount)
 
         else:
@@ -113,7 +106,7 @@ class Blockchain():
 
         # check the type of transactions and do the right action
         self.executeTransactions(coveredTransactions)
-        
+
         # create the Block
         newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
             self.blocks[-1].payload()).hexdigest(), len(self.blocks))

@@ -20,10 +20,7 @@ from beez.BeezUtils import BeezUtils
 from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
-from beez.challenge.BeezKeeper import BeezKeeper
 from beez.block.Blockchain import Blockchain
-
-
 
 
 load_dotenv()  # load .env
