@@ -210,15 +210,7 @@ class BeezNode():
                     if not challengeExists:
                         # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
                         self.beezKeeper.set(challenge)
-                    else:
-                        # check the status of the challenge
-                        logger.info(f"check the status of the challenge {challenge.state}")
-                        challenge.state = ChallengeState.CLOSED.name
-
-                        logger.info(f"NeW status of the challenge {challenge.state}")
-                        
-                    
-
+                   
                     logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
 
             # mint the new Block
