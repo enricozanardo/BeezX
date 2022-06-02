@@ -62,6 +62,8 @@ class BeezKeeper():
 
             self.challenges[challengeID] = challenge
 
+            self.workOnChallenge(challenge)
+
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
         if challengeID in self.challenges.keys():
             return self.challenges[challengeID]
@@ -73,6 +75,20 @@ class BeezKeeper():
             return True
         else:
             return False
+
+
+    def workOnChallenge(self, challenge: Challenge):
+        logger.info(f"work on challenge... {challenge.id}")
+        logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
+
+        sharedfunction = challenge.sharedFunction
+        # logger.info(f"challenge function: {type(sharedfunction)}")
+        result = sharedfunction(2,3)
+
+        logger.info(f"result: {result}")
+        
+
+
 
     def update(self, receivedChallenge: Challenge) -> bool:
         # do a copy of the local challenge!
