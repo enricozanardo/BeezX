@@ -51,7 +51,7 @@ class ChallengeHandler():
     """
     def status(self):
         while True:
-            logger.info(f"Current connections:")
+            logger.info(f"#### Current Challenges #####:")
             for idx, challenge in self.challenges.items():
                 logger.info(f"From ChallengeHandler -> ChallengeID : {idx}")
             time.sleep(INTERVALS)
@@ -59,7 +59,7 @@ class ChallengeHandler():
 
     def discovery(self):
          while True:
-            logger.info(f"discovery")
+            logger.info(f"#### Manage Challenges #####")
             handshakeMessage = self.handshakeMessage()
             # Broadcast the message
             self.socketCommunication.broadcast(handshakeMessage)
@@ -92,7 +92,7 @@ class ChallengeHandler():
         return encodedMessage
 
     def handleChallengesMessage(self, message: MessageChallenges):
-        
+
         challenges: Dict[ChallengeID : Challenge] = message.challenges
         newChallenge = True
 
