@@ -6,15 +6,18 @@ from loguru import logger
 import os
 from dotenv import load_dotenv
 
+
 from beez.socket.MessageType import MessageType
 from beez.socket.MessageChallenges import MessageChallenges
 from beez.BeezUtils import BeezUtils
+from beez.challenge.Keeper import Keeper
 
 if TYPE_CHECKING:
     from beez.socket.SocketCommunication import SocketCommunication
     from p2pnetwork.node import Node
     from beez.challenge.Challenge import Challenge
     from beez.Types import ChallengeID
+    from beez.node.BeezNode import BeezNode
 
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
@@ -23,15 +26,11 @@ INTERVALS = int(os.getenv('INTERVALS', LOCAL_INTERVALS))
 
 class ChallengeHandler():
     """
-    A Socket Communication submodule that frequently checks if there are new peers in the network.
+    A Socket Communication submodule that frequently checks if there are new challenges in the network.
     """
-
     def __init__(self, socketCommunication: SocketCommunication) -> None:
         self.socketCommunication = socketCommunication
-        # Store the challenges!
-        self.challenges : Dict[ChallengeID : Challenge] = {}
-
-    
+        
     def start(self):
         # start node threads... 
         statusThread = threading.Thread(target=self.status, args={})
@@ -47,12 +46,12 @@ class ChallengeHandler():
             return False
 
     """
-    Display the nodes that are connected to a node
+    Display the current challenges
     """
     def status(self):
         while True:
             logger.info(f"#### Current Challenges #####:")
-            for idx, challenge in self.challenges.items():
+            for idx, challenge in self.socketCommunication.challenges.items():
                 logger.info(f"From ChallengeHandler -> ChallengeID : {idx}")
             time.sleep(INTERVALS)
 
@@ -60,9 +59,9 @@ class ChallengeHandler():
     def discovery(self):
          while True:
             logger.info(f"#### Manage Challenges #####")
-            handshakeMessage = self.handshakeMessage()
+            challengeMessage = self.challengesMessage()
             # Broadcast the message
-            self.socketCommunication.broadcast(handshakeMessage)
+            self.socketCommunication.broadcast(challengeMessage)
 
             time.sleep(INTERVALS)
 
@@ -81,7 +80,10 @@ class ChallengeHandler():
         Here, what is important is to share the knowed peers
         """
         ownConnector = self.socketCommunication.socketConnector
-        ownedChallenges = self.challenges
+        ownedChallenges = self.socketCommunication.challenges
+        # TODO: get the challenges from the blockchian
+        logger.info(f"#### get the challenges from the blockchian {ownedChallenges} #####")
+        
         messageType = MessageType.CHALLENGES.name
 
         message = MessageChallenges(ownConnector, messageType, ownedChallenges)
@@ -105,4 +107,4 @@ class ChallengeHandler():
             
             if newChallenge == True:
                 # Add the challenge to the Dictionary
-                self.challenges[idx] = challenge
+                self.socketCommunication.challenges[idx] = challenge

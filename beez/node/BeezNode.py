@@ -7,6 +7,8 @@ from loguru import logger
 import GPUtil
 import copy
 
+from beez.transaction.TransactionType import TransactionType
+
 
 
 load_dotenv()  # load .env
@@ -212,6 +214,13 @@ class BeezNode():
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
+
+            # check and add the challenge to the challenges!!!
+            for tx in block.transactions:
+                logger.info(f"Transaction analyzed? {tx.type}")
+                if tx.type == TransactionType.CHALLENGE.name:
+                    logger.info(f"Transaction Challenge finded {tx.id}")
+                    self.p2p.challenges[tx.id] = tx
 
             # broadcast the block to the network
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)

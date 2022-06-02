@@ -4,9 +4,11 @@ from p2pnetwork.node import Node
 import os
 from dotenv import load_dotenv
 from loguru import logger
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Dict, List
 import json
+from beez.Types import ChallengeID
 from beez.block.Blockchain import Blockchain
+from beez.challenge.Challenge import Challenge
 from beez.challenge.Keeper import Keeper
 
 
@@ -43,6 +45,9 @@ class SocketCommunication(Node):
         super(SocketCommunication, self).__init__(ip, port, None)
         # TODO: move the peers to a storage!
         self.ownConnections: List[SocketConnector] = []
+        # TODO: move to a better place
+        self.challenges: Dict[ChallengeID: Challenge] = {}
+
         self.peerDiscoveryHandler = PeerDiscoveryHandler(self)
         self.challengeHandler = ChallengeHandler(self)
         self.socketConnector = SocketConnector(ip, port)

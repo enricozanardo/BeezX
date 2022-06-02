@@ -82,9 +82,11 @@ class Blockchain():
                 challengeExists = self.keeper.challegeExists(challenge.id)
                 logger.info(f"challengeExists: {challengeExists}")
 
-                if not challengeExists:
-                    # Add the challenge to the Keeper and keep store the tokens to the keeper!
-                    self.keeper.set(challenge) 
+                # if not challengeExists:
+                #     # Add the challenge to the Keeper and keep store the tokens to the keeper!
+                #     self.
+
+                #     self.keeper.set(challenge) 
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)

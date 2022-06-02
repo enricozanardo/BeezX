@@ -14,7 +14,7 @@ from beez.BeezUtils import BeezUtils
 if TYPE_CHECKING:
     from beez.socket.SocketCommunication import SocketCommunication
     from p2pnetwork.node import Node
-
+    
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
 INTERVALS = int(os.getenv('INTERVALS', LOCAL_INTERVALS))
