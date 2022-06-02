@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from beez.socket.SocketConnector import SocketConnector
-    from beez.challenge.Keeper import Keeper
+    from beez.challenge.BeezKeeper import BeezKeeper
 
 from beez.socket.Message import Message
 from beez.socket.MessageType import MessageType
 
-class MessageKeeper(Message):
+class MessageBeezKeeper(Message):
 
-    def __init__(self, senderConnector: SocketConnector, messageType: MessageType, keeper: Keeper):
+    def __init__(self, senderConnector: SocketConnector, messageType: MessageType, beezKeeper: BeezKeeper):
         super().__init__(senderConnector, messageType)
-        self.keeper = keeper
+        self.beezKeeper = beezKeeper

@@ -6,11 +6,6 @@ from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, Dict, List
 import json
-from beez.Types import ChallengeID
-from beez.block.Blockchain import Blockchain
-from beez.challenge.Challenge import Challenge
-from beez.challenge.Keeper import Keeper
-
 
 if TYPE_CHECKING:
     from beez.Types import Address
@@ -20,11 +15,13 @@ if TYPE_CHECKING:
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
-from beez.socket.ChallengeHandler import ChallengeHandler
 from beez.BeezUtils import BeezUtils
 from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
+from beez.challenge.BeezKeeper import BeezKeeper
+from beez.block.Blockchain import Blockchain
+
 
 
 
@@ -45,11 +42,8 @@ class SocketCommunication(Node):
         super(SocketCommunication, self).__init__(ip, port, None)
         # TODO: move the peers to a storage!
         self.ownConnections: List[SocketConnector] = []
-        # TODO: move to a better place
-        self.challenges: Dict[ChallengeID: Challenge] = {}
-
         self.peerDiscoveryHandler = PeerDiscoveryHandler(self)
-        self.challengeHandler = ChallengeHandler(self)
+        # self.challengeHandler = ChallengeHandler(self)
         self.socketConnector = SocketConnector(ip, port)
 
         logger.info(f"Socket Communication created.. {FIRST_SERVER_IP}: {P_2_P_PORT}")
@@ -65,7 +59,7 @@ class SocketCommunication(Node):
         self.beezNode = beezNode
         self.start()
         self.peerDiscoveryHandler.start()
-        self.challengeHandler.start()
+        # self.challengeHandler.start()
         self.connectToFirstNode()
 
     # Broadcast the message to alle the nodes
@@ -81,15 +75,13 @@ class SocketCommunication(Node):
         logger.info(
             f"inbound connection (some node wants to connect to this node)")
         self.peerDiscoveryHandler.handshake(connectedNode)
-        self.challengeHandler.handshake(connectedNode)
         
     # Callback method of sending requests to nodes
     def outbound_node_connected(self, connectedNode: Node):
         logger.info(
             f"outbound connection (this node wants to connect to other node)")
         self.peerDiscoveryHandler.handshake(connectedNode)
-        self.challengeHandler.handshake(connectedNode)
-
+    
     # Once connected send a message
     # this is automatically provided by the library
     def node_message(self, connectedNode: Node, message: Message):
@@ -143,8 +135,8 @@ class SocketCommunication(Node):
             blockchain : Blockchain = message.blockchain
             self.beezNode.handleBlockchain(blockchain)
 
-        elif message.messageType == MessageType.KEEPER.name:
-            # handle the KEEPER
-            logger.info(f"A KEEPER Message will be sent to the requester peer!! {message.messageType}")
-            keeper : Keeper = message.keeper
-            self.beezNode.handleKeeper(keeper)
+        # elif message.messageType == MessageType.KEEPER.name:
+        #     # handle the KEEPER
+        #     logger.info(f"A KEEPER Message will be sent to the requester peer!! {message.messageType}")
+        #     beezKeeper : BeezKeeper = message.beezKeeper
+        #     self.beezNode.handleKeeper(beezKeeper)

@@ -4,7 +4,6 @@ import pathlib
 
 from loguru import logger
 
-from beez.challenge.ChallengeState import ChallengeState
 
 
 
@@ -13,13 +12,14 @@ if TYPE_CHECKING:
     from beez.Types import PublicKeyString
     from beez.wallet.Wallet import Wallet
     from beez.challenge.Challenge import Challenge
+    from beez.challenge.ChallengeState import ChallengeState    
 
 from beez.block.Block import Block
 from beez.BeezUtils import BeezUtils
 from beez.state.AccountStateModel import AccountStateModel
 from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
-from beez.challenge.Keeper import Keeper
+from beez.challenge.BeezKeeper import BeezKeeper
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
 
@@ -33,7 +33,7 @@ class Blockchain():
         self.blocks: List[Block] = [Block.genesis()]
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()
-        self.keeper = Keeper()
+        self.beezKeeper = BeezKeeper()
         self.genesisPubKey = GenesisPublicKey()
 
     def toJson(self):
@@ -67,7 +67,7 @@ class Blockchain():
                 self.pos.update(sender, amount)
                 self.accountStateModel.updateBalance(sender, -amount)
 
-        # case of Challenge transaction [involve Keeper]
+        # case of Challenge transaction [involve beezKeeper]
         elif transaction.type == TransactionType.CHALLENGE.name:
             logger.info(f"CHALLENGE")
             # cast the kind of transaction
@@ -77,16 +77,14 @@ class Blockchain():
             receiver = transaction.receiverPublicKey
             amount = challengeTX.amount
             if sender == receiver:
-                # Check with the Challenge Keeper
+                # Check with the Challenge beezKeeper
                 challenge : Challenge = challengeTX.challenge
-                challengeExists = self.keeper.challegeExists(challenge.id)
+                challengeExists = self.beezKeeper.challegeExists(challenge.id)
                 logger.info(f"challengeExists: {challengeExists}")
 
-                # if not challengeExists:
-                #     # Add the challenge to the Keeper and keep store the tokens to the keeper!
-                #     self.
-
-                #     self.keeper.set(challenge) 
+                if not challengeExists:
+                    # Add the challenge to the beezKeeper and keep store the tokens to the keeper!
+                    self.beezKeeper.set(challenge)
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)

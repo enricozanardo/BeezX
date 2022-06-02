@@ -7,10 +7,6 @@ from loguru import logger
 import GPUtil
 import copy
 
-from beez.transaction.TransactionType import TransactionType
-
-
-
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
 
@@ -32,9 +28,10 @@ from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.Blockchain import Blockchain
 from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
-from beez.socket.MessageKeeper import MessageKeeper
-from beez.challenge.Keeper import Keeper
+from beez.socket.MessageBeezKeeper import MessageBeezKeeper
+from beez.challenge.BeezKeeper import BeezKeeper
 from beez.socket.Message import Message
+from beez.transaction.TransactionType import TransactionType
 
 class BeezNode():
 
@@ -61,9 +58,7 @@ class BeezNode():
     def startP2P(self):
         self.p2p = SocketCommunication(self.ip, self.port)
         self.p2p.startSocketCommunication(self)
-        # Start Keeper!
-        # self.blockchain.keeper.start()
-
+    
     def startAPI(self):
         self.api = NodeAPI()
         # Inject Node to NodeAPI
@@ -167,7 +162,7 @@ class BeezNode():
         signatureValid = Wallet.signatureValid(
             data, signature, signaturePublicKey)
 
-        # already exist in the keeper
+        # already exist in the beezKeeper
         challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
 
         # already exist in the Blockchain
@@ -219,10 +214,10 @@ class BeezNode():
             for tx in block.transactions:
                 logger.info(f"Transaction analyzed? {tx.type}")
                 if tx.type == TransactionType.CHALLENGE.name:
-                    logger.info(f"Transaction Challenge finded {tx.id}")
-                    self.p2p.challenges[tx.id] = tx
+                    logger.info(f"Transaction Challenge Do something ..................... {tx.id}")
+                    # store somewhere the challenge!!!!
 
-            # broadcast the block to the network
+            # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
@@ -239,7 +234,7 @@ class BeezNode():
 
     def handleKeeperRequest(self, requestingNode: BeezNode):
         # send the updated version of the keeper to the node that made the request
-        message = MessageKeeper(self.p2p.socketConnector, MessageType.KEEPER.name, self.blockchain.keeper)
+        message = MessageKeeper(self.p2p.socketConnector, MessageType.KEEPER.name, self.blockchain.beezKeeper)
         encodedMessage = BeezUtils.encode(message)
         self.p2p.send(requestingNode, encodedMessage)
 
@@ -258,17 +253,17 @@ class BeezNode():
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
             
-    def handleKeeper(self, receivedKeeper: Keeper):
+    def handlebeezKeeper(self, receivedbeezKeeper: beezKeeper):
         # sync keeper between peers in the network
-        logger.info(f"Update the local keeper!!!")
-        localKeeperCopy: Keeper = copy.deepcopy(self.blockchain.keeper)
+        logger.info(f"Update the local beezKeeper!!!")
+        localbeezKeeperCopy: beezKeeper = copy.deepcopy(self.blockchain.beezKeeper)
 
-        for idx, challengeTx in receivedKeeper.challenges.items():
-            challengeExists = localKeeperCopy.challegeExists(id)
+        for idx, challengeTx in receivedbeezKeeper.challenges.items():
+            challengeExists = localbeezKeeperCopy.challegeExists(id)
             if not challengeExists:
-                # Add the challenge to the local keeper
-                localKeeperCopy.set(challengeTx)
-        self.blockchain.keeper = localKeeperCopy
+                # Add the challenge to the local beezKeeper
+                localbeezKeeperCopy.set(challengeTx)
+        self.blockchain.beezKeeper = localbeezKeeperCopy
 
         
 

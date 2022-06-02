@@ -21,10 +21,10 @@ from beez.challenge.ChallengeState import ChallengeState
 
 
 
-class Keeper():
+class BeezKeeper():
     """
     keeps track of each Challenge.
-    Every time that a block is added to the Blockchain, the Keeper will update the challenge based
+    Every time that a block is added to the Blockchain, the beezKeeper will update the challenge based
     on the transactions accured.
     """
     def __init__(self):
