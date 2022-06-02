@@ -83,7 +83,9 @@ class BeezKeeper():
     def workOnChallenge(self, challenge: Challenge):
         logger.info(f"work on challenge... {challenge.id}")
 
-        #Accept the challenge!
+        # Accept the challenge!
+        # update the challenge state!
+        # create a new Challenge TX!
 
         logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
 

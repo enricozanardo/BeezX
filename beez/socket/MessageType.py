@@ -23,7 +23,7 @@ class MessageType(Enum):
     BLOCKCHAINREQUEST = "blockchainrequest"
     BLOCKCHAIN = "blockchain"
     CHALLENGE = "challenge"
-    CHALLENGES = "challenges"
+    CHALLENGEUPDATE = "challengeupdate"
     KEEPERREQUEST = "keeperrequest"
     KEEPER = "keeper"
     ACCEPT = "accept"

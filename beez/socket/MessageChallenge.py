@@ -9,8 +9,8 @@ if TYPE_CHECKING:
 from beez.socket.Message import Message
 from beez.socket.MessageType import MessageType
 
-class MessageChallenges(Message):
+class MessageChallenge(Message):
 
-    def __init__(self, senderConnector: SocketConnector, messageType: MessageType, challenges: Dict[ChallengeID : Challenge]):
+    def __init__(self, senderConnector: SocketConnector, messageType: MessageType, challenge: Challenge):
         super().__init__(senderConnector, messageType)
-        self.challenges = challenges
+        self.challenge = challenge

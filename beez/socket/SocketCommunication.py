@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, Dict, List
 import json
+from beez.challenge.Challenge import Challenge
 
 if TYPE_CHECKING:
     from beez.Types import Address
@@ -43,7 +44,6 @@ class SocketCommunication(Node):
         # TODO: move the peers to a storage!
         self.ownConnections: List[SocketConnector] = []
         self.peerDiscoveryHandler = PeerDiscoveryHandler(self)
-        # self.challengeHandler = ChallengeHandler(self)
         self.socketConnector = SocketConnector(ip, port)
 
         logger.info(f"Socket Communication created.. {FIRST_SERVER_IP}: {P_2_P_PORT}")
@@ -59,7 +59,6 @@ class SocketCommunication(Node):
         self.beezNode = beezNode
         self.start()
         self.peerDiscoveryHandler.start()
-        # self.challengeHandler.start()
         self.connectToFirstNode()
 
     # Broadcast the message to alle the nodes
@@ -110,6 +109,12 @@ class SocketCommunication(Node):
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
             challengeTransaction : ChallengeTX  = message.challengeTx
             self.beezNode.handleChallengeTX(challengeTransaction)
+
+        elif message.messageType == MessageType.CHALLENGEUPDATE.name:
+            # handle the CHALLENGEUPDATE
+            logger.info(f"A CHALLENGEUPDATE Message will be broadcasted!! {message.messageType}")
+            challenge : Challenge = message.challenge
+            self.beezNode.handleChallengeUpdate(challenge)
         
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK

@@ -31,7 +31,6 @@ class Blockchain():
         self.blocks: List[Block] = [Block.genesis()]
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()
-        self.beezKeeper = BeezKeeper()
         self.genesisPubKey = GenesisPublicKey()
 
         # for testing...
@@ -79,17 +78,6 @@ class Blockchain():
             receiver = transaction.receiverPublicKey
             amount = challengeTX.amount
             if sender == receiver:
-                # Check with the Challenge beezKeeper
-                challenge : Challenge = challengeTX.challenge
-                challengeExists = self.beezKeeper.challegeExists(challenge.id)
-                logger.info(f"challengeExists: {challengeExists}")
-
-                if not challengeExists:
-                    # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
-                    self.beezKeeper.set(challenge)
-
-                    logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}")
-
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
 
@@ -104,7 +92,7 @@ class Blockchain():
             # second update the receiver balance
             self.accountStateModel.updateBalance(receiver, amount)
 
-        
+
     def transactionExist(self, transaction: Transaction):
         # TODO: Find a better solution to check if a transaction already exist into the blockchain!
         for block in self.blocks:
@@ -119,16 +107,13 @@ class Blockchain():
 
         return nextForger
     
-    def mintBlock(self, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
+    def mintBlock(self, header: Header, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
         # Check that the transaction are covered 
         coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
 
         # check the type of transactions and do the right action
         self.executeTransactions(coveredTransactions)
-
-        # Get the updated version of the in-memory objects and create the Block Header
-        header = Header(self.beezKeeper, self.accountStateModel)
-
+        
         # create the Block
         newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
             self.blocks[-1].payload()).hexdigest(), len(self.blocks))

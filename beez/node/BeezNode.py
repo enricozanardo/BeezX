@@ -7,6 +7,8 @@ from loguru import logger
 import GPUtil
 import copy
 
+
+
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
 
@@ -28,10 +30,10 @@ from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.Blockchain import Blockchain
 from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
-from beez.socket.MessageBeezKeeper import MessageBeezKeeper
 from beez.challenge.BeezKeeper import BeezKeeper
 from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
+from beez.block.Header import Header
 
 class BeezNode():
 
@@ -44,6 +46,8 @@ class BeezNode():
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
+        self.beezKeeper = BeezKeeper()
+
         if key is not None:
             self.wallet.fromKey(key)
 
@@ -139,11 +143,16 @@ class BeezNode():
         encodedMessage = BeezUtils.encode(message)
 
         self.p2p.broadcast(encodedMessage)
-        
-    def handleChallengeTX(self, challengeTx: ChallengeTX):
 
-        challenge: Challenge = challengeTx.challenge
+    
+    def handleChallengeUpdate(self, challenge: Challenge):
+        message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGEUPDATE.name, challenge)
+        encodedMessage = BeezUtils.encode(message)
+        self.p2p.broadcast(encodedMessage)
         
+
+    def handleChallengeTX(self, challengeTx: ChallengeTX):
+        challenge: Challenge = challengeTx.challenge
         logger.info(f"Manage the challenge ID: {challenge.id}")
 
         data = challengeTx.payload()
@@ -165,7 +174,6 @@ class BeezNode():
             self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
             message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
-
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
 
@@ -174,17 +182,6 @@ class BeezNode():
             if forgingRequired == True:
                 logger.info(f"Forger required")
                 self.forge()
-
-        
-
-            # logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
-
-            # sharedfunction = challengeTx.challenge.sharedFunction
-            # logger.info(f"challenge function: {type(sharedfunction)}")
-            # result = sharedfunction(2,3)
-
-            # logger.info(f"result: {result}")
-
 
     def forge(self):
         logger.info(f"Forger called")
@@ -198,7 +195,24 @@ class BeezNode():
             logger.info(f"I'm the next forger")
 
             # mint the new Block
-            block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
+            # Check with the Challenge beezKeeper
+            for tx in self.transactionPool.transactions:
+                if tx.type == TransactionType.CHALLENGE.name:
+                    # add to the BeezKeeper
+                    challengeTX: ChallengeTX = tx
+                    challenge : Challenge = challengeTX.challenge
+                    challengeExists = self.beezKeeper.challegeExists(challenge.id)
+                    logger.info(f"challengeExists: {challengeExists}")
+
+                    if not challengeExists:
+                        # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
+                        self.beezKeeper.set(challenge)
+
+                    logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
+
+            # mint the new Block
+            header = Header(self.beezKeeper, self.blockchain.accountStateModel)
+            block = self.blockchain.mintBlock(header, self.transactionPool.transactions, self.wallet)
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
