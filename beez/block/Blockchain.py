@@ -6,6 +6,7 @@ from loguru import logger
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
     from beez.wallet.Wallet import Wallet
+    from beez.challenge.Challenge import Challenge
 
 from beez.block.Block import Block
 from beez.BeezUtils import BeezUtils
@@ -70,6 +71,20 @@ class Blockchain():
             sender = challengeTX.senderPublicKey
             receiver = transaction.receiverPublicKey
             if sender == receiver:
+
+                logger.info(f"import the keeper till here!!!!!")
+                
+                # challenge : Challenge = challengeTX.challenge
+                # challengeExists = self.beezKeeper.challegeExists(challenge.id)
+                # logger.info(f"challengeExists: {challengeExists}")
+
+                # if not challengeExists:
+                #     # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
+                #     self.beezKeeper.set(challenge)
+                   
+                # logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
+
+
                 # Update the balance of the sender!
                 amount = challengeTX.amount
                 self.accountStateModel.updateBalance(sender, -amount)
