@@ -175,7 +175,7 @@ class BeezNode():
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
-            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx.challenge)
+            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
 
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
