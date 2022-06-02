@@ -127,6 +127,9 @@ class BeezNode():
             self.blockchain.addBlock(block)
 
             self.transactionPool.removeFromPool(block.transactions)
+            # Update the current version of the in-memory AccountStateModel and BeezKeeper
+            self.blockchain.accountStateModel = block.header.accountStateModel
+            self.blockchain.beezKeeper = block.header.beezKeeper
 
             # broadcast the block message
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
@@ -140,14 +143,6 @@ class BeezNode():
 
         self.p2p.broadcast(encodedMessage)
         
-    def requestKeeper(self):
-        # The node will send a message to request the updated Keeper
-        message = Message(self.p2p.socketConnector, MessageType.KEEPERREQUEST.name)
-        encodedMessage = BeezUtils.encode(message)
-
-        self.p2p.broadcast(encodedMessage)
-
-
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 
         challenge: Challenge = challengeTx.challenge
@@ -210,6 +205,10 @@ class BeezNode():
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
+
+            # Update the current version of the in-memory AccountStateModel and BeezKeeper
+            self.blockchain.accountStateModel = block.header.accountStateModel
+            self.blockchain.beezKeeper = block.header.beezKeeper
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
