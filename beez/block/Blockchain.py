@@ -75,9 +75,7 @@ class Blockchain():
             sender = challengeTX.senderPublicKey
             receiver = transaction.receiverPublicKey
             if sender == receiver:
-                
-                blockBeezKeeper.workOnChallenge(challengeTX.challenge)
-
+            
                 logger.info(f"import the keeper till here!!!!!")
                 
                 # challenge : Challenge = challengeTX.challenge
