@@ -9,6 +9,8 @@ import copy
 
 
 
+
+
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
 
@@ -34,6 +36,7 @@ from beez.challenge.BeezKeeper import BeezKeeper
 from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
 from beez.block.Header import Header
+from beez.challenge.ChallengeState import ChallengeState
 
 class BeezNode():
 
@@ -204,9 +207,17 @@ class BeezNode():
                     challengeExists = self.beezKeeper.challegeExists(challenge.id)
                     logger.info(f"challengeExists: {challengeExists}")
 
-                    if not challengeExists:
+                    if challengeExists:
                         # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
                         self.beezKeeper.set(challenge)
+                    else:
+                        # check the status of the challenge
+                        logger.info(f"check the status of the challenge {challenge.state}")
+                        challenge.state = ChallengeState.CLOSED.name
+
+                        logger.info(f"NeW status of the challenge {challenge.state}")
+                        self.handleChallengeUpdate(challenge)
+                    
 
                     logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
 
@@ -229,6 +240,7 @@ class BeezNode():
         else:
             logger.info(f"I'm not the forger")  
 
+    
     def handleBlockchainRequest(self, requestingNode: BeezNode):
         # send the updated version of the blockchain to the node that made the request
         message = MessageBlockchain(self.p2p.socketConnector, MessageType.BLOCKCHAIN.name, self.blockchain)
