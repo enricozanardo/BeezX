@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, List
 
 from loguru import logger
 
+from beez.challenge.BeezKeeper import BeezKeeper
+
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
     from beez.wallet.Wallet import Wallet
@@ -42,15 +44,17 @@ class Blockchain():
         return jsonBlockchain
 
     def addBlock(self, block: Block):
-        self.executeTransactions(block.transactions)
+        self.executeTransactions(block)
         if self.blocks[-1].blockCount < block.blockCount:
             self.blocks.append(block)
 
-    def executeTransactions(self, transactions: List[Transaction]):
+    def executeTransactions(self, block: Block):
+        transactions: List[Transaction] = block.transactions
+        blockBeezKeeper : BeezKeeper = block.header.beezKeeper
         for transaction in transactions:
-            self.executeTransaction(transaction)
+            self.executeTransaction(transaction, blockBeezKeeper)
     
-    def executeTransaction(self, transaction: Transaction):
+    def executeTransaction(self, transaction: Transaction, blockBeezKeeper: BeezKeeper):
         logger.info(f"Execute transaction of type: {transaction.type}")
 
         # case of Stake transaction [involve POS]
@@ -71,6 +75,8 @@ class Blockchain():
             sender = challengeTX.senderPublicKey
             receiver = transaction.receiverPublicKey
             if sender == receiver:
+                
+                blockBeezKeeper.workOnChallenge(challengeTX.challenge)
 
                 logger.info(f"import the keeper till here!!!!!")
                 
