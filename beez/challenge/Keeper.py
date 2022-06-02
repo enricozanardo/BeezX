@@ -10,7 +10,6 @@ import time
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
 INTERVALS = int(os.getenv('INTERVALS', LOCAL_INTERVALS))
-INTERVALS = 20
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
