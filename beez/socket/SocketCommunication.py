@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
+from beez.socket.ChallengeHandler import ChallengeHandler
 from beez.BeezUtils import BeezUtils
 from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
@@ -43,6 +44,7 @@ class SocketCommunication(Node):
         # TODO: move the peers to a storage!
         self.ownConnections: List[SocketConnector] = []
         self.peerDiscoveryHandler = PeerDiscoveryHandler(self)
+        self.challengeHandler = ChallengeHandler(self)
         self.socketConnector = SocketConnector(ip, port)
 
         logger.info(f"Socket Communication created.. {FIRST_SERVER_IP}: {P_2_P_PORT}")
@@ -92,6 +94,11 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             self.peerDiscoveryHandler.handleMessage(message)
 
+        elif message.messageType == MessageType.CHALLENGES.name:
+            # handle the CHALLENGES
+            logger.info(f"manage the message {message.messageType}")
+            self.challengeHandler.handleChallengesMessage(message)
+            
         elif message.messageType == MessageType.TRANSACTION.name:
             # handle the TRANSACTION
             logger.info(f"A Transaction Message will be broadcasted!! {message.messageType}")
