@@ -32,12 +32,11 @@ class Blockchain():
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()
         self.beezKeeper = BeezKeeper()
-        
         self.genesisPubKey = GenesisPublicKey()
 
         # for testing...
-        self.beezKeeper.start()
-        self.accountStateModel.start()
+        # self.beezKeeper.start()
+        # self.accountStateModel.start()
 
     def toJson(self):
         jsonBlockchain = {}
@@ -88,6 +87,8 @@ class Blockchain():
                 if not challengeExists:
                     # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
                     self.beezKeeper.set(challenge)
+
+                    logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}")
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
