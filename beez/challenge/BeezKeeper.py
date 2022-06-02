@@ -82,12 +82,15 @@ class BeezKeeper():
 
     def workOnChallenge(self, challenge: Challenge):
         logger.info(f"work on challenge... {challenge.id}")
+
+        #Accept the challenge!
+
         logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
 
         sharedfunction = challenge.sharedFunction
         # logger.info(f"challenge function: {type(sharedfunction)}")
-        inputA = random.randint(0, 9)
-        inputB = random.randint(0, 9)
+        inputA = random.randint(0, 100)
+        inputB = random.randint(0, 100)
 
         result = sharedfunction(inputA, inputB)
 
