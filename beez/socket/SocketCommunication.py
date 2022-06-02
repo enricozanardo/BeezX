@@ -60,6 +60,7 @@ class SocketCommunication(Node):
         self.beezNode = beezNode
         self.start()
         self.peerDiscoveryHandler.start()
+        self.challengeHandler.start()
         self.connectToFirstNode()
 
     # Broadcast the message to alle the nodes
