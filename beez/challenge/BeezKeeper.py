@@ -62,10 +62,7 @@ class BeezKeeper():
         else:
             # new challenge! Thinkto broadcast the challenge and no more!
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept. Challenge STATE: {challenge.state}")
-
             self.challenges[challengeID] = challenge
-
-            self.workOnChallenge(challenge)
 
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
         if challengeID in self.challenges.keys():
