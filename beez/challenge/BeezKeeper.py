@@ -110,6 +110,7 @@ class BeezKeeper():
 
             localChallenge.state = ChallengeState.CLOSED.name
             self.challenges[challenge.id] = localChallenge
+            logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
 
        
         
