@@ -52,11 +52,10 @@ class Blockchain():
 
     def executeTransactions(self, block: Block):
         transactions: List[Transaction] = block.transactions
-        blockBeezKeeper : BeezKeeper = block.header.beezKeeper
         for transaction in transactions:
-            self.executeTransaction(transaction, blockBeezKeeper)
+            self.executeTransaction(transaction)
     
-    def executeTransaction(self, transaction: Transaction, blockBeezKeeper: BeezKeeper):
+    def executeTransaction(self, transaction: Transaction):
         logger.info(f"Execute transaction of type: {transaction.type}")
 
         # case of Stake transaction [involve POS]
