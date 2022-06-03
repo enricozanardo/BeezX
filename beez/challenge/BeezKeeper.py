@@ -81,7 +81,7 @@ class BeezKeeper():
 
 
     def workOnChallenge(self, challenge: Challenge):
-        logger.info(f"work on challenge... {challenge.id}")
+        logger.info(f"work on challenge... move to the ChallengesHandler this job! {challenge.id}")
 
         #Accept the challenge!
 
