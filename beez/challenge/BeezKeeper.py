@@ -92,7 +92,7 @@ class BeezKeeper():
                 logger.info(f"Change the local Challenge STATE to ACCEPTED")
                 localChallenge.state = ChallengeState.ACCEPTED.name
 
-        elif challenge.state == ChallengeState.ACCEPTED.name:
+        elif localChallenge.state == ChallengeState.ACCEPTED.name:
             #work on challenge!
             logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
             sharedfunction = challenge.sharedFunction
