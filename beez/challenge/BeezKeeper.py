@@ -83,10 +83,13 @@ class BeezKeeper():
         logger.info(f"Current ChallengeState: {challenge.state}")
         if challenge.state == ChallengeState.CREATED.name:
 
-            challenge.state = ChallengeState.ACCEPTED.name
-            self.challenges[challenge.id] = challenge
+            challenge.state = ChallengeState.CLOSED.name
+            # self.challenges[challenge.id] = challenge
 
             localChallenge : Challenge = self.challenges[challenge.id]
+            localChallenge.state = ChallengeState.ACCEPTED.name
+            self.challenges[challenge.id] = localChallenge
+
             logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
 
     
