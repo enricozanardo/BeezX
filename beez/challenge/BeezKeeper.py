@@ -78,24 +78,30 @@ class BeezKeeper():
 
 
     def workOnChallenge(self, challenge: Challenge):
-        logger.info(f"work on challenge... move to the ChallengesHandler this job! {challenge.id}")
+        logger.info(f"work on challenge... this job! {challenge.id}")
 
-        #Accept the challenge!
+        if challenge.state == ChallengeState.CREATED.name:
+            logger.info(f"Accept the challenge")
+            challengeID = challenge.id
+            localChallenge = self.get(challengeID)
+            if localChallenge:
+                localChallenge.state = ChallengeState.ACCEPTED.name
 
-        logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
+        elif challenge.state == ChallengeState.ACCEPTED.name:
+            #work on challenge!
+            logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
+            sharedfunction = challenge.sharedFunction
+            # logger.info(f"challenge function: {type(sharedfunction)}")
+            inputA = random.randint(0, 100)
+            inputB = random.randint(0, 100)
 
-        sharedfunction = challenge.sharedFunction
-        # logger.info(f"challenge function: {type(sharedfunction)}")
-        inputA = random.randint(0, 100)
-        inputB = random.randint(0, 100)
+            result = sharedfunction(inputA, inputB)
 
-        result = sharedfunction(inputA, inputB)
+            logger.info(f"result: {result}")
 
-        logger.info(f"result: {result}")
+        else:
+            logger.info(f"Unknow challenge state: {challenge.state} ")
         
-
-
-
     def update(self, receivedChallenge: Challenge) -> bool:
         # do a copy of the local challenge!
         challengeExists = self.challegeExists(receivedChallenge.id)
