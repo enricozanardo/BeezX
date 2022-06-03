@@ -119,12 +119,15 @@ class Blockchain():
 
         return nextForger
     
-    def mintBlock(self, header: Header, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
+    def mintBlock(self, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
         # Check that the transaction are covered 
         coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
 
         # check the type of transactions and do the right action
         self.executeTransactions(coveredTransactions)
+
+        # Get the updated version of the in-memory objects and create the Block Header
+        header = Header(self.beezKeeper, self.accountStateModel)
 
         # create the Block
         newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(

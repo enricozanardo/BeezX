@@ -8,9 +8,6 @@ import GPUtil
 import copy
 
 
-
-
-
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
 
@@ -35,7 +32,6 @@ from beez.socket.MessageBlockchain import MessageBlockchain
 from beez.challenge.BeezKeeper import BeezKeeper
 from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
-from beez.block.Header import Header
 from beez.challenge.ChallengeState import ChallengeState
 
 class BeezNode():
@@ -49,7 +45,6 @@ class BeezNode():
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
-        self.beezKeeper = BeezKeeper()
 
         if key is not None:
             self.wallet.fromKey(key)
@@ -198,24 +193,7 @@ class BeezNode():
             logger.info(f"I'm the next forger")
 
             # mint the new Block
-            # Check with the Challenge beezKeeper
-            for tx in self.transactionPool.transactions:
-                if tx.type == TransactionType.CHALLENGE.name:
-                    # add to the BeezKeeper
-                    challengeTX: ChallengeTX = tx
-                    challenge : Challenge = challengeTX.challenge
-                    challengeExists = self.beezKeeper.challegeExists(challenge.id)
-                    logger.info(f"challengeExists: {challengeExists}")
-
-                    if not challengeExists:
-                        # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
-                        self.beezKeeper.set(challenge)
-                   
-                    logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
-
-            # mint the new Block
-            header = Header(self.beezKeeper, self.blockchain.accountStateModel)
-            block = self.blockchain.mintBlock(header, self.transactionPool.transactions, self.wallet)
+            block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
