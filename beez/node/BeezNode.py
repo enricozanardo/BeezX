@@ -125,8 +125,6 @@ class BeezNode():
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
 
             # Add the block to the Blockchain
-            logger.info(f"type {block.header.beezKeeper}")
-
             self.blockchain.addBlock(block)
 
             self.transactionPool.removeFromPool(block.transactions)
@@ -135,6 +133,14 @@ class BeezNode():
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
+
+    
+    def requestChallenge(self):
+        # The node will send a message to request the updated Blockchain
+        message = Message(self.p2p.socketConnector, MessageType.CHALLENGEREQUEST.name)
+        encodedMessage = BeezUtils.encode(message)
+
+        self.p2p.broadcast(encodedMessage)
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain
@@ -202,6 +208,11 @@ class BeezNode():
 
             # mint the new Block
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
+
+            # 
+            beezKeeper = block.header.beezKeeper
+            if len(beezKeeper.challenges.items()) > 0:
+                self.requestChallenge()
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)

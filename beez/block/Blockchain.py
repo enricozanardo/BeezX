@@ -118,7 +118,7 @@ class Blockchain():
                     # if isChallengeAccepted:
                     #     localChallenge = self.beezKeeper.get(challenge.id)
                     #     logger.info(f"Create a ACCEPTED Transaction {localChallenge.state}")
-                     self.beezKeeper.workOnChallenge(challenge)
+                    self.beezKeeper.workOnChallenge(challenge)
                     
                     
                 # Update the balance of the sender!
