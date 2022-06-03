@@ -81,22 +81,32 @@ class BeezKeeper():
         logger.info(f"work on challenge...! {challenge.id}")
 
         logger.info(f"Current ChallengeState: {challenge.state}")
-        challenge.state = ChallengeState.ACCEPTED.name
-        self.challenges[challenge.id] = challenge
+        if challenge.state == ChallengeState.CREATED.name:
 
-        updatedChallenge = self.challenges[challenge.id]
-        logger.info(f"Updated localKeeper ChallengeState: {updatedChallenge.state}")
+            challenge.state = ChallengeState.ACCEPTED.name
+            self.challenges[challenge.id] = challenge
 
+            localChallenge : Challenge = self.challenges[challenge.id]
+            logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
+
+    
         #work on challenge!
-        logger.info(f"challenge function: {updatedChallenge.sharedFunction.__doc__}")
-        sharedfunction = updatedChallenge.sharedFunction
-        # logger.info(f"challenge function: {type(sharedfunction)}")
-        inputA = random.randint(0, 100)
-        inputB = random.randint(0, 100)
+        if challenge.state == ChallengeState.ACCEPTED.name:
+            # Somebody else is working on the challenge...
+            logger.info(f"Somebody else is working on the challenge.. {challenge.state}")
 
-        result = sharedfunction(inputA, inputB)
+        localChallenge : Challenge = self.challenges[challenge.id]
 
-        logger.info(f"result: {result}")
+        if localChallenge.state == ChallengeState.ACCEPTED.name:
+            logger.info(f"challenge function: {localChallenge.sharedFunction.__doc__}")
+            sharedfunction = localChallenge.sharedFunction
+            # logger.info(f"challenge function: {type(sharedfunction)}")
+            inputA = random.randint(0, 100)
+            inputB = random.randint(0, 100)
+
+            result = sharedfunction(inputA, inputB)
+
+            logger.info(f"result: {result}")
 
        
         
