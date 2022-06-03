@@ -48,7 +48,7 @@ class Blockchain():
         return jsonBlockchain
 
     def addBlock(self, block: Block):
-        self.executeTransactions(block)
+        self.executeTransactions(block.transactions, block.header.beezKeeper)
         if self.blocks[-1].blockCount < block.blockCount:
             self.blocks.append(block)
 
