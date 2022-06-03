@@ -80,32 +80,25 @@ class BeezKeeper():
     def workOnChallenge(self, challenge: Challenge):
         logger.info(f"work on challenge...! {challenge.id}")
 
-        if challenge.state == ChallengeState.CREATED.name:
-            logger.info(f"Accept the challenge")
-            challengeID = challenge.id
-            challengeExists = self.challegeExists(challengeID)
-            if not challengeExists:
-                self.set(challenge)
+        logger.info(f"Current ChallengeState: {challenge.state}")
+        challenge.state = ChallengeState.ACCEPTED.name
+        self.challenges[challenge.id] = challenge
 
-            localChallenge = self.get(challengeID)
-            if localChallenge:
-                logger.info(f"Change the local Challenge STATE to ACCEPTED")
-                localChallenge.state = ChallengeState.ACCEPTED.name
+        updatedChallenge = self.challenges[challenge.id]
+        logger.info(f"Updated localKeeper ChallengeState: {updatedChallenge.state}")
 
-        elif localChallenge.state == ChallengeState.ACCEPTED.name:
-            #work on challenge!
-            logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
-            sharedfunction = challenge.sharedFunction
-            # logger.info(f"challenge function: {type(sharedfunction)}")
-            inputA = random.randint(0, 100)
-            inputB = random.randint(0, 100)
+        #work on challenge!
+        logger.info(f"challenge function: {updatedChallenge.sharedFunction.__doc__}")
+        sharedfunction = updatedChallenge.sharedFunction
+        # logger.info(f"challenge function: {type(sharedfunction)}")
+        inputA = random.randint(0, 100)
+        inputB = random.randint(0, 100)
 
-            result = sharedfunction(inputA, inputB)
+        result = sharedfunction(inputA, inputB)
 
-            logger.info(f"result: {result}")
+        logger.info(f"result: {result}")
 
-        else:
-            logger.info(f"Unknow challenge state: {challenge.state} ")
+       
         
     def update(self, receivedChallenge: Challenge) -> bool:
         # do a copy of the local challenge!
