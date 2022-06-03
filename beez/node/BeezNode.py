@@ -199,8 +199,9 @@ class BeezNode():
             self.transactionPool.removeFromPool(block.transactions)
 
             # Update the current version of the in-memory AccountStateModel and BeezKeeper
-            # self.blockchain.accountStateModel = block.header.accountStateModel
-            # self.blockchain.beezKeeper = block.header.beezKeeper
+            logger.info(f"GO!!!!!!")
+            self.blockchain.accountStateModel = block.header.accountStateModel
+            self.blockchain.beezKeeper = block.header.beezKeeper
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
