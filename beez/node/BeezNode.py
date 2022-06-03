@@ -44,8 +44,7 @@ class BeezNode():
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
-        # Start the beezKeeper 
-        self.blockchain.beezKeeper.start()
+        
         if key is not None:
             self.wallet.fromKey(key)
 
