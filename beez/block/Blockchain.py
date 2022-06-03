@@ -52,9 +52,7 @@ class Blockchain():
         if self.blocks[-1].blockCount < block.blockCount:
             self.blocks.append(block)
 
-    def executeTransactions(self, block: Block):
-        transactions: List[Transaction] = block.transactions
-        blockBeezKeeper: BeezKeeper = block.header.beezKeeper
+    def executeTransactions(self, transactions: List[Transaction], blockBeezKeeper: Header):
         for transaction in transactions:
             self.executeTransaction(transaction, blockBeezKeeper)
     
@@ -128,11 +126,11 @@ class Blockchain():
         # Check that the transaction are covered 
         coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
 
-        # check the type of transactions and do the right action
-        self.executeTransactions(coveredTransactions)
-
         # Get the updated version of the in-memory objects and create the Block Header
         header = Header(self.beezKeeper, self.accountStateModel)
+
+        # check the type of transactions and do the right action
+        self.executeTransactions(coveredTransactions, header)
 
         # create the Block
         newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
