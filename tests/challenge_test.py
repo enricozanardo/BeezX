@@ -1,5 +1,6 @@
 from loguru import logger
 
+
 import os
 from dotenv import load_dotenv
 import requests
@@ -12,6 +13,9 @@ from beez.BeezUtils import BeezUtils
 from beez.Types import WalletAddress
 from beez.challenge.Challenge import Challenge
 from beez.transaction.ChallengeTX import ChallengeTX
+
+# for function
+import random
 
 load_dotenv()  # load .env
 
@@ -56,7 +60,7 @@ def test_send_challenge_transaction():
     AliceWallet = Wallet()
     AliceWallet.fromKey(alicePrivateKeyPath)
 
-    reward = 10
+    reward = 8
     type = TransactionType.CHALLENGE.name
 
     # Define the challenge
