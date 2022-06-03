@@ -127,6 +127,8 @@ class Blockchain():
         # Get the updated version of the in-memory objects and create the Block Header
         header = Header(self.beezKeeper, self.accountStateModel)
 
+        logger.info(f"Header: {len(header.beezKeeper.challenges.items())}")
+
         # create the Block
         newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
             self.blocks[-1].payload()).hexdigest(), len(self.blocks))

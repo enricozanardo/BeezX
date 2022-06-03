@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
@@ -86,7 +86,7 @@ class Wallet():
         return challengeTransaction
 
     # Manage Block creation
-    def createBlock(self, header: Header, transactions: List[Transaction], lastHash: str, blockCounter: int) -> Block:
+    def createBlock(self, header: Optional[Header], transactions: List[Transaction], lastHash: str, blockCounter: int) -> Block:
         block = Block(header, transactions, lastHash, self.publicKeyString(), blockCounter)
 
         signature = self.sign(block.payload())
