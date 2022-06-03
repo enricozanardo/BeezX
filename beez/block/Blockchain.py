@@ -50,8 +50,7 @@ class Blockchain():
         if self.blocks[-1].blockCount < block.blockCount:
             self.blocks.append(block)
 
-    def executeTransactions(self, block: Block):
-        transactions: List[Transaction] = block.transactions
+    def executeTransactions(self, transactions: List[Transaction]):
         for transaction in transactions:
             self.executeTransaction(transaction)
     
