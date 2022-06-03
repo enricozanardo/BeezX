@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, List
 
 from loguru import logger
 
-from beez.challenge.BeezKeeper import BeezKeeper
+
 
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
@@ -18,6 +18,7 @@ from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
 from beez.block.Header import Header
+from beez.challenge.BeezKeeper import BeezKeeper
 
 
 
@@ -28,7 +29,8 @@ class Blockchain():
     def __init__(self):
         self.blocks: List[Block] = [Block.genesis()]
         self.accountStateModel = AccountStateModel()
-        self.pos = ProofOfStake()
+        self.pos = ProofOfStake()   
+        self.beezKeeper = BeezKeeper()
         self.genesisPubKey = GenesisPublicKey()
 
         # for testing...
@@ -75,18 +77,16 @@ class Blockchain():
             sender = challengeTX.senderPublicKey
             receiver = transaction.receiverPublicKey
             if sender == receiver:
-            
-                logger.info(f"import the keeper till here!!!!!")
-                
-                # challenge : Challenge = challengeTX.challenge
-                # challengeExists = self.beezKeeper.challegeExists(challenge.id)
-                # logger.info(f"challengeExists: {challengeExists}")
+                # Check with the challenge Keeeper
+                challenge : Challenge = challengeTX.challenge
+                challengeExists = self.beezKeeper.challegeExists(challenge.id)
+                logger.info(f"challengeExists: {challengeExists}")
 
-                # if not challengeExists:
-                #     # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
-                #     self.beezKeeper.set(challenge)
+                if not challengeExists:
+                    # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
+                    self.beezKeeper.set(challenge)
                    
-                # logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
+                logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
 
 
                 # Update the balance of the sender!
