@@ -77,6 +77,23 @@ class BeezKeeper():
             return False
 
 
+    def acceptChallenge(self, challenge: Challenge):
+        logger.info(f"accept challengeid: {challenge.id}")
+        logger.info(f"Current ChallengeState: {challenge.state}")
+        isAccepted = False
+
+        if challenge.state == ChallengeState.CREATED.name:
+
+            localChallenge : Challenge = self.challenges[challenge.id]
+            localChallenge.state = ChallengeState.ACCEPTED.name
+            self.challenges[challenge.id] = localChallenge
+
+            logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
+            isAccepted = True
+        
+        return isAccepted
+
+
     def workOnChallenge(self, challenge: Challenge):
         logger.info(f"work on challenge...! {challenge.id}")
 
@@ -90,10 +107,10 @@ class BeezKeeper():
             logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
 
     
-        #work on challenge!
-        if challenge.state == ChallengeState.ACCEPTED.name:
-            # Somebody else is working on the challenge...
-            logger.info(f"Somebody else is working on the challenge.. {challenge.state}")
+        # #work on challenge!
+        # if challenge.state == ChallengeState.ACCEPTED.name:
+        #     # Somebody else is working on the challenge...
+        #     logger.info(f"Somebody else is working on the challenge.. {challenge.state}")
 
         localChallenge : Challenge = self.challenges[challenge.id]
 
@@ -108,9 +125,9 @@ class BeezKeeper():
 
             logger.info(f"result: {result}")
 
-            localChallenge.state = ChallengeState.CLOSED.name
-            self.challenges[challenge.id] = localChallenge
-            logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
+            # localChallenge.state = ChallengeState.CLOSED.name
+            # self.challenges[challenge.id] = localChallenge
+            # logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
 
        
         
