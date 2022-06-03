@@ -118,6 +118,8 @@ class BeezNode():
 
         signatureValid = Wallet.signatureValid(blockHash, signature, forger)
 
+        logger.info(f"What is wrong? blockCountValid: {blockCountValid}")
+
         if not blockCountValid:
             # ask to peers their state of the blockchain
             logger.info("Request the updated version of the Blockchain")
@@ -232,8 +234,8 @@ class BeezNode():
                     localBlockchainCopy.addBlock(block)
                     logger.warning(f"Here is the problem?")
                     # Update the current version of the in-memory AccountStateModel and BeezKeeper
-                    # self.blockchain.accountStateModel = block.header.accountStateModel
-                    # self.blockchain.beezKeeper = block.header.beezKeeper
+                    self.blockchain.accountStateModel = block.header.accountStateModel
+                    self.blockchain.beezKeeper = block.header.beezKeeper
 
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
