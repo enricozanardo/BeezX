@@ -78,13 +78,18 @@ class BeezKeeper():
 
 
     def workOnChallenge(self, challenge: Challenge):
-        logger.info(f"work on challenge... this job! {challenge.id}")
+        logger.info(f"work on challenge...! {challenge.id}")
 
         if challenge.state == ChallengeState.CREATED.name:
             logger.info(f"Accept the challenge")
             challengeID = challenge.id
+            challengeExists = self.challegeExists(challengeID)
+            if not challengeExists:
+                self.set(challenge)
+
             localChallenge = self.get(challengeID)
             if localChallenge:
+                logger.info(f"Change the local Challenge STATE to ACCEPTED")
                 localChallenge.state = ChallengeState.ACCEPTED.name
 
         elif challenge.state == ChallengeState.ACCEPTED.name:
