@@ -90,12 +90,14 @@ class Blockchain():
                     # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
                     logger.info(f"beezKeeper add the challenge {challenge.id}")
                     self.beezKeeper.set(challenge)
-                    # compare the challenges!
-                    if blockBeezKeeper is not None:
-                        logger.info(f"blockBeezKeeper challenges: {len(blockBeezKeeper.challenges.items())}")
-                        logger.info(f"localBeezKeeper challenges: {len(self.beezKeeper.challenges.items())}")
-                        for idx, challenge in blockBeezKeeper.challenges.items():
-                            logger.info(f"Check the following challenge {idx}")
+
+                    
+                # compare the challenges!
+                if blockBeezKeeper is not None:
+                    logger.info(f"blockBeezKeeper challenges: {len(blockBeezKeeper.challenges.items())}")
+                    logger.info(f"localBeezKeeper challenges: {len(self.beezKeeper.challenges.items())}")
+                    for idx, challenge in blockBeezKeeper.challenges.items():
+                        logger.info(f"Check the following challenge {idx}")
                     
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
