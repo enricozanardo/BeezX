@@ -230,9 +230,10 @@ class BeezNode():
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
-                     # Update the current version of the in-memory AccountStateModel and BeezKeeper
-                    self.blockchain.accountStateModel = block.header.accountStateModel
-                    self.blockchain.beezKeeper = block.header.beezKeeper
+                    logger.warning(f"Here is the problem?")
+                    # Update the current version of the in-memory AccountStateModel and BeezKeeper
+                    # self.blockchain.accountStateModel = block.header.accountStateModel
+                    # self.blockchain.beezKeeper = block.header.beezKeeper
 
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
