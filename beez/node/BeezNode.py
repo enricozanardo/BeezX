@@ -126,6 +126,8 @@ class BeezNode():
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
 
             # Add the block to the Blockchain
+            logger.info(f"type {block.header.beezKeeper}")
+
             self.blockchain.addBlock(block)
 
             self.transactionPool.removeFromPool(block.transactions)

@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 import pathlib
 
 from loguru import logger
@@ -48,15 +48,17 @@ class Blockchain():
         return jsonBlockchain
 
     def addBlock(self, block: Block):
-        self.executeTransactions(block.transactions, block.header.beezKeeper)
+        beezKeeper : BeezKeeper = block.header.beezKeeper
+        self.executeTransactions(block.transactions, beezKeeper)
+
         if self.blocks[-1].blockCount < block.blockCount:
             self.blocks.append(block)
 
-    def executeTransactions(self, transactions: List[Transaction], blockBeezKeeper: Header):
+    def executeTransactions(self, transactions: List[Transaction], blockBeezKeeper: Optional[BeezKeeper]):
         for transaction in transactions:
             self.executeTransaction(transaction, blockBeezKeeper)
     
-    def executeTransaction(self, transaction: Transaction, blockBeezKeeper: BeezKeeper):
+    def executeTransaction(self, transaction: Transaction, blockBeezKeeper: Optional[BeezKeeper]):
         logger.info(f"Execute transaction of type: {transaction.type}")
 
         # case of Stake transaction [involve POS]
@@ -83,8 +85,10 @@ class Blockchain():
                 challenge : Challenge = challengeTX.challenge
                 challengeExists = self.beezKeeper.challegeExists(challenge.id)
                 logger.info(f"challengeExists: {challengeExists}")
-
-                logger.info(f"blockBeezKeeper: {len(blockBeezKeeper.challenges.items())}")
+                
+                if blockBeezKeeper is not None:
+                    logger.info(f"blockBeezKeeper: {type(blockBeezKeeper)}")
+                    logger.info(f"blockBeezKeeper: {len(blockBeezKeeper.challenges.items())}")
 
                 if not challengeExists:
                     # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
@@ -126,11 +130,11 @@ class Blockchain():
         # Check that the transaction are covered 
         coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
 
+        # check the type of transactions and do the right action
+        self.executeTransactions(coveredTransactions, None)
+
         # Get the updated version of the in-memory objects and create the Block Header
         header = Header(self.beezKeeper, self.accountStateModel)
-
-        # check the type of transactions and do the right action
-        self.executeTransactions(coveredTransactions, header)
 
         # create the Block
         newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
