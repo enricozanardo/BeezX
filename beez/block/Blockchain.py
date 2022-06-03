@@ -113,15 +113,12 @@ class Blockchain():
                         self.beezKeeper = blockBeezKeeper
 
                 if workOnChallenge:
-                    isChallengeAccepted = self.beezKeeper.acceptChallenge(challenge)
+                    # isChallengeAccepted = self.beezKeeper.acceptChallenge(challenge)
 
-                    if isChallengeAccepted:
-                        localChallenge = self.beezKeeper.get(challenge.id)
-                        logger.info(f"Create a ACCEPTED Transaction {localChallenge.state}")
-
-
-
-                    #  self.beezKeeper.workOnChallenge(challenge)
+                    # if isChallengeAccepted:
+                    #     localChallenge = self.beezKeeper.get(challenge.id)
+                    #     logger.info(f"Create a ACCEPTED Transaction {localChallenge.state}")
+                     self.beezKeeper.workOnChallenge(challenge)
                     
                     
                 # Update the balance of the sender!

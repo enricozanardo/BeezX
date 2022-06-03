@@ -123,7 +123,10 @@ class BeezKeeper():
 
             result = sharedfunction(inputA, inputB)
 
+            localChallenge.result = localChallenge.result + result
+
             logger.info(f"result: {result}")
+            logger.info(f"localChallenge result: {localChallenge.result}")
 
             # localChallenge.state = ChallengeState.CLOSED.name
             # self.challenges[challenge.id] = localChallenge

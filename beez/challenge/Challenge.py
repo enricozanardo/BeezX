@@ -17,5 +17,6 @@ class Challenge():
         self.sharedFunction = sharedFunction
         self.state = ChallengeState.CREATED.name
         self.reward = reward
+        self.result = 0
 
 
