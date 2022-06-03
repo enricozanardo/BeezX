@@ -48,15 +48,17 @@ class Blockchain():
         return jsonBlockchain
 
     def addBlock(self, block: Block):
-        self.executeTransactions(block.transactions)
+        self.executeTransactions(block)
         if self.blocks[-1].blockCount < block.blockCount:
             self.blocks.append(block)
 
-    def executeTransactions(self, transactions: List[Transaction]):
+    def executeTransactions(self, block: Block):
+        transactions: List[Transaction] = block.transactions
+        blockBeezKeeper: BeezKeeper = block.header.beezKeeper
         for transaction in transactions:
-            self.executeTransaction(transaction)
+            self.executeTransaction(transaction, blockBeezKeeper)
     
-    def executeTransaction(self, transaction: Transaction):
+    def executeTransaction(self, transaction: Transaction, blockBeezKeeper: BeezKeeper):
         logger.info(f"Execute transaction of type: {transaction.type}")
 
         # case of Stake transaction [involve POS]
@@ -84,6 +86,8 @@ class Blockchain():
                 challengeExists = self.beezKeeper.challegeExists(challenge.id)
                 logger.info(f"challengeExists: {challengeExists}")
 
+                logger.info(f"blockBeezKeeper: {len(blockBeezKeeper.challenges.items())}")
+
                 if not challengeExists:
                     # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
                     self.beezKeeper.set(challenge)
@@ -92,6 +96,7 @@ class Blockchain():
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
+                
 
         else:
             # case of [TRANSACTION]
