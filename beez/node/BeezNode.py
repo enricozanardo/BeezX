@@ -209,7 +209,7 @@ class BeezNode():
             # mint the new Block
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
-            # 
+            ###################################################
             beezKeeper = block.header.beezKeeper
             if len(beezKeeper.challenges.items()) > 0:
                 self.requestChallenge()
