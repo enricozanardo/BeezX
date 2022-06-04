@@ -113,6 +113,8 @@ class BeezNode():
 
         signatureValid = Wallet.signatureValid(blockHash, signature, forger)
 
+        logger.info(f"blockCountValid: {blockCountValid}")
+
         if not blockCountValid:
             # ask to peers their state of the blockchain
             logger.info("Request the updated version of the Blockchain")
