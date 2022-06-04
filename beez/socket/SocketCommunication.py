@@ -4,9 +4,9 @@ from p2pnetwork.node import Node
 import os
 from dotenv import load_dotenv
 from loguru import logger
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, List
 import json
-from beez.challenge.Challenge import Challenge
+
 
 if TYPE_CHECKING:
     from beez.Types import Address

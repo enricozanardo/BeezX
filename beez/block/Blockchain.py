@@ -17,9 +17,6 @@ from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
-from beez.block.Header import Header
-from beez.challenge.BeezKeeper import BeezKeeper
-
 
 
 class Blockchain():
@@ -30,7 +27,6 @@ class Blockchain():
         self.blocks: List[Block] = [Block.genesis()]
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()   
-        self.beezKeeper = BeezKeeper()
         self.genesisPubKey = GenesisPublicKey()
 
         # for testing...
@@ -77,15 +73,7 @@ class Blockchain():
             if sender == receiver:
                 # Check with the challenge Keeeper
                 challenge : Challenge = challengeTX.challenge
-                challengeExists = self.beezKeeper.challegeExists(challenge.id)
-                logger.info(f"challengeExists: {challengeExists}")
-
-                if not challengeExists:
-                    # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
-                    self.beezKeeper.set(challenge)
-                   
-                logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
-
+                logger.info(f"do something which the challenge ???? {challenge.id}") 
 
                 # Update the balance of the sender!
                 amount = challengeTX.amount
@@ -124,13 +112,8 @@ class Blockchain():
         # check the type of transactions and do the right action
         self.executeTransactions(coveredTransactions)
 
-        # Get the updated version of the in-memory objects and create the Block Header
-        header = Header(self.beezKeeper, self.accountStateModel)
-
-        logger.info(f"Header: {len(header.beezKeeper.challenges.items())}")
-
         # create the Block
-        newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
+        newBlock = forgerWallet.createBlock(coveredTransactions, BeezUtils.hash(
             self.blocks[-1].payload()).hexdigest(), len(self.blocks))
 
         self.blocks.append(newBlock)

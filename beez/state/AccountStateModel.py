@@ -1,6 +1,5 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Dict
-import threading
 from loguru import logger
 import time
 
@@ -20,27 +19,6 @@ class AccountStateModel():
         self.accounts: List[PublicKeyString] = []
         # collect all the balaces of each publicKey
         self.balances: Dict[PublicKeyString:int] = {}
-
-    def start(self):
-        # start node threads... 
-        statusThread = threading.Thread(target=self.status, args={})
-        statusThread.start()
-
-    def status(self):
-         while True:
-            logger.info(f"Account State Model Status {len(self.balances.items())}")
-            for key, value in self.balances.items():
-                
-                walletPublicKey : PublicKeyString = key
-                balance: int = value
-                
-                logger.info(f"Wallet: {walletPublicKey} balance: {str(balance)}")
-
-            # challengeStatusMessage = self.challengeStatusMessage()
-            # # Broadcast the message
-            # self.socketCommunication.broadcast(challengeStatusMessage)
-
-            time.sleep(5)
 
     def addAccount(self, publicKeyString: PublicKeyString):
         if not publicKeyString in self.accounts:

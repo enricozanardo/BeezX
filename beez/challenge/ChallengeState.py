@@ -12,7 +12,7 @@ class ChallengeState(Enum):
     ACCEPTED: A peer accept to join the challenge
     """
     CREATED = "created"
-    OPENED = "opened"
+    OPEN = "open"
     UPDATED = "updated"
     CLOSED = "closed"
     ACCEPTED = "accepted"

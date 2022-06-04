@@ -7,7 +7,6 @@ from loguru import logger
 import GPUtil
 import copy
 
-
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
 
@@ -25,14 +24,12 @@ from beez.api.NodeAPI import NodeAPI
 from beez.transaction.TransactionPool import TransactionPool
 from beez.socket.MessageTransaction import MessageTransation
 from beez.socket.MessageType import MessageType
-from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.Blockchain import Blockchain
 from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
-from beez.challenge.BeezKeeper import BeezKeeper
 from beez.socket.Message import Message
-from beez.transaction.TransactionType import TransactionType
-from beez.challenge.ChallengeState import ChallengeState
+from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
+
 
 class BeezNode():
 
@@ -92,9 +89,7 @@ class BeezNode():
             self.transactionPool.addTransaction(transaction)
             # Propagate the transaction to other peers
             message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
-
             encodedMessage = BeezUtils.encode(message)
-
             self.p2p.broadcast(encodedMessage)
         
             # check if is time to forge a new Block
@@ -118,15 +113,12 @@ class BeezNode():
 
         signatureValid = Wallet.signatureValid(blockHash, signature, forger)
 
-        logger.info(f"What is wrong? blockCountValid: {blockCountValid}")
-
         if not blockCountValid:
             # ask to peers their state of the blockchain
             logger.info("Request the updated version of the Blockchain")
             self.requestChain()
 
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
-
             # Add the block to the Blockchain
             self.blockchain.addBlock(block)
 
@@ -143,13 +135,6 @@ class BeezNode():
         encodedMessage = BeezUtils.encode(message)
 
         self.p2p.broadcast(encodedMessage)
-
-    
-    def handleChallengeUpdate(self, challenge: Challenge):
-        message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGEUPDATE.name, challenge)
-        encodedMessage = BeezUtils.encode(message)
-        self.p2p.broadcast(encodedMessage)
-        
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
         challenge: Challenge = challengeTx.challenge
@@ -200,18 +185,13 @@ class BeezNode():
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
 
-            # Update the current version of the in-memory AccountStateModel and BeezKeeper
-            logger.info(f"GO!!!!!!")
-            self.blockchain.accountStateModel = block.header.accountStateModel
-            self.blockchain.beezKeeper = block.header.beezKeeper
-
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
             
         else:
-            logger.info(f"I'm not the forger")  
+            logger.info(f"I'm not the forger!!!")  
 
     
     def handleBlockchainRequest(self, requestingNode: BeezNode):
@@ -232,12 +212,8 @@ class BeezNode():
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
-                    logger.warning(f"Here is the problem?")
-                    # Update the current version of the in-memory AccountStateModel and BeezKeeper
-                    self.blockchain.accountStateModel = block.header.accountStateModel
-                    self.blockchain.beezKeeper = block.header.beezKeeper
-
                     self.transactionPool.removeFromPool(block.transactions)
+
             self.blockchain = localBlockchainCopy
 
         

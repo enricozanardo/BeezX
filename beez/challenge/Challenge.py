@@ -2,8 +2,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable
 import uuid
 
+
+
 if TYPE_CHECKING:
     from beez.Types import SharedFunction, Prize
+    from beez.socket.SocketConnector import SocketConnector
     
 from beez.challenge.ChallengeState import ChallengeState
 
@@ -17,5 +20,13 @@ class Challenge():
         self.sharedFunction = sharedFunction
         self.state = ChallengeState.CREATED.name
         self.reward = reward
+        self.workers = []
+
+
+    def addWorker(self, worker: SocketConnector):
+        self.workers.append(worker)
+
+
+
 
 

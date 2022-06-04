@@ -11,11 +11,6 @@ class MessageType(Enum):
     BLOCKCHAINREQUEST: Ask to peers about the current state of the Blockchain
     BLOCKCHAIN: Send to the requesting node a copy of the Blockchain
     CHALLENGE: Broadcast the challenge to other peers using P2P
-    CHALLENGES: Broadcast the challenges to other peers
-    KEEPERREQUEST: Ask to peers about the current state of the Keeper
-    KEEPER: Send to the requesting node a copy of the Keeper
-    ACCEPT: Send to the requesting node an acceptance transaction of the Challenge.
-    UPDATE: Ask to peers about the current state of the Challenge
     """
     DISCOVERY = "discovery"
     TRANSACTION = "transaction"
@@ -23,8 +18,4 @@ class MessageType(Enum):
     BLOCKCHAINREQUEST = "blockchainrequest"
     BLOCKCHAIN = "blockchain"
     CHALLENGE = "challenge"
-    CHALLENGEUPDATE = "challengeupdate"
-    KEEPERREQUEST = "keeperrequest"
-    KEEPER = "keeper"
-    ACCEPT = "accept"
-    UPDATE = "update"
+    

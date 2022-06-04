@@ -27,8 +27,7 @@ class ProofOfStake():
         # genisisPublicKey = open(f"{currentPath}/beez/keys/genesisPublicKey.pem", 'r').read()
 
         genisisPublicKey = GenesisPublicKey()
-
-
+        
         # logger.info(f"GenesisublicKey: {genisisPublicKey}")
         # give to the genesis staker 1 stake to allow him to forge the initial Block
         self.stakers[genisisPublicKey.pubKey] = 1
