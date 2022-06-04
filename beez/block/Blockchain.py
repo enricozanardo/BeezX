@@ -207,7 +207,13 @@ class Blockchain():
             return False
 
     def blockCountValid(self, block: Block):
-        if self.blocks[-1].blockCount == block.blockCount - 1:
+        localBlockCount = self.blocks[-1].blockCount
+        blockCount = block.blockCount - 1
+
+        logger.info(f"localBlockCount: {localBlockCount}")
+        logger.info(f"blockCount: {blockCount}")
+
+        if localBlockCount == blockCount:
             return True
         else:
             return False
