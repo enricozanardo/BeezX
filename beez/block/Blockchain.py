@@ -159,7 +159,8 @@ class Blockchain():
 
     def blockCountValid(self, block: Block):
         localBlockCount = self.blocks[-1].blockCount
-        blockCount = block.blockCount - 1
+        # blockCount = block.blockCount - 1
+        blockCount = block.blockCount
 
         logger.info(f"localBlockCount: {localBlockCount}")
         logger.info(f"blockCount: {blockCount}")
