@@ -185,10 +185,16 @@ class BeezNode():
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
             # clean the transaction pool
+            logger.info(f"clean the transaction pool")
             self.transactionPool.removeFromPool(block.transactions)
 
+
+            logger.info(f"broadcast the block")
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
+
+            logger.info(f"message: {message.messageType}")
+
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
             

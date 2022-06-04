@@ -58,7 +58,7 @@ class SocketCommunication(Node):
         self.peerDiscoveryHandler.start()
         self.connectToFirstNode()
 
-    # Broadcast the message to alle the nodes
+    # Broadcast the message to all the nodes
     def broadcast(self, message: str):
         self.send_to_nodes(message)
 
@@ -90,6 +90,12 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             self.peerDiscoveryHandler.handleMessage(message)
 
+        elif message.messageType == MessageType.BLOCK.name:
+            # handle the BLOCK
+            logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
+            block : Block = message.block
+            self.beezNode.handleBlock(block)
+
         elif message.messageType == MessageType.TRANSACTION.name:
             # handle the TRANSACTION
             logger.info(f"A Transaction Message will be broadcasted!! {message.messageType}")
@@ -101,12 +107,6 @@ class SocketCommunication(Node):
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
             challengeTransaction : ChallengeTX  = message.challengeTx
             self.beezNode.handleChallengeTX(challengeTransaction)
-
-        elif message.messageType == MessageType.BLOCK.name:
-            # handle the BLOCK
-            logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
-            block : Block = message.block
-            self.beezNode.handleBlock(block)
 
         elif message.messageType == MessageType.BLOCKCHAINREQUEST.name:
             # handle the BLOCKCHAINREQUEST

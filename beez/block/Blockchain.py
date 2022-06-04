@@ -107,8 +107,14 @@ class Blockchain():
     
     def mintBlock(self, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
         # Check that the transaction are covered 
+
+
+        logger.info(f"Mint the block")
+
+        logger.info(f"coveredTransactions")
         coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
 
+        logger.info(f"executeTransactions")
         # check the type of transactions and do the right action
         self.executeTransactions(coveredTransactions)
 
@@ -116,6 +122,7 @@ class Blockchain():
         newBlock = forgerWallet.createBlock(coveredTransactions, BeezUtils.hash(
             self.blocks[-1].payload()).hexdigest(), len(self.blocks))
 
+        logger.info(f"append the block")
         self.blocks.append(newBlock)
 
         return newBlock
@@ -159,8 +166,7 @@ class Blockchain():
 
     def blockCountValid(self, block: Block):
         localBlockCount = self.blocks[-1].blockCount
-        # blockCount = block.blockCount - 1
-        blockCount = block.blockCount
+        blockCount = block.blockCount - 1
 
         logger.info(f"localBlockCount: {localBlockCount}")
         logger.info(f"blockCount: {blockCount}")
