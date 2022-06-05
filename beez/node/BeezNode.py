@@ -32,6 +32,7 @@ from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
 from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
+from beez.socket.MessageChallenge import MessageChallenge
 
 class BeezNode():
 
@@ -150,6 +151,9 @@ class BeezNode():
         for idx, challenge in challenges.items():
             logger.info(f"do something with the challenge: {idx}")
 
+            message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEACCEPT.name, challenge)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain

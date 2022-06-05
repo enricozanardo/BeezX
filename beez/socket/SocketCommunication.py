@@ -122,12 +122,7 @@ class SocketCommunication(Node):
             # this message do not contain any object
             self.beezNode.handleBlockchainRequest(connectedNode)
 
-        elif message.messageType == MessageType.KEEPERREQUEST.name:
-            # handle the KEEPERREQUEST
-            logger.info(f"A KEEPERREQUEST Message will be broadcasted!! {message.messageType}")
-            # this message do not contain any object
-            self.beezNode.handleKeeperRequest(connectedNode)
-
+    
         elif message.messageType == MessageType.BLOCKCHAIN.name:
             # handle the BLOCKCHAIN
             logger.info(f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.messageType}")
