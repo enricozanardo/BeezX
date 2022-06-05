@@ -133,10 +133,11 @@ class BeezNode():
             # For Peers
             # check the BeezKeeper
             challenges = self.blockchain.beezKeeper.challenges
-            logger.info(f"Peer challenges.... {len(challenges.items())}")
+            challengesNumber = len(challenges.items())
+            logger.info(f"Peer challenges.... {challengesNumber}")
 
-            if len(challenges.items()) > 0:
-                self.acceptChallenges(challenges)
+            if challengesNumber > 0:
+                self.acceptChallenges()
             
 
             # broadcast the block message
@@ -145,9 +146,8 @@ class BeezNode():
             self.p2p.broadcast(encodedMessage)
 
 
-    def acceptChallenges(self, challenges: Dict[ChallengeID:  Challenge]):
-        for challenge in challenges.items():
-            logger.info(f"do something with the challenge {challenge.id}")
+    def acceptChallenges(self):
+        logger.info(f"do something with the challenge...")
 
 
     def requestChain(self):
@@ -217,10 +217,11 @@ class BeezNode():
             # For Forger
             # check the BeezKeeper
             challenges = self.blockchain.beezKeeper.challenges
-            logger.info(f"Forger challenges.... {len(challenges.items())}")
+            challengesNumber = len(challenges.items())
+            logger.info(f"Forger challenges.... {challengesNumber}")
 
-            if len(challenges.items()) > 0:
-                self.acceptChallenges(challenges)
+            if challengesNumber > 0:
+                self.acceptChallenges()
 
         else:
             logger.info(f"I'm not the forger")  
