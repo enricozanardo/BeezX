@@ -19,7 +19,6 @@ from beez.BeezUtils import BeezUtils
 from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
-from beez.challenge.BeezKeeper import BeezKeeper
 from beez.block.Blockchain import Blockchain
 
 
@@ -134,9 +133,3 @@ class SocketCommunication(Node):
             logger.info(f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.messageType}")
             blockchain : Blockchain = message.blockchain
             self.beezNode.handleBlockchain(blockchain)
-
-        # elif message.messageType == MessageType.KEEPER.name:
-        #     # handle the KEEPER
-        #     logger.info(f"A KEEPER Message will be sent to the requester peer!! {message.messageType}")
-        #     beezKeeper : BeezKeeper = message.beezKeeper
-        #     self.beezNode.handleKeeper(beezKeeper)

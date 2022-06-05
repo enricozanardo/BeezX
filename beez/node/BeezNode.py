@@ -28,8 +28,6 @@ from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.Blockchain import Blockchain
 from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
-from beez.socket.MessageBeezKeeper import MessageBeezKeeper
-from beez.challenge.BeezKeeper import BeezKeeper
 from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
 
@@ -134,13 +132,6 @@ class BeezNode():
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
 
-    
-    def requestChallenge(self):
-        # The node will send a message to request the updated Blockchain
-        message = Message(self.p2p.socketConnector, MessageType.CHALLENGEREQUEST.name)
-        encodedMessage = BeezUtils.encode(message)
-
-        self.p2p.broadcast(encodedMessage)
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain
@@ -209,17 +200,12 @@ class BeezNode():
             # mint the new Block
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
-            ###################################################
-            beezKeeper = block.header.beezKeeper
-            if len(beezKeeper.challenges.items()) > 0:
-                self.requestChallenge()
+            # when the block is minted than a BLOCK message is propagated!!
+
+            logger.info(f"block: {block.timestamp}")
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
-
-            # Update the current version of the in-memory AccountStateModel and BeezKeeper
-            self.blockchain.accountStateModel = block.header.accountStateModel
-            self.blockchain.beezKeeper = block.header.beezKeeper
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
@@ -247,10 +233,7 @@ class BeezNode():
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
-                     # Update the current version of the in-memory AccountStateModel and BeezKeeper
-                    self.blockchain.accountStateModel = block.header.accountStateModel
-                    self.blockchain.beezKeeper = block.header.beezKeeper
-
+                    
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
 

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, List, Optional
 import pathlib
 
 from loguru import logger
+from numpy import block
 
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
@@ -16,11 +17,8 @@ from beez.BeezUtils import BeezUtils
 from beez.state.AccountStateModel import AccountStateModel
 from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
-from beez.challenge.BeezKeeper import BeezKeeper
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
-from beez.block.Header import Header
-
 
 
 class Blockchain():
@@ -31,12 +29,7 @@ class Blockchain():
         self.blocks: List[Block] = [Block.genesis()]
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()
-        self.beezKeeper = BeezKeeper()
         self.genesisPubKey = GenesisPublicKey()
-
-        # for testing...
-        # self.beezKeeper.start()
-        # self.accountStateModel.start()
 
     def toJson(self):
         jsonBlockchain = {}
@@ -48,17 +41,17 @@ class Blockchain():
         return jsonBlockchain
 
     def addBlock(self, block: Block):
-        beezKeeper : BeezKeeper = block.header.beezKeeper
-        self.executeTransactions(block.transactions, beezKeeper)
+        
+        self.executeTransactions(block.transactions)
 
         if self.blocks[-1].blockCount < block.blockCount:
             self.blocks.append(block)
 
-    def executeTransactions(self, transactions: List[Transaction], blockBeezKeeper: Optional[BeezKeeper]):
+    def executeTransactions(self, transactions: List[Transaction]):
         for transaction in transactions:
-            self.executeTransaction(transaction, blockBeezKeeper)
+            self.executeTransaction(transaction)
     
-    def executeTransaction(self, transaction: Transaction, blockBeezKeeper: Optional[BeezKeeper]):
+    def executeTransaction(self, transaction: Transaction):
         logger.info(f"Execute transaction of type: {transaction.type}")
 
         # case of Stake transaction [involve POS]
@@ -71,7 +64,7 @@ class Blockchain():
                 self.pos.update(sender, amount)
                 self.accountStateModel.updateBalance(sender, -amount)
 
-        # case of Challenge transaction [involve beezKeeper]
+        # case of Challenge transaction
         elif transaction.type == TransactionType.CHALLENGE.name:
             logger.info(f"CHALLENGE")
             # cast the kind of transaction
@@ -81,46 +74,6 @@ class Blockchain():
             receiver = transaction.receiverPublicKey
             amount = challengeTX.amount
             if sender == receiver:
-                # Check with the Challenge beezKeeper
-                challenge : Challenge = challengeTX.challenge
-                challengeExists = self.beezKeeper.challegeExists(challenge.id)
-                logger.info(f"challengeExists: {challengeExists}")
-
-                workOnChallenge = False
-                
-                if not challengeExists:
-                    # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
-                    logger.info(f"beezKeeper add the challenge {challenge.id}")
-                    workOnChallenge = True
-                    self.beezKeeper.set(challenge)
-                    
-                # compare the challenges!
-                if blockBeezKeeper is not None:                    
-                    blockBeezKeeperChallenges = len(blockBeezKeeper.challenges.items())
-                    localBeezKeeperChallenges = len(self.beezKeeper.challenges.items())
-
-                    logger.info(f"blockBeezKeeper challenges: {blockBeezKeeperChallenges}")
-                    logger.info(f"localBeezKeeper challenges: {localBeezKeeperChallenges}")
-
-                    if blockBeezKeeperChallenges == localBeezKeeperChallenges:
-                        # Check the challenges!
-                        for idx, challenge in blockBeezKeeper.challenges.items():
-                            logger.info(f"Check the following challenge {idx}")
-                            logger.info(f"Based on the status of the challenge take a decision")
-                            workOnChallenge = True
-                    else:
-                        # TODO: update the localKeeper with the blockKeeper
-                        self.beezKeeper = blockBeezKeeper
-
-                if workOnChallenge:
-                    # isChallengeAccepted = self.beezKeeper.acceptChallenge(challenge)
-
-                    # if isChallengeAccepted:
-                    #     localChallenge = self.beezKeeper.get(challenge.id)
-                    #     logger.info(f"Create a ACCEPTED Transaction {localChallenge.state}")
-                    self.beezKeeper.workOnChallenge(challenge)
-                    
-                    
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
                 
@@ -154,16 +107,12 @@ class Blockchain():
     def mintBlock(self, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
         # Check that the transaction are covered 
         coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
-
         # check the type of transactions and do the right action
-        self.executeTransactions(coveredTransactions, None)
-
-        # Get the updated version of the in-memory objects and create the Block Header
-        header = Header(self.beezKeeper, self.accountStateModel)
-
+        self.executeTransactions(coveredTransactions)
         # create the Block
-        newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
-            self.blocks[-1].payload()).hexdigest(), len(self.blocks))
+        newBlock = forgerWallet.createBlock(coveredTransactions, BeezUtils.hash(self.blocks[-1].payload()).hexdigest(), len(self.blocks))
+
+        logger.info(f"minted block timestamp {newBlock.timestamp}")
 
         self.blocks.append(newBlock)
 
