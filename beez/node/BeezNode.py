@@ -68,6 +68,12 @@ class BeezNode():
         self.api.start(self.ip)
 
 
+    def handleChallenge(self, challenge: Challenge):
+        logger.info(f"Manage the challenge {challenge.id}")
+
+        logger.info(f"Start the calculus!!!! {challenge.id}")
+
+
     # Manage requests that come from the NodeAPI
     def handleTransaction(self, transaction: Transaction):
 

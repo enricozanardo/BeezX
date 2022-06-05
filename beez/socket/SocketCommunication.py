@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, Dict, List
 import json
+from beez.challenge.Challenge import Challenge
 
 if TYPE_CHECKING:
     from beez.Types import Address
@@ -96,7 +97,8 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.CHALLENGEACCEPT.name:
             # handle the CHALLENGEACCEPT
             logger.info(f"manage the message {message.messageType}")
-            # self.challengeHandler.handleChallengesMessage(message)
+            challenge: Challenge = message.challenge
+            self.beezNode.handleChallenge(challenge)
             
         elif message.messageType == MessageType.TRANSACTION.name:
             # handle the TRANSACTION
