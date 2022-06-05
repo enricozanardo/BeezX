@@ -159,6 +159,8 @@ class BeezNode():
             challenge : Challenge = ch
             logger.info(f"do something with the challenge: {idx}")
 
+            logger.info(f"do something with the challenge STATE: {challenge.state}")
+
             # get the localchallenge
             localChallenge = self.blockchain.beezKeeper.get(challenge.id)
             
@@ -167,15 +169,16 @@ class BeezNode():
                 self.blockchain.beezKeeper.set(challenge)
 
             if challenge.state == ChallengeState.CREATED.name:
-                logger.info(f"Challenge {challenge.state}: Created change to OPEN!!!")
+                logger.info(f"Challenge {challenge.state}: Update challenge to OPEN!!!")
+
                 if localChallenge.state == challenge.state:
                     logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
                     localChallenge.state = ChallengeState.OPEN.name
                     self.blockchain.beezKeeper[localChallenge.id] = localChallenge
 
-                    message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
-                    encodedMessage = BeezUtils.encode(message)
-                    self.p2p.broadcast(encodedMessage)
+                    # message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
+                    # encodedMessage = BeezUtils.encode(message)
+                    # self.p2p.broadcast(encodedMessage)
 
 
             elif challenge.state == ChallengeState.CLOSED.name:
@@ -186,13 +189,15 @@ class BeezNode():
                 # self.p2p.broadcast(encodedMessage)
 
             elif challenge.state == ChallengeState.OPEN.name:
-                logger.info(f"Challenge {challenge.state}: Work on the Challenge and then CLOSE")
+                logger.info(f"Challenge: {challenge.state}")
+                logger.info(f"localChallenge: {localChallenge.state}")
 
-
-
-            # message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
-            # encodedMessage = BeezUtils.encode(message)
-            # self.p2p.broadcast(encodedMessage)
+                if localChallenge.state == challenge.state:
+                    logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
+                    
+            message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain
