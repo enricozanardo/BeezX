@@ -76,33 +76,18 @@ class BeezKeeper():
     def workOnChallenge(self, challenge: Challenge):
         logger.info(f"work on challenge...! {challenge.id}")
 
-        logger.info(f"Current ChallengeState: {challenge.state}")
-        if challenge.state == ChallengeState.CREATED.name:
+        if challenge.state == ChallengeState.OPEN.name:
+            localChallenge = self.get(challenge.id)
 
-            localChallenge : Challenge = self.challenges[challenge.id]
-            localChallenge.state = ChallengeState.ACCEPTED.name
-            self.challenges[challenge.id] = localChallenge
-
-            logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
-
-    
-        # #work on challenge!
-        # if challenge.state == ChallengeState.ACCEPTED.name:
-        #     # Somebody else is working on the challenge...
-        #     logger.info(f"Somebody else is working on the challenge.. {challenge.state}")
-
-        localChallenge : Challenge = self.challenges[challenge.id]
-
-        if localChallenge.state == ChallengeState.ACCEPTED.name:
-            logger.info(f"challenge function: {localChallenge.sharedFunction.__doc__}")
-            sharedfunction = localChallenge.sharedFunction
+            logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
+            sharedfunction = challenge.sharedFunction
             # logger.info(f"challenge function: {type(sharedfunction)}")
             inputA = random.randint(0, 100)
             inputB = random.randint(0, 100)
 
             result = sharedfunction(inputA, inputB)
 
-            localChallenge.result = localChallenge.result + result
+            challenge.result = localChallenge.result + result
 
             logger.info(f"result: {result}")
             logger.info(f"localChallenge result: {localChallenge.result}")

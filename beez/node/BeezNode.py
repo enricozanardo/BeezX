@@ -1,5 +1,4 @@
 from __future__ import annotations
-from re import L
 from typing import TYPE_CHECKING, Dict
 import os
 from dotenv import load_dotenv
@@ -75,16 +74,10 @@ class BeezNode():
 
         if challenge.state == ChallengeState.OPEN.name:
             logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
+            self.blockchain.beezKeeper.workOnChallenge(challenge)
 
-            genesisPubKey = self.blockchain.genesisPubKey
-            challengeTx : ChallengeTX = ChallengeTX(genesisPubKey, genesisPubKey, challenge.reward, TransactionType.CHALLENGE, challenge)
-            self.transactionPool.addTransaction(challengeTx)
+            # get the result and generate a message!!!
 
-            # # check if is time to forge a new Block
-            # forgingRequired = self.transactionPool.forgerRequired()
-            # if forgingRequired == True:
-            #     logger.info(f"Forger required")
-            #     self.forge()
 
 
     # Manage requests that come from the NodeAPI
