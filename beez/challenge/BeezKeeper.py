@@ -11,8 +11,6 @@ import time
 import random
 
 load_dotenv()  # load .env
-LOCAL_INTERVALS = 10
-INTERVALS = int(os.getenv('INTERVALS', LOCAL_INTERVALS))
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
@@ -32,27 +30,7 @@ class BeezKeeper():
     """
     def __init__(self):
         self.challenges : Dict[ChallengeID : Challenge] = {}
-
-    def start(self):
-        # start node threads... 
-        statusThread = threading.Thread(target=self.status, args={})
-        statusThread.start()
-
-    def status(self):
-         while True:
-            logger.info(f"challenge status.... {len(self.challenges.items())}")
-            for key, value in self.challenges.items():
-                challenge: Challenge = value
-                challengeID : ChallengeID = key
-                
-                logger.info(f"Do something with challenge ID: {challengeID} on status: {challenge.state}")
-
-            # challengeStatusMessage = self.challengeStatusMessage()
-            # # Broadcast the message
-            # self.socketCommunication.broadcast(challengeStatusMessage)
-
-            time.sleep(INTERVALS)
-        
+    
     def set(self, challenge: Challenge):
         challengeID : ChallengeID = challenge.id
         reward = challenge.reward

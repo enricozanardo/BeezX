@@ -4,6 +4,7 @@ import pathlib
 
 from loguru import logger
 from numpy import block
+from beez.Types import ChallengeID
 
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
@@ -19,6 +20,7 @@ from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
+from beez.challenge.BeezKeeper import BeezKeeper
 
 
 class Blockchain():
@@ -28,6 +30,7 @@ class Blockchain():
     def __init__(self):
         self.blocks: List[Block] = [Block.genesis()]
         self.accountStateModel = AccountStateModel()
+        self.beezKeeper = BeezKeeper()
         self.pos = ProofOfStake()
         self.genesisPubKey = GenesisPublicKey()
 
@@ -74,6 +77,10 @@ class Blockchain():
             receiver = transaction.receiverPublicKey
             amount = challengeTX.amount
             if sender == receiver:
+                # Add the challenge to the local Keeper
+                challenge : Challenge = challengeTX.challenge
+                self.beezKeeper.set(challenge)
+
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
                 
@@ -111,8 +118,6 @@ class Blockchain():
         self.executeTransactions(coveredTransactions)
         # create the Block
         newBlock = forgerWallet.createBlock(coveredTransactions, BeezUtils.hash(self.blocks[-1].payload()).hexdigest(), len(self.blocks))
-
-        logger.info(f"minted block timestamp {newBlock.timestamp}")
 
         self.blocks.append(newBlock)
 

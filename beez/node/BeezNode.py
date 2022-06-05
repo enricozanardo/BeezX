@@ -200,10 +200,6 @@ class BeezNode():
             # mint the new Block
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
-            # when the block is minted than a BLOCK message is propagated!!
-
-            logger.info(f"block: {block.timestamp}")
-
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
 
@@ -211,6 +207,11 @@ class BeezNode():
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
+
+            # check the BeezKeeper
+            challenges = self.blockchain.beezKeeper.challenges
+            logger.info(f"challenges: {len(challenges.items())}")
+
             
         else:
             logger.info(f"I'm not the forger")  
