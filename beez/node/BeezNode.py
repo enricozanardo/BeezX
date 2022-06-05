@@ -70,10 +70,21 @@ class BeezNode():
         self.api.start(self.ip)
 
 
-    def handleChallenge(self, challenge: Challenge):
-        logger.info(f"Manage the challenge {challenge.id}")
+    def handleChallengeOpen(self, challenge: Challenge):
+        logger.info(f"Manage the challenge {challenge.id} -- STATE: {challenge.state}")
 
-        logger.info(f"Start the calculus!!!! {challenge.state}")
+        if challenge.state == ChallengeState.OPEN.name:
+            logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
+
+            genesisPubKey = self.blockchain.genesisPubKey
+            challengeTx : ChallengeTX = ChallengeTX(genesisPubKey, genesisPubKey, challenge.reward, TransactionType.CHALLENGE, challenge)
+            self.transactionPool.addTransaction(challengeTx)
+
+            # # check if is time to forge a new Block
+            # forgingRequired = self.transactionPool.forgerRequired()
+            # if forgingRequired == True:
+            #     logger.info(f"Forger required")
+            #     self.forge()
 
 
     # Manage requests that come from the NodeAPI
@@ -181,6 +192,8 @@ class BeezNode():
                     # message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
                     # encodedMessage = BeezUtils.encode(message)
                     # self.p2p.broadcast(encodedMessage)
+                    
+                    
 
             elif challenge.state == ChallengeState.CLOSED.name:
                 logger.info(f"Challenge {challenge.state}: remove from Keeper")
@@ -199,6 +212,7 @@ class BeezNode():
             message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
+
 
     def requestChain(self):
         # The node will send a message to request the updated Blockchain
