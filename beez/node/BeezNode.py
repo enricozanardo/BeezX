@@ -8,6 +8,7 @@ import GPUtil
 import copy
 
 from beez.Types import ChallengeID
+from beez.challenge.ChallengeState import ChallengeState
 
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
@@ -154,8 +155,32 @@ class BeezNode():
 
 
     def acceptChallenges(self, challenges : Dict[ChallengeID : Challenge]):
-        for idx, challenge in challenges.items():
+        for idx, ch in challenges.items():
+            challenge : Challenge = ch
             logger.info(f"do something with the challenge: {idx}")
+
+            # get the localchallenge
+            localChallenge = self.blockchain.beezKeeper.get(challenge.id)
+            
+            if not localChallenge:
+                # add the challenge to the Keeper
+                self.blockchain.beezKeeper.set(challenge)
+
+            if challenge.state == ChallengeState.CREATED.name:
+                logger.info(f"Challenge {challenge.state}: Created change to OPEN!!!")
+                                
+
+            elif challenge.state == ChallengeState.CLOSED.name:
+                logger.info(f"Challenge {challenge.state}: remove from Keeper")
+
+                # message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, challenge.id)
+                # encodedMessage = BeezUtils.encode(message)
+                # self.p2p.broadcast(encodedMessage)
+
+            elif challenge.state == ChallengeState.OPEN.name:
+                logger.info(f"Challenge {challenge.state}: Work on the Challenge and then CLOSE")
+
+
 
             message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEACCEPT.name, challenge)
             encodedMessage = BeezUtils.encode(message)
