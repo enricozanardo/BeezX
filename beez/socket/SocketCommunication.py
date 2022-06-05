@@ -94,8 +94,8 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             self.peerDiscoveryHandler.handleMessage(message)
 
-        elif message.messageType == MessageType.CHALLENGEACCEPT.name:
-            # handle the CHALLENGEACCEPT
+        elif message.messageType == MessageType.CHALLENGEOPEN.name:
+            # handle the CHALLENGEOPEN
             logger.info(f"manage the message {message.messageType}")
             challenge: Challenge = message.challenge
             self.beezNode.handleChallenge(challenge)
