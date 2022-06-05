@@ -130,8 +130,8 @@ class BeezNode():
 
             # For Peers
             # check the BeezKeeper
-            # challenges = self.blockchain.beezKeeper.challenges
-            logger.info(f"Peers challenges....")
+            challenges = self.blockchain.beezKeeper.challenges
+            logger.info(f"Peer challenges.... {len(challenges.items())}")
 
           
             # broadcast the block message
@@ -217,8 +217,8 @@ class BeezNode():
 
             # For Forger
             # check the BeezKeeper
-            # challenges = self.blockchain.beezKeeper.challenges
-            logger.info(f"Forger challenges....")
+            challenges = self.blockchain.beezKeeper.challenges
+            logger.info(f"Forger challenges.... {len(challenges.items())}")
 
             
         
