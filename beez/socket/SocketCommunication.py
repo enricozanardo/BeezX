@@ -93,8 +93,8 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             self.peerDiscoveryHandler.handleMessage(message)
 
-        elif message.messageType == MessageType.CHALLENGEREQUEST.name:
-            # handle the CHALLENGEREQUEST
+        elif message.messageType == MessageType.CHALLENGEACCEPT.name:
+            # handle the CHALLENGEACCEPT
             logger.info(f"manage the message {message.messageType}")
             # self.challengeHandler.handleChallengesMessage(message)
             
