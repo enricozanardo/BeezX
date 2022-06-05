@@ -88,7 +88,7 @@ class BeezKeeper():
 
             challenge.result = result
 
-            self.set(challenge.id)
+            self.set(challenge)
             logger.info(f"result: {result}")
 
             localChallenge = self.get(challenge.id)
