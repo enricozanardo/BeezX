@@ -36,7 +36,8 @@ class BeezKeeper():
         reward = challenge.reward
 
         if challengeID in self.challenges.keys():
-            logger.info(f"Challenge already created")
+            logger.info(f"Challenge already created, update the challenge {challengeID}")
+            self.challenges[challengeID] = challenge
         else:
             # new challenge! Thinkto broadcast the challenge and no more!
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept. Challenge STATE: {challenge.state}")

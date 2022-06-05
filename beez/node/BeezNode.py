@@ -1,4 +1,5 @@
 from __future__ import annotations
+from re import L
 from typing import TYPE_CHECKING, Dict
 import os
 from dotenv import load_dotenv
@@ -174,12 +175,12 @@ class BeezNode():
                 if localChallenge.state == challenge.state:
                     logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
                     localChallenge.state = ChallengeState.OPEN.name
-                    self.blockchain.beezKeeper[localChallenge.id] = localChallenge
+                
+                    self.blockchain.beezKeeper.set(localChallenge)
 
                     # message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
                     # encodedMessage = BeezUtils.encode(message)
                     # self.p2p.broadcast(encodedMessage)
-
 
             elif challenge.state == ChallengeState.CLOSED.name:
                 logger.info(f"Challenge {challenge.state}: remove from Keeper")
