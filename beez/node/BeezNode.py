@@ -1,11 +1,13 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict
 import os
 from dotenv import load_dotenv
 import socket
 from loguru import logger
 import GPUtil
 import copy
+
+from beez.Types import ChallengeID
 
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
@@ -133,11 +135,19 @@ class BeezNode():
             challenges = self.blockchain.beezKeeper.challenges
             logger.info(f"Peer challenges.... {len(challenges.items())}")
 
-          
+            if len(challenges.items()) > 0:
+                self.acceptChallenges(challenges)
+            
+
             # broadcast the block message
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
+
+
+    def acceptChallenges(self, challenges: Dict[ChallengeID:  Challenge]):
+        for challenge in challenges.items():
+            logger.info(f"do something with the challenge {challenge.id}")
 
 
     def requestChain(self):
@@ -182,17 +192,6 @@ class BeezNode():
                 logger.info(f"Forger required")
                 self.forge()
 
-        
-
-            # logger.info(f"challenge function: {challengeTx.challenge.sharedFunction.__doc__}")
-
-            # sharedfunction = challengeTx.challenge.sharedFunction
-            # logger.info(f"challenge function: {type(sharedfunction)}")
-            # result = sharedfunction(2,3)
-
-            # logger.info(f"result: {result}")
-
-
     def forge(self):
         logger.info(f"Forger called")
         # Elect the next forger
@@ -220,8 +219,9 @@ class BeezNode():
             challenges = self.blockchain.beezKeeper.challenges
             logger.info(f"Forger challenges.... {len(challenges.items())}")
 
-            
-        
+            if len(challenges.items()) > 0:
+                self.acceptChallenges(challenges)
+
         else:
             logger.info(f"I'm not the forger")  
 
