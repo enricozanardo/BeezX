@@ -147,7 +147,8 @@ class BeezNode():
 
 
     def acceptChallenges(self, challenges : Dict[ChallengeID : Challenge]):
-        logger.info(f"do something with the challenge...")
+        for idx, challenge in challenges.items():
+            logger.info(f"do something with the challenge: {idx}")
 
 
     def requestChain(self):
