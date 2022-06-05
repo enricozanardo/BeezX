@@ -78,8 +78,8 @@ class Blockchain():
             amount = challengeTX.amount
             if sender == receiver:
                 # Add the challenge to the local Keeper
-                # challenge : Challenge = challengeTX.challenge
-                # self.beezKeeper.set(challenge)
+                challenge : Challenge = challengeTX.challenge
+                self.beezKeeper.set(challenge)
 
                 # Update the balance of the sender!
                 self.accountStateModel.updateBalance(sender, -amount)
