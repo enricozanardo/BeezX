@@ -77,8 +77,7 @@ class BeezKeeper():
         logger.info(f"work on challenge...! {challenge.id}")
 
         if challenge.state == ChallengeState.OPEN.name:
-            localChallenge = self.get(challenge.id)
-
+            
             logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
             sharedfunction = challenge.sharedFunction
             # logger.info(f"challenge function: {type(sharedfunction)}")
@@ -87,9 +86,13 @@ class BeezKeeper():
 
             result = sharedfunction(inputA, inputB)
 
-            challenge.result = localChallenge.result + result
+            challenge.result = result
 
+            self.set(challenge.id)
             logger.info(f"result: {result}")
+
+            localChallenge = self.get(challenge.id)
+
             logger.info(f"localChallenge result: {localChallenge.result}")
 
             # localChallenge.state = ChallengeState.CLOSED.name
