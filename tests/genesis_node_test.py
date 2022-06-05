@@ -14,7 +14,9 @@ def test_genesis_node():
 
     beezNode = BeezNode(genesisPrivateKeyPath)
 
-    logger.info(f"Genesis Node info: CPU:{beezNode.cpus}, GPU: {beezNode.gpus}")
+    gpus = len(beezNode.gpus)
+
+    logger.info(f"Genesis Node info: CPU:{beezNode.cpus}, GPU: {gpus}")
 
     beezNode.startP2P()
     beezNode.startAPI()
