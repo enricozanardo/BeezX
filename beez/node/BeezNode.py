@@ -204,8 +204,8 @@ class BeezNode():
             self.transactionPool.removeFromPool(block.transactions)
 
             # check the BeezKeeper
-            challenges = self.blockchain.beezKeeper.challenges
-            logger.info(f"challenges: {len(challenges.items())}")
+            # challenges = self.blockchain.beezKeeper.challenges
+            # logger.info(f"challenges: {len(challenges.items())}")
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
