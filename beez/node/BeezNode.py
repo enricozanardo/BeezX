@@ -80,9 +80,9 @@ class BeezNode():
 
         # Create a TX to store in the Blockchain
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CHALLENGE.name, closedChallenge)
+        self.handleChallengeTX(challengeTX)
+
         logger.info("Yuppy")
-        
-        # self.handleChallengeTX(challengeTX)
 
 
     def handleChallengeOpen(self, challenge: Challenge):
