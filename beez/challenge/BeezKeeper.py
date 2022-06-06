@@ -83,6 +83,7 @@ class BeezKeeper():
         challengeStateOpen = challenge.state == ChallengeState.OPEN.name if  True else False
 
         # logger.info(f"challengeStateOpen {challengeStateOpen}")
+        
         if challengeStateOpen:
             if challenge.counter < challenge.iteration + 1:
                 logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
@@ -119,8 +120,7 @@ class BeezKeeper():
                 challenge.state = ChallengeState.CLOSED.name
                 # Store the new version of the Challenge
                 self.set(challenge)
-                logger.info(f"Challenge must be closed: {challenge.state}")
-    
+                
                 localChallenge = self.get(challenge.id)
 
                 return localChallenge
