@@ -90,6 +90,9 @@ class BeezKeeper():
                 inputA = random.randint(0, 100)
                 inputB = random.randint(0, 100)
 
+                logger.info(f"inputA {inputA}")
+                logger.info(f"inputB {inputB}")
+
                 calculusResult = sharedfunction(inputA, inputB)
 
                 # update the values

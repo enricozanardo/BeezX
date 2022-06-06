@@ -92,6 +92,7 @@ class BeezNode():
 
                 elif updatedChallenge.state == ChallengeState.CLOSED.name:
                     logger.info(f"Challenge closed.. create the Final TX")
+                    logger.info(f"Final Result: {updatedChallenge.result}")
 
 
             # get the result and generate a message!!!
