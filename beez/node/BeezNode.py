@@ -365,12 +365,13 @@ class BeezNode():
 
         if localBlockCount <= receivedChainBlockCount:
 
-            logger.info(f"########################################")
-
             for blockNumber, block in enumerate(blockchain.blocks):
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
+
+                    logger.info(f"########################################")
+
 
                     self.transactionPool.removeFromPool(block.transactions)
                     self.transactionPool.removeFromPoolOldTX(block.transactions)
