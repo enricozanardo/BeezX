@@ -364,6 +364,9 @@ class BeezNode():
         receivedChainBlockCount = len(blockchain.blocks)
 
         if localBlockCount <= receivedChainBlockCount:
+
+            logger.info(f"########################################")
+
             for blockNumber, block in enumerate(blockchain.blocks):
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
