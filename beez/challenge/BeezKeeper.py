@@ -76,6 +76,14 @@ class BeezKeeper():
     def workOnChallenge(self, challenge: Challenge):
         logger.info(f"work on challenge...! {challenge.id}")
 
+        challengeState = challenge.state == ChallengeState.OPEN.name if  True else False
+
+        logger.info(f"challengeState {challengeState}")
+
+        if challenge.counter < challenge.iteration + 1:
+            logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
+
+
         if challenge.state == ChallengeState.OPEN.name:
             
             logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")

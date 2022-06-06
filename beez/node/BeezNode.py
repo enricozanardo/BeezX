@@ -76,8 +76,6 @@ class BeezNode():
 
         logger.info(f"Challenge Iterations: {challenge.iteration}")
 
-        
-
         if challenge.state == ChallengeState.OPEN.name:
             logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
             self.blockchain.beezKeeper.workOnChallenge(challenge)
@@ -192,8 +190,6 @@ class BeezNode():
                     # encodedMessage = BeezUtils.encode(message)
                     # self.p2p.broadcast(encodedMessage)
                     
-                    
-
             elif challenge.state == ChallengeState.CLOSED.name:
                 logger.info(f"Challenge {challenge.state}: remove from Keeper")
 
