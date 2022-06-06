@@ -78,7 +78,17 @@ class BeezNode():
 
         if challenge.state == ChallengeState.OPEN.name:
             logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
-            self.blockchain.beezKeeper.workOnChallenge(challenge)
+            updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
+
+            if updatedChallenge is not None:
+                logger.info(f"A New Updated Challenge received back!!!")
+
+                if updatedChallenge.state == ChallengeState.OPEN.name:
+                    logger.info(f"Challenge still open.. propagate it")
+
+                elif updatedChallenge.state == ChallengeState.CLOSED.name:
+                    logger.info(f"Challenge closed.. create the Final TX")
+
 
             # get the result and generate a message!!!
 

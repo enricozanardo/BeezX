@@ -73,7 +73,7 @@ class BeezKeeper():
         return isAccepted
 
 
-    def workOnChallenge(self, challenge: Challenge):
+    def workOnChallenge(self, challenge: Challenge) -> Optional[Challenge]:
         logger.info(f"work on challenge...! {challenge.id}")
 
         challengeStateOpen = challenge.state == ChallengeState.OPEN.name if  True else False
@@ -105,9 +105,21 @@ class BeezKeeper():
                 return localChallenge
 
             else:
+                logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
                 logger.warning(f"Challenge must be closed: {challenge.id}")
-                return None
 
+                # update the values
+                challenge.state = ChallengeState.CLOSED.name
+                # Store the new version of the Challenge
+                self.set(challenge)
+                logger.info(f"Challenge must be closed: {challenge.state}")
+                logger.info(f"Final Result: {challenge.result}")
+
+                localChallenge = self.get(challenge.id)
+
+                return localChallenge
+
+            
         logger.warning(f"It was not possible to perform the calculus: {challenge.id}")
         return None
 
