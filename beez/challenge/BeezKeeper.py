@@ -76,39 +76,41 @@ class BeezKeeper():
     def workOnChallenge(self, challenge: Challenge):
         logger.info(f"work on challenge...! {challenge.id}")
 
-        challengeState = challenge.state == ChallengeState.OPEN.name if  True else False
+        challengeStateOpen = challenge.state == ChallengeState.OPEN.name if  True else False
 
-        logger.info(f"challengeState {challengeState}")
+        # logger.info(f"challengeStateOpen {challengeStateOpen}")
+        if challengeStateOpen:
+            if challenge.counter < challenge.iteration + 1:
+                logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
 
-        if challenge.counter < challenge.iteration + 1:
-            logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
+                # execute the calculus
+                logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
+                sharedfunction = challenge.sharedFunction
+                # logger.info(f"challenge function: {type(sharedfunction)}")
+                inputA = random.randint(0, 100)
+                inputB = random.randint(0, 100)
 
+                calculusResult = sharedfunction(inputA, inputB)
 
-        if challenge.state == ChallengeState.OPEN.name:
-            
-            logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
-            sharedfunction = challenge.sharedFunction
-            # logger.info(f"challenge function: {type(sharedfunction)}")
-            inputA = random.randint(0, 100)
-            inputB = random.randint(0, 100)
+                # update the values
+                challenge.result = challenge.result + calculusResult
+                challenge.counter = challenge.counter + 1
+                
+                # Store the new version of the Challenge
+                self.set(challenge)
+                logger.info(f"Partial Result: {challenge.result}")
 
-            result = sharedfunction(inputA, inputB)
+                localChallenge = self.get(challenge.id)
 
-            challenge.result = result
+                return localChallenge
 
-            self.set(challenge)
-            logger.info(f"result: {result}")
+            else:
+                logger.warning(f"Challenge must be closed: {challenge.id}")
+                return None
 
-            localChallenge = self.get(challenge.id)
+        logger.warning(f"It was not possible to perform the calculus: {challenge.id}")
+        return None
 
-            logger.info(f"localChallenge result: {localChallenge.result}")
-
-            # localChallenge.state = ChallengeState.CLOSED.name
-            # self.challenges[challenge.id] = localChallenge
-            # logger.info(f"Updated localKeeper ChallengeState: {localChallenge.state}")
-
-       
-        
     def update(self, receivedChallenge: Challenge) -> bool:
         # do a copy of the local challenge!
         challengeExists = self.challegeExists(receivedChallenge.id)
