@@ -151,6 +151,9 @@ class Blockchain():
             
             # return False
             return True
+        
+        if transaction.type == TransactionType.CHALLENGE.name:
+            return True
 
         senderBalance = self.accountStateModel.getBalance(
             transaction.senderPublicKey)
