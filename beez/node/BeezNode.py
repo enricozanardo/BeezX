@@ -261,13 +261,20 @@ class BeezNode():
         signatureValid = Wallet.signatureValid(
             data, signature, signaturePublicKey)
 
-        # already exist in the beezKeeper
+        # already exist in the transaction pool
         challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
+
+        # already exist in the beezKeeper
+        challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challengeTx.challenge.id)
+
+        logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
 
         # already exist in the Blockchain
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
-        if not challengeTransactionExist and not transactionInBlock and signatureValid:
+
+
+        if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
