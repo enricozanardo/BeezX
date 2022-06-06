@@ -55,7 +55,10 @@ class BeezKeeper():
         else:
             return False
 
-
+    def delete(self, challengeID: ChallengeID):
+        if challengeID in self.challenges.keys():
+            self.challenges.pop(challengeID)
+       
     def acceptChallenge(self, challenge: Challenge):
         logger.info(f"accept challengeid: {challenge.id}")
         logger.info(f"Current ChallengeState: {challenge.state}")

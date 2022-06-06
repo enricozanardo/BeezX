@@ -99,6 +99,12 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             challenge: Challenge = message.challenge
             self.beezNode.handleChallengeOpen(challenge)
+
+        elif message.messageType == MessageType.CHALLENGECLOSED.name:
+            # handle the CHALLENGECLOSED
+            logger.info(f"manage the message {message.messageType}")
+            challenge: Challenge = message.challenge
+            self.beezNode.handleChallengeClosed(challenge)
             
         elif message.messageType == MessageType.TRANSACTION.name:
             # handle the TRANSACTION

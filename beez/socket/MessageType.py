@@ -24,3 +24,4 @@ class MessageType(Enum):
     BLOCKCHAIN = "blockchain"
     CHALLENGE = "challenge"
     CHALLENGEOPEN = "challengeopen"
+    CHALLENGECLOSED = "challengeclosed"

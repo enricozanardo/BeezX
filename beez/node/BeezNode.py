@@ -69,6 +69,16 @@ class BeezNode():
         self.api.start(self.ip)
 
 
+    def handleChallengeClosed(self, closedChallenge: Challenge):
+        logger.info(f"Manage the Closed Challenge")
+        # remove the challenge from the Keeper
+        self.blockchain.beezKeeper.delete(closedChallenge.id)
+
+        # Create a TX to store in the Blockchain
+        # challengeTX : ChallengeTX = ChallengeTX()
+        # self.handleChallengeTX(challengeTX)
+
+
     def handleChallengeOpen(self, challenge: Challenge):
         logger.info(f"Manage the challenge {challenge.id} -- STATE: {challenge.state}")
 
@@ -105,6 +115,10 @@ class BeezNode():
                     elif updatedChallenge.state == ChallengeState.CLOSED.name:
                         logger.warning(f"Challenge closed.. create the Final TX")
                         logger.error(f"Final Result: {updatedChallenge.result}")
+
+                        message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, updatedChallenge)
+                        encodedMessage = BeezUtils.encode(message)
+                        self.p2p.broadcast(encodedMessage)
             
             else:
                 logger.info(f"skip challenge version: {challenge.id}")
