@@ -76,11 +76,9 @@ class BeezNode():
 
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
-        logger.info(f"owner: {closedChallenge.ownerPublicKey}")
-
         # Create a TX to store in the Blockchain
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CHALLENGE.name, closedChallenge)
-        self.handleChallengeTX(challengeTX)
+        self.handleClosedChallengeTX(challengeTX)
 
         logger.info("Yuppy")
 
@@ -246,9 +244,9 @@ class BeezNode():
         encodedMessage = BeezUtils.encode(message)
 
         self.p2p.broadcast(encodedMessage)
-        
-    def handleChallengeTX(self, challengeTx: ChallengeTX):
 
+
+    def handleClosedChallengeTX(self, challengeTx: ChallengeTX):
         challenge: Challenge = challengeTx.challenge
         
         logger.info(f"Manage the challenge ID: {challenge.id}")
@@ -272,9 +270,38 @@ class BeezNode():
         # already exist in the Blockchain
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
-
-
         if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
+            # logger.info(f"add to the Transaction Pool!!!")
+            self.transactionPool.addTransaction(challengeTx)
+
+            # check if is time to forge a new Block
+            forgingRequired = self.transactionPool.forgerRequired()
+            if forgingRequired == True:
+                logger.info(f"Forger required")
+                self.forge()
+
+    
+    def handleChallengeTX(self, challengeTx: ChallengeTX):
+
+        challenge: Challenge = challengeTx.challenge
+        
+        logger.info(f"Manage the challenge ID: {challenge.id}")
+
+        data = challengeTx.payload()
+        signature = challengeTx.signature
+        signaturePublicKey = challengeTx.senderPublicKey
+
+        # # # is valid?
+        signatureValid = Wallet.signatureValid(
+            data, signature, signaturePublicKey)
+
+        # already exist in the transaction pool
+        challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
+       
+        # already exist in the Blockchain
+        transactionInBlock = self.blockchain.transactionExist(challengeTx)
+
+        if not challengeTransactionExist and not transactionInBlock and signatureValid:
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
