@@ -88,6 +88,9 @@ class BeezNode():
 
         # localChallenge = self.blockchain.beezKeeper.get(challenge.id)
 
+        #TODO: remove doubles!!! add the worker to the list
+        challenge.workers.append(self.wallet.publicKeyString())
+
         logger.info(f"Challenge Iterations: {challenge.iteration}")
 
         if challenge.state == ChallengeState.OPEN.name:
@@ -235,9 +238,6 @@ class BeezNode():
                     logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
                     localChallenge.state = ChallengeState.OPEN.name
 
-                    # add the worker to the list
-                    localChallenge.workers.append(self.wallet.publicKeyString())
-                
                     self.blockchain.beezKeeper.set(localChallenge)
 
                     message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
