@@ -33,6 +33,9 @@ class TransactionPool():
         return False
 
     def removeFromPool(self, transactions: List[Transaction]):
+        # Remove closed challenge tx....
+        logger.warning("# Remove closed challenge tx....")
+
         newPoolTransactions: List[Transaction] = []
         for pooltransaction in self.transactions:
             insert = True
