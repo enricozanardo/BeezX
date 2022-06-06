@@ -366,9 +366,6 @@ class BeezNode():
         if localBlockCount <= receivedChainBlockCount:
 
             for blockNumber, block in enumerate(blockchain.blocks):
-
-                self.transactionPool.removeFromPoolOldTX(block.transactions)
-
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
