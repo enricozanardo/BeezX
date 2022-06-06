@@ -95,10 +95,6 @@ class BeezNode():
                     logger.info(f"Final Result: {updatedChallenge.result}")
 
 
-            # get the result and generate a message!!!
-
-
-
     # Manage requests that come from the NodeAPI
     def handleTransaction(self, transaction: Transaction):
 
@@ -201,27 +197,9 @@ class BeezNode():
                 
                     self.blockchain.beezKeeper.set(localChallenge)
 
-                    # message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
-                    # encodedMessage = BeezUtils.encode(message)
-                    # self.p2p.broadcast(encodedMessage)
-                    
-            elif challenge.state == ChallengeState.CLOSED.name:
-                logger.info(f"Challenge {challenge.state}: remove from Keeper")
-
-                # message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, challenge.id)
-                # encodedMessage = BeezUtils.encode(message)
-                # self.p2p.broadcast(encodedMessage)
-
-            elif challenge.state == ChallengeState.OPEN.name:
-                logger.info(f"Challenge: {challenge.state}")
-                logger.info(f"localChallenge: {localChallenge.state}")
-
-                if localChallenge.state == challenge.state:
-                    logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
-                    
-            message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
-            encodedMessage = BeezUtils.encode(message)
-            self.p2p.broadcast(encodedMessage)
+                    message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
+                    encodedMessage = BeezUtils.encode(message)
+                    self.p2p.broadcast(encodedMessage)
 
 
     def requestChain(self):
