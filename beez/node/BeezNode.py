@@ -368,6 +368,10 @@ class BeezNode():
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
+
+                    # check out ChallengeTX
+                    for tx in block.transactions:
+                        logger.warning(f"Check {tx.type}")
                     
                     self.transactionPool.removeFromPool(block.transactions)
             self.blockchain = localBlockchainCopy
