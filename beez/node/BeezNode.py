@@ -72,6 +72,12 @@ class BeezNode():
     def handleChallengeOpen(self, challenge: Challenge):
         logger.info(f"Manage the challenge {challenge.id} -- STATE: {challenge.state}")
 
+        # localChallenge = self.blockchain.beezKeeper.get(challenge.id)
+
+        logger.info(f"Challenge Iterations: {challenge.iteration}")
+
+        
+
         if challenge.state == ChallengeState.OPEN.name:
             logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
             self.blockchain.beezKeeper.workOnChallenge(challenge)

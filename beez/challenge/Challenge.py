@@ -12,11 +12,12 @@ class Challenge():
     Manage the challenge that must be broacasted to a cluster of peers.
     """
 
-    def __init__(self, sharedFunction: Callable[[], Any], reward: Prize):
+    def __init__(self, sharedFunction: Callable[[], Any], reward: Prize, iteration: int):
         self.id = uuid.uuid1().hex
         self.sharedFunction = sharedFunction
         self.state = ChallengeState.CREATED.name
         self.reward = reward
         self.result = 0
+        self.iteration = iteration
 
 

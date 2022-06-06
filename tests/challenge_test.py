@@ -58,9 +58,10 @@ def test_send_challenge_transaction():
 
     reward = 10
     type = TransactionType.CHALLENGE.name
+    iteration = 5
 
     # Define the challenge
-    challenge = Challenge(sum, reward)
+    challenge = Challenge(sum, reward, iteration)
 
     postChallengeTransaction(AliceWallet, reward, type, challenge)
 
