@@ -116,8 +116,7 @@ class BeezKeeper():
                 # Store the new version of the Challenge
                 self.set(challenge)
                 logger.info(f"Challenge must be closed: {challenge.state}")
-                logger.info(f"Final Result: {challenge.result}")
-
+    
                 localChallenge = self.get(challenge.id)
 
                 return localChallenge

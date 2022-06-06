@@ -78,21 +78,42 @@ class BeezNode():
 
         if challenge.state == ChallengeState.OPEN.name:
             logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
-            updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
 
-            if updatedChallenge is not None:
-                logger.info(f"A New Updated Challenge received back!!!")
+            localChallenge = self.blockchain.beezKeeper.get(challenge.id)
+            localChallengeCounter = localChallenge.counter
 
-                if updatedChallenge.state == ChallengeState.OPEN.name:
-                    logger.info(f"Challenge still open.. propagate it")
+            incomingChallengeCounter = challenge.counter
 
-                    message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, updatedChallenge)
-                    encodedMessage = BeezUtils.encode(message)
-                    self.p2p.broadcast(encodedMessage)
+            logger.info(f"localChallengeCounter = {localChallengeCounter}")
+            logger.info(f"incomingChallengeCounter = {localChallengeCounter}")
 
-                elif updatedChallenge.state == ChallengeState.CLOSED.name:
-                    logger.info(f"Challenge closed.. create the Final TX")
-                    logger.info(f"Final Result: {updatedChallenge.result}")
+            if incomingChallengeCounter > localChallengeCounter:
+                logger.info(f"work on challenge = {challenge.id}")
+
+
+                updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
+
+                if updatedChallenge is not None:
+                    logger.info(f"A New Updated Challenge received back!!!")
+
+                    if updatedChallenge.state == ChallengeState.OPEN.name:
+                        logger.info(f"Challenge still open.. propagate it")
+
+                        message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, updatedChallenge)
+                        encodedMessage = BeezUtils.encode(message)
+                        self.p2p.broadcast(encodedMessage)
+
+                    elif updatedChallenge.state == ChallengeState.CLOSED.name:
+                        logger.info(f"Challenge closed.. create the Final TX")
+                        logger.info(f"Final Result: {updatedChallenge.result}")
+            
+            else:
+                logger.info(f"skip challenge version: {challenge.id}")
+                message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
+                encodedMessage = BeezUtils.encode(message)
+                self.p2p.broadcast(encodedMessage)
+
+
 
 
     # Manage requests that come from the NodeAPI
