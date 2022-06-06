@@ -21,7 +21,7 @@ class Challenge():
         self.reward = reward
         self.iteration = iteration
         self.result = 0
-        self.counter = 0
+        self.counter = 1
         
 
 
