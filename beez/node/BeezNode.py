@@ -77,7 +77,7 @@ class BeezNode():
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
         # Create a TX to store in the Blockchain
-        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CHALLENGE.name, closedChallenge)
+        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         self.handleClosedChallengeTX(challengeTX)
 
         logger.info("Yuppy")
