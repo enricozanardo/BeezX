@@ -135,7 +135,9 @@ class BeezNode():
                 
                 localChallenge = self.get(challenge.id)
 
-                message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, updatedChallenge)
+                logger.error(f"Final Result: {localChallenge.result}")
+
+                message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, localChallenge)
                 encodedMessage = BeezUtils.encode(message)
                 self.p2p.broadcast(encodedMessage)
 
