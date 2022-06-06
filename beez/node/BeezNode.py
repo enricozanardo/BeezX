@@ -90,7 +90,6 @@ class BeezNode():
             if incomingChallengeCounter == localChallengeCounter:
                 logger.info(f"work on challenge = {challenge.id}")
 
-
                 updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
 
                 if updatedChallenge is not None:
@@ -104,8 +103,8 @@ class BeezNode():
                         self.p2p.broadcast(encodedMessage)
 
                     elif updatedChallenge.state == ChallengeState.CLOSED.name:
-                        logger.info(f"Challenge closed.. create the Final TX")
-                        logger.info(f"Final Result: {updatedChallenge.result}")
+                        logger.warning(f"Challenge closed.. create the Final TX")
+                        logger.error(f"Final Result: {updatedChallenge.result}")
             
             else:
                 logger.info(f"skip challenge version: {challenge.id}")
