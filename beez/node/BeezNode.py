@@ -369,11 +369,9 @@ class BeezNode():
                 if blockNumber >= localBlockCount:
                     localBlockchainCopy.addBlock(block)
 
-                    # check out ChallengeTX
-                    for tx in block.transactions:
-                        logger.warning(f"Check {tx.type}")
-                    
                     self.transactionPool.removeFromPool(block.transactions)
+                    self.transactionPool.removeFromPoolOldTX(block.transactions)
+                
             self.blockchain = localBlockchainCopy
 
         

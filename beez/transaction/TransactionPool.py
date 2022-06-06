@@ -3,6 +3,8 @@ from typing import TYPE_CHECKING, List
 
 from loguru import logger
 
+from beez.transaction.TransactionType import TransactionType
+
 if TYPE_CHECKING:
     from beez.transaction.Transaction import Transaction
     from beez.transaction.ChallengeTX import ChallengeTX
@@ -31,6 +33,23 @@ class TransactionPool():
             if tx.equals(transaction):
                 return True
         return False
+
+    def removeFromPoolOldTX(self, transactions: List[Transaction]):
+        newPoolTransactions: List[Transaction] = []
+
+        for pooltransaction in self.transactions:
+            insert = True
+
+            for transaction in transactions:
+                if transaction.type == TransactionType.CHALLENGE:
+                    logger.warning(f"Check if the transaction is closed and remove all the local copies..")
+
+            #     if pooltransaction.equals(transaction):
+            #         insert = False
+
+            # if insert == True:
+            #     newPoolTransactions.append(pooltransaction)
+            
 
     def removeFromPool(self, transactions: List[Transaction]):
         newPoolTransactions: List[Transaction] = []
