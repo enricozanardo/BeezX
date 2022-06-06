@@ -35,20 +35,12 @@ class TransactionPool():
         return False
 
     def removeFromPoolOldTX(self, transactions: List[Transaction]):
+        logger.warning(f"Check if the transaction is closed and remove all the local copies..")
         newPoolTransactions: List[Transaction] = []
 
-        for pooltransaction in self.transactions:
-            insert = True
+        
 
-            for transaction in transactions:
-                if transaction.type == TransactionType.CHALLENGE:
-                    logger.warning(f"Check if the transaction is closed and remove all the local copies..")
-
-            #     if pooltransaction.equals(transaction):
-            #         insert = False
-
-            # if insert == True:
-            #     newPoolTransactions.append(pooltransaction)
+        
             
 
     def removeFromPool(self, transactions: List[Transaction]):
