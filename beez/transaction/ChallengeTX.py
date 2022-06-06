@@ -32,7 +32,7 @@ class ChallengeTX(Transaction):
             "state": self.challenge.state,
             "id": self.challenge.id,
             "reward": self.challenge.reward,
-            "workers": ["w1", "w2"],
+            "workers": self.challenge.workers,
             "enrolment": "Mon 30.06.2022@23:59",
             "result": self.challenge.result
         }

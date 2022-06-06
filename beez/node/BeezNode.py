@@ -234,6 +234,9 @@ class BeezNode():
                 if localChallenge.state == challenge.state:
                     logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
                     localChallenge.state = ChallengeState.OPEN.name
+
+                    # add the worker to the list
+                    localChallenge.workers.append(self.wallet.publicKeyString())
                 
                     self.blockchain.beezKeeper.set(localChallenge)
 
