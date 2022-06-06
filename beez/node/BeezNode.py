@@ -126,6 +126,19 @@ class BeezNode():
             
             else:
                 logger.info(f"skip challenge version: {challenge.id}")
+                logger.warning(f"Challenge must be closed: {challenge.id}")
+
+                # update the values
+                challenge.state = ChallengeState.CLOSED.name
+                # Store the new version of the Challenge
+                self.set(challenge)
+                
+                localChallenge = self.get(challenge.id)
+
+                message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, updatedChallenge)
+                encodedMessage = BeezUtils.encode(message)
+                self.p2p.broadcast(encodedMessage)
+
                 
 
 
