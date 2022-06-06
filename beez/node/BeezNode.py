@@ -109,9 +109,7 @@ class BeezNode():
             
             else:
                 logger.info(f"skip challenge version: {challenge.id}")
-                message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, challenge)
-                encodedMessage = BeezUtils.encode(message)
-                self.p2p.broadcast(encodedMessage)
+                
 
 
 
