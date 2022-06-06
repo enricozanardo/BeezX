@@ -74,6 +74,8 @@ class BeezNode():
         # remove the challenge from the Keeper
         self.blockchain.beezKeeper.delete(closedChallenge.id)
 
+        logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
+
         # Create a TX to store in the Blockchain
         # challengeTX : ChallengeTX = ChallengeTX()
         # self.handleChallengeTX(challengeTX)
