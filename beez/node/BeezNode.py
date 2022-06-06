@@ -101,7 +101,9 @@ class BeezNode():
             logger.info(f"localChallengeCounter = {localChallengeCounter}")
             logger.info(f"incomingChallengeCounter = {localChallengeCounter}")
 
-            if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
+            logger.info(f"incomingChallengeCounter {incomingChallengeCounter} -- iteration  {challenge.iteration}")
+
+            if incomingChallengeCounter == localChallengeCounter:
                 logger.info(f"work on challenge = {challenge.id}")
 
                 updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
@@ -126,20 +128,7 @@ class BeezNode():
             
             else:
                 logger.info(f"skip challenge version: {challenge.id}")
-                logger.warning(f"Challenge must be closed: {challenge.id}")
-
-                # update the values
-                challenge.state = ChallengeState.CLOSED.name
-                # Store the new version of the Challenge
-                self.set(challenge)
                 
-                localChallenge = self.get(challenge.id)
-
-                logger.error(f"Final Result: {localChallenge.result}")
-
-                message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, localChallenge)
-                encodedMessage = BeezUtils.encode(message)
-                self.p2p.broadcast(encodedMessage)
 
                 
 
