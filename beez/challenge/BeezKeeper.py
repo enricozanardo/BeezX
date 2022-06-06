@@ -57,6 +57,7 @@ class BeezKeeper():
 
     def delete(self, challengeID: ChallengeID):
         if challengeID in self.challenges.keys():
+            logger.error(f"remove the closed challenge!")
             self.challenges.pop(challengeID)
        
     def acceptChallenge(self, challenge: Challenge):
