@@ -87,9 +87,6 @@ class BeezNode():
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         self.handleClosedChallengeTX(challengeTX)
 
-        logger.info("Yuppy")
-
-
     def handleChallengeOpen(self, challenge: Challenge):
         logger.info(f"Manage the challenge {challenge.id} -- STATE: {challenge.state}")
 
@@ -99,8 +96,6 @@ class BeezNode():
         challenge.workers.append(self.wallet.publicKeyString())
 
         logger.info(f"Challenge Iterations: {challenge.iteration}")
-
-
 
         if challenge.state == ChallengeState.OPEN.name:
             logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
@@ -139,26 +134,32 @@ class BeezNode():
                     #     self.p2p.broadcast(encodedMessage)
             
             else:
-                logger.info(f"skip challenge version: {challenge.id}")
-                challenge.state == ChallengeState.CLOSED.name
 
-                logger.warning(f"Cloase the Challenge! create the Final TX")
+                logger.info(f"skip challenge version: {challenge.id}") 
 
-                localChallenge = self.blockchain.beezKeeper.get(challenge.id)
+                if challenge.state == ChallengeState.CLOSED.name:
+                    logger.info(f"Challenge already closed... DO NOT DO SPAM the NETWORK!!")
 
-                localResult = localChallenge.result
-                incomingResult = challenge.result
+                else: 
+                    challenge.state == ChallengeState.CLOSED.name
 
-                logger.info(f"localResult: {localResult}")
-                logger.info(f"incomingResult: {incomingResult}")
-                logger.error(f"Final Result: {incomingResult}")
+                    logger.warning(f"Cloase the Challenge! create the Final TX")
 
-                # Update the localstete of the challenge
-                self.blockchain.beezKeeper.set(challenge)
+                    localChallenge = self.blockchain.beezKeeper.get(challenge.id)
 
-                message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, challenge)
-                encodedMessage = BeezUtils.encode(message)
-                self.p2p.broadcast(encodedMessage)
+                    localResult = localChallenge.result
+                    incomingResult = challenge.result
+
+                    logger.info(f"localResult: {localResult}")
+                    logger.info(f"incomingResult: {incomingResult}")
+                    logger.error(f"Final Result: {incomingResult}")
+
+                    # Update the localstete of the challenge
+                    self.blockchain.beezKeeper.set(challenge)
+
+                    message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, challenge)
+                    encodedMessage = BeezUtils.encode(message)
+                    self.p2p.broadcast(encodedMessage)
                 
 
                 
@@ -249,7 +250,6 @@ class BeezNode():
         for idx, ch in challenges.items():
             challenge : Challenge = ch
             logger.info(f"do something with the challenge: {idx}")
-
             logger.info(f"do something with the challenge STATE: {challenge.state}")
 
             # get the localchallenge
