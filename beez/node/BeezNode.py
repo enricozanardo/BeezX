@@ -87,6 +87,8 @@ class BeezNode():
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         self.handleClosedChallengeTX(challengeTX)
 
+
+
     def handleChallengeOpen(self, challenge: Challenge):
         logger.info(f"Manage the challenge {challenge.id} -- STATE: {challenge.state}")
 
@@ -110,7 +112,7 @@ class BeezNode():
 
             logger.info(f"incomingChallengeCounter {incomingChallengeCounter} -- iteration  {challenge.iteration}")
 
-            if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
+            if incomingChallengeCounter < localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
                 logger.info(f"work on challenge = {challenge.id}")
 
                 updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
@@ -141,9 +143,8 @@ class BeezNode():
                     logger.info(f"Challenge already closed... DO NOT DO SPAM the NETWORK!!")
 
                 else: 
+                    logger.warning(f"Close the Challenge! create the Final TX")
                     challenge.state == ChallengeState.CLOSED.name
-
-                    logger.warning(f"Cloase the Challenge! create the Final TX")
 
                     localChallenge = self.blockchain.beezKeeper.get(challenge.id)
 
