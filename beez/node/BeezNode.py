@@ -137,7 +137,7 @@ class BeezNode():
             
             else:
 
-                logger.info(f"skip challenge version: {challenge.id}") 
+                logger.info(f"skip challenge version: {challenge.id} -- {challenge.state}") 
 
                 if challenge.state == ChallengeState.CLOSED.name:
                     logger.info(f"Challenge already closed... DO NOT DO SPAM the NETWORK!!")
@@ -148,9 +148,11 @@ class BeezNode():
                     challenge.state == ChallengeState.CLOSED.name
 
                     # Update the localstete of the challenge
-                    localChallenge = self.blockchain.beezKeeper.set(challenge)
+                    self.blockchain.beezKeeper.set(challenge)
+
+                    localChallenge = self.blockchain.beezKeeper.get(challenge.id)
                 
-                    localResult = localChallenge.result
+                    localResult = localChallenge
                     incomingResult = challenge.result
 
                     logger.info(f"localResult: {localResult}")
