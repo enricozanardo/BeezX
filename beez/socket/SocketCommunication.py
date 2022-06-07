@@ -97,6 +97,8 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.CHALLENGEOPEN.name:
             # handle the CHALLENGEOPEN
             logger.info(f"manage the message {message.messageType}")
+            logger.warning(f"ChallengeTX ID: {message.id}")
+
             challenge: Challenge = message.challenge
             self.beezNode.handleChallengeOpen(challenge)
 
