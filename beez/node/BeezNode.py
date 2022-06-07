@@ -318,14 +318,22 @@ class BeezNode():
 
             # TODO: iterate to workers generate Rewarding transactions!!
             workers = challenge.workers
-            rewardTX : Transaction = Transaction(self.wallet.publicKeyString(), workers[0], 2, TransactionType.TRANSFER.name)
-            self.transactionPool.addTransaction(rewardTX)
+            pubkeyOne = workers[0]
 
-            # check if is time to forge a new Block
-            forgingRequired = self.transactionPool.forgerRequired()
-            if forgingRequired == True:
-                logger.info(f"Forger required")
-                self.forge()
+            logger.info(f"workers??? {len(workers)}")
+
+            pubkeyOne = workers[0]
+
+            logger.info(f"pubkeyOne  {pubkeyOne}")
+
+            # rewardTX : Transaction = Transaction(self.wallet.publicKeyString(), workers[0], 2, TransactionType.TRANSFER.name)
+            # self.transactionPool.addTransaction(rewardTX)
+
+            # # check if is time to forge a new Block
+            # forgingRequired = self.transactionPool.forgerRequired()
+            # if forgingRequired == True:
+            #     logger.info(f"Forger required")
+            #     self.forge()
 
            
             # check if is time to forge a new Block
