@@ -95,7 +95,13 @@ class BeezNode():
         # localChallenge = self.blockchain.beezKeeper.get(challenge.id)
 
         #TODO: remove doubles!!! add the worker to the list
-        challenge.workers.append(self.wallet.publicKeyString())
+        
+        if self.wallet.publicKeyString() in challenge.workers.items():
+            # Worker already present, increment the counter
+            challenge.workers[self.wallet.publicKeyString()] = challenge.workers[self.wallet.publicKeyString()] + 1
+        else:
+            challenge.workers[self.wallet.publicKeyString()] = 1
+            
 
         logger.info(f"Challenge Iterations: {challenge.iteration}")
 
@@ -320,15 +326,22 @@ class BeezNode():
             self.handleRewards(challenge.workers, challenge.reward)
 
 
-    def handleRewards(self, workers: List[PublicKeyString], totalReward: int):
+    def handleRewards(self, workers: Dict[PublicKeyString: int], totalReward: int):
         logger.info(f"Pay workers!!!")
-        # TODO: iterate to workers generate Rewarding transactions!!
-        logger.info(f"workers??? {len(workers)}")
-        pubkeyOne = workers[0]
+        # iterate to workers generate Rewarding transactions!!
+        logger.info(f"workers??? {len(workers.items())}")
 
-        rewardTX : Transaction = self.wallet.createTransaction(pubkeyOne, 2, TransactionType.REWARD.name)
-        
-        self.handleTransaction(rewardTX)
+        # TODO: calculate the reward!
+        totalCount = 0
+        partialReward = totalReward / len(workers.items())
+
+        for pubKeyString, count in workers.items():
+
+            publicKeyString : PublicKeyString = pubKeyString
+
+            rewardTX : Transaction = self.wallet.createTransaction(publicKeyString, partialReward, TransactionType.REWARD.name)
+            self.handleTransaction(rewardTX)
+
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 

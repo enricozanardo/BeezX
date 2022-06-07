@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable, List
+from typing import TYPE_CHECKING, Any, Callable, Dict
 import uuid
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ class Challenge():
         self.iteration = iteration
         self.result = 0
         self.counter = 1
-        self.workers : List[PublicKeyString] = []
+        self.workers : Dict[PublicKeyString: int] = {}
         
 
 
