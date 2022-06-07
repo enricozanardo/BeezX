@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict
+from typing import TYPE_CHECKING, Dict, List
 import os
 from dotenv import load_dotenv
 import socket
@@ -7,7 +7,7 @@ from loguru import logger
 import GPUtil
 import copy
 
-from beez.Types import ChallengeID
+from beez.Types import ChallengeID, PublicKeyString
 from beez.challenge.ChallengeState import ChallengeState
 
 load_dotenv()  # load .env
@@ -315,35 +315,20 @@ class BeezNode():
                 self.forge()
 
             logger.info(f"########## Reward starts ###########")
-
-            # TODO: iterate to workers generate Rewarding transactions!!
-            workers = challenge.workers
-            pubkeyOne = workers[0]
-
-            logger.info(f"workers??? {len(workers)}")
-
-            pubkeyOne = workers[0]
-
-    
-            rewardTX : Transaction = self.wallet.createTransaction(pubkeyOne, 2, TransactionType.TRANSFER.name)
-            self.transactionPool.addTransaction(rewardTX)
-
-            # check if is time to forge a new Block
-            forgingRequired = self.transactionPool.forgerRequired()
-            if forgingRequired == True:
-                logger.info(f"Forger required")
-                self.forge()
-
-           
-            # check if is time to forge a new Block
-            forgingRequired = self.transactionPool.forgerRequired()
-            if forgingRequired == True:
-                logger.info(f"Forger required")
-                self.forge()
+            self.handleRewards(challenge.workers, challenge.reward)
 
 
-    
-    
+    def handleRewards(self, workers: List[PublicKeyString], totalReward: int):
+        logger.info(f"Pay workers!!!")
+        # TODO: iterate to workers generate Rewarding transactions!!
+        logger.info(f"workers??? {len(workers)}")
+        pubkeyOne = workers[0]
+
+        rewardTX : Transaction = self.wallet.createTransaction(pubkeyOne, 2, TransactionType.TRANSFER.name)
+        self.transactionPool.addTransaction(rewardTX)
+
+        self.handleTransaction(rewardTX)
+
     def handleChallengeTX(self, challengeTx: ChallengeTX):
 
         challenge: Challenge = challengeTx.challenge
