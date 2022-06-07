@@ -139,13 +139,14 @@ class BeezNode():
 
                 logger.info(f"skip challenge version: {challenge.id} -- {challenge.state}") 
 
-                for tx in self.transactionPool.transactions:
-                    logger.info(f"tx: {tx.id} -- {tx.type}")
+                poolTransactions = len(self.transactionPool.transactions)
 
-                if challenge.state == ChallengeState.OPEN.name:
-                    logger.info(f"Challenge already closed from another peer!!!! remove it")
-                    
-                elif challenge.state == ChallengeState.CLOSED.name:
+                logger.info(f"txs: {poolTransactions}")
+
+                for tx in self.transactionPool.transactions:
+                    logger.info(f"txs:  --> {tx.id} --> {tx.type}")
+            
+                if challenge.state == ChallengeState.CLOSED.name:
                     logger.info(f"Challenge already closed... DO NOT DO SPAM the NETWORK!!")
 
                 else: 
