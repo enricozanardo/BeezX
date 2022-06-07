@@ -84,7 +84,7 @@ class BeezNode():
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
         # Create a TX to REWARD the workers in the Blockchain
-        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.REWARD.name, closedChallenge)
+        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         self.handleClosedChallengeTX(challengeTX)
 
         logger.info("Yuppy")
@@ -301,6 +301,8 @@ class BeezNode():
         challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challengeTx.challenge.id)
 
         logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
+        logger.info(f"challengeTx.challenge.id: {challengeTx.challenge.id}")
+        logger.info(f"challengeTx ID: {challengeTx.id}")
 
         # already exist in the Blockchain
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
