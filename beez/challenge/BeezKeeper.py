@@ -92,8 +92,11 @@ class BeezKeeper():
                 logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
                 sharedfunction = challenge.sharedFunction
                 # logger.info(f"challenge function: {type(sharedfunction)}")
-                inputA = random.randint(0, 100)
-                inputB = random.randint(0, 100)
+                # inputA = random.randint(0, 100)
+                # inputB = random.randint(0, 100)
+
+                inputA = 2
+                inputB = 2
 
                 logger.info(f"inputA {inputA}")
                 logger.info(f"inputB {inputB}")
