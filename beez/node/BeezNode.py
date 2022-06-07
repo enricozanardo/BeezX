@@ -325,8 +325,7 @@ class BeezNode():
         pubkeyOne = workers[0]
 
         rewardTX : Transaction = self.wallet.createTransaction(pubkeyOne, 2, TransactionType.TRANSFER.name)
-        self.transactionPool.addTransaction(rewardTX)
-
+        
         self.handleTransaction(rewardTX)
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
