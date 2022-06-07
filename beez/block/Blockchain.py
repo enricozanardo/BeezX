@@ -152,7 +152,7 @@ class Blockchain():
             # return False
             return True
         
-        if transaction.type == TransactionType.CLOSED.name:
+        if transaction.type == TransactionType.REWARD.name:
             return True
 
         senderBalance = self.accountStateModel.getBalance(

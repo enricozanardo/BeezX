@@ -74,6 +74,9 @@ class BeezNode():
         # remove the challenge from the Keeper
         self.blockchain.beezKeeper.delete(closedChallenge.id)
         # clean the transactionpool
+        transactionInPool = len(self.transactionPool.transactions)
+        logger.info(f"number of transactions in pool:  {transactionInPool}")
+
         for tx in self.transactionPool.transactions:
             logger.info(f"transaction in pool:  {tx.id} -- {tx.type}")
 
