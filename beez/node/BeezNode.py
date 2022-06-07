@@ -324,7 +324,7 @@ class BeezNode():
         logger.info(f"workers??? {len(workers)}")
         pubkeyOne = workers[0]
 
-        rewardTX : Transaction = self.wallet.createTransaction(pubkeyOne, 2, TransactionType.TRANSFER.name)
+        rewardTX : Transaction = self.wallet.createTransaction(pubkeyOne, 2, TransactionType.REWARD.name)
         
         self.handleTransaction(rewardTX)
 
