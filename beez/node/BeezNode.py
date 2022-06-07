@@ -326,7 +326,7 @@ class BeezNode():
 
             logger.info(f"pubkeyOne  {pubkeyOne}")
 
-            # rewardTX : Transaction = Transaction(self.wallet.publicKeyString(), workers[0], 2, TransactionType.TRANSFER.name)
+            rewardTX : Transaction = Transaction(self.wallet.publicKeyString(), pubkeyOne, 2, TransactionType.TRANSFER.name)
             # self.transactionPool.addTransaction(rewardTX)
 
             # # check if is time to forge a new Block
