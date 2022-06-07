@@ -324,16 +324,15 @@ class BeezNode():
 
             pubkeyOne = workers[0]
 
-            logger.info(f"pubkeyOne  {pubkeyOne}")
-
+    
             rewardTX : Transaction = self.wallet.createTransaction(pubkeyOne, 2, TransactionType.TRANSFER.name)
-            # self.transactionPool.addTransaction(rewardTX)
+            self.transactionPool.addTransaction(rewardTX)
 
-            # # check if is time to forge a new Block
-            # forgingRequired = self.transactionPool.forgerRequired()
-            # if forgingRequired == True:
-            #     logger.info(f"Forger required")
-            #     self.forge()
+            # check if is time to forge a new Block
+            forgingRequired = self.transactionPool.forgerRequired()
+            if forgingRequired == True:
+                logger.info(f"Forger required")
+                self.forge()
 
            
             # check if is time to forge a new Block
