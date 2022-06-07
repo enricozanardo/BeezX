@@ -93,6 +93,8 @@ class BeezNode():
 
         logger.info(f"Challenge Iterations: {challenge.iteration}")
 
+
+
         if challenge.state == ChallengeState.OPEN.name:
             logger.info(f"Start the calculus!!!! only if the challenge is {ChallengeState.OPEN.name}")
 
@@ -106,7 +108,7 @@ class BeezNode():
 
             logger.info(f"incomingChallengeCounter {incomingChallengeCounter} -- iteration  {challenge.iteration}")
 
-            if incomingChallengeCounter == localChallengeCounter:
+            if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter < challenge.iteration:
                 logger.info(f"work on challenge = {challenge.id}")
 
                 updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
