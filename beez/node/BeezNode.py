@@ -108,7 +108,7 @@ class BeezNode():
 
             logger.info(f"incomingChallengeCounter {incomingChallengeCounter} -- iteration  {challenge.iteration}")
 
-            if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter < challenge.iteration:
+            if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
                 logger.info(f"work on challenge = {challenge.id}")
 
                 updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
@@ -142,14 +142,11 @@ class BeezNode():
                 localResult = localChallenge.result
                 incomingResult = challenge.result
 
-                finalResult = localResult + incomingResult
-
                 logger.info(f"localResult: {localResult}")
                 logger.info(f"incomingResult: {incomingResult}")
-                logger.error(f"Final Result: {finalResult}")
+                logger.error(f"Final Result: {incomingResult}")
 
                 # Update the localstete of the challenge
-                challenge.result = finalResult
                 self.blockchain.beezKeeper.set(challenge)
 
                 message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, challenge)
