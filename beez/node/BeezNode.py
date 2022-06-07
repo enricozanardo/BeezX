@@ -336,14 +336,13 @@ class BeezNode():
         logger.info(f"workers??? {len(workers.items())}")
 
         # TODO: calculate the reward!
-        totalCount = 0
-        partialReward = int(totalReward / len(workers.items()))
-
+        totalCount = sum(workers.values())
+       
         for pubKeyString, count in workers.items():
-
             publicKeyString : PublicKeyString = pubKeyString
 
-            rewardTX : Transaction = self.wallet.createTransaction(publicKeyString, partialReward, TransactionType.REWARD.name)
+            reward = int(totalReward / totalCount * count)
+            rewardTX : Transaction = self.wallet.createTransaction(publicKeyString, reward, TransactionType.REWARD.name)
             self.handleTransaction(rewardTX)
 
 
