@@ -16,6 +16,7 @@ class TransactionType(Enum):
     TRANSFER = "transfer"
     STAKE = "stake"
     CHALLENGE = "challenge"
+    REWARD = "reward"
     CLOSED = "closed"
     ACCEPT = "accept"
     UPDATE = "update"

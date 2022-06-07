@@ -73,11 +73,15 @@ class BeezNode():
         logger.info(f"Manage the Closed Challenge")
         # remove the challenge from the Keeper
         self.blockchain.beezKeeper.delete(closedChallenge.id)
+        # clean the transactionpool
+        for tx in self.transactionPool.transactions:
+            logger.info(f"transaction in pool:  {tx.id} -- {tx.type}")
+
 
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
-        # Create a TX to store in the Blockchain
-        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
+        # Create a TX to REWARD the workers in the Blockchain
+        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.REWARD.name, closedChallenge)
         self.handleClosedChallengeTX(challengeTX)
 
         logger.info("Yuppy")
@@ -277,7 +281,7 @@ class BeezNode():
     def handleClosedChallengeTX(self, challengeTx: ChallengeTX):
         challenge: Challenge = challengeTx.challenge
         
-        logger.info(f"Manage the challenge ID: {challenge.id}")
+        logger.warning(f"Handle Closed Transaction: [To reward the workers....] {challenge.id}")
 
         data = challengeTx.payload()
         signature = challengeTx.signature
