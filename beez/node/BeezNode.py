@@ -98,7 +98,7 @@ class BeezNode():
 
         walletPubKey = str(self.wallet.publicKeyString()).strip()
         
-        if walletPubKey in challenge.workers.items():
+        if walletPubKey in challenge.workers.keys():
             # Worker already present, increment the counter
             count = challenge.workers[walletPubKey] 
             challenge.workers[walletPubKey] = count + 1
