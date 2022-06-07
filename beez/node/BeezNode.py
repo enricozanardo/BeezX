@@ -137,15 +137,8 @@ class BeezNode():
             
             else:
 
-                logger.info(f"skip challenge version: {challenge.id} -- {challenge.state}") 
+                logger.info(f"skip or close challenge version: {challenge.id} -- {challenge.state}") 
 
-                poolTransactions = len(self.transactionPool.transactions)
-
-                logger.info(f"txs: {poolTransactions}")
-
-                for tx in self.transactionPool.transactions:
-                    logger.info(f"txs:  --> {tx.id} --> {tx.type}")
-            
                 if challenge.state == ChallengeState.CLOSED.name:
                     logger.info(f"Challenge already closed... DO NOT DO SPAM the NETWORK!!")
 
@@ -170,11 +163,6 @@ class BeezNode():
                     encodedMessage = BeezUtils.encode(message)
                     self.p2p.broadcast(encodedMessage)
                 
-
-                
-
-
-
 
     # Manage requests that come from the NodeAPI
     def handleTransaction(self, transaction: Transaction):
@@ -258,8 +246,8 @@ class BeezNode():
     def acceptChallenges(self, challenges : Dict[ChallengeID : Challenge]):
         for idx, ch in challenges.items():
             challenge : Challenge = ch
-            logger.info(f"do something with the challenge: {idx}")
-            logger.info(f"do something with the challenge STATE: {challenge.state}")
+            # logger.info(f"do something with the challenge: {idx}")
+            # logger.info(f"do something with the challenge STATE: {challenge.state}")
 
             # get the localchallenge
             localChallenge = self.blockchain.beezKeeper.get(challenge.id)
@@ -269,10 +257,10 @@ class BeezNode():
                 self.blockchain.beezKeeper.set(challenge)
 
             if challenge.state == ChallengeState.CREATED.name:
-                logger.info(f"Challenge {challenge.state}: Update challenge to OPEN!!!")
+                # logger.info(f"Challenge {challenge.state}: Update challenge to OPEN!!!")
 
                 if localChallenge.state == challenge.state:
-                    logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
+                    # logger.info(f"Update the local Challenge {challenge.state} to {ChallengeState.OPEN.name}")
                     localChallenge.state = ChallengeState.OPEN.name
 
                     self.blockchain.beezKeeper.set(localChallenge)
@@ -317,8 +305,13 @@ class BeezNode():
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
         if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
+            # iterate to workers generate Rewarding transactions!!
+            workers = challenge.workers
+
+            rewardTX : Transaction = Transaction(self.wallet.publicKeyString(), workers[0], 2, TransactionType.TRANSFER.name)
+
             # logger.info(f"add to the Transaction Pool!!!")
-            self.transactionPool.addTransaction(challengeTx)
+            self.transactionPool.addTransaction(rewardTX)
 
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
