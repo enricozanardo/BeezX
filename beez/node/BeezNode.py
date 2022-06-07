@@ -123,13 +123,13 @@ class BeezNode():
                         encodedMessage = BeezUtils.encode(message)
                         self.p2p.broadcast(encodedMessage)
 
-                    elif updatedChallenge.state == ChallengeState.CLOSED.name:
-                        logger.warning(f"Challenge closed.. create the Final TX")
-                        logger.error(f"Final Result: {updatedChallenge.result}")
+                    # elif updatedChallenge.state == ChallengeState.CLOSED.name:
+                    #     logger.warning(f"Challenge closed.. create the Final TX")
+                    #     logger.error(f"Final Result: {updatedChallenge.result}")
 
-                        message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, updatedChallenge)
-                        encodedMessage = BeezUtils.encode(message)
-                        self.p2p.broadcast(encodedMessage)
+                    #     message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, updatedChallenge)
+                    #     encodedMessage = BeezUtils.encode(message)
+                    #     self.p2p.broadcast(encodedMessage)
             
             else:
                 logger.info(f"skip challenge version: {challenge.id}")
