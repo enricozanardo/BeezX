@@ -95,12 +95,16 @@ class BeezNode():
         # localChallenge = self.blockchain.beezKeeper.get(challenge.id)
 
         #TODO: remove doubles!!! add the worker to the list
+
+        walletPubKey = str(self.wallet.publicKeyString()).strip()
         
-        if self.wallet.publicKeyString() in challenge.workers.items():
+        if walletPubKey in challenge.workers.items():
             # Worker already present, increment the counter
-            challenge.workers[self.wallet.publicKeyString()] = challenge.workers[self.wallet.publicKeyString()] + 1
+            count = challenge.workers[walletPubKey] 
+            challenge.workers[walletPubKey] = count + 1
         else:
-            challenge.workers[self.wallet.publicKeyString()] = 1
+            # add the new worker
+            challenge.workers[walletPubKey] = 1
             
 
         logger.info(f"Challenge Iterations: {challenge.iteration}")
@@ -333,7 +337,7 @@ class BeezNode():
 
         # TODO: calculate the reward!
         totalCount = 0
-        partialReward = totalReward / len(workers.items())
+        partialReward = int(totalReward / len(workers.items()))
 
         for pubKeyString, count in workers.items():
 
