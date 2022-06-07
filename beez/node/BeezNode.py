@@ -305,13 +305,14 @@ class BeezNode():
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
         if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
-            # iterate to workers generate Rewarding transactions!!
-            workers = challenge.workers
-
-            rewardTX : Transaction = Transaction(self.wallet.publicKeyString(), workers[0], 2, TransactionType.TRANSFER.name)
+            # # iterate to workers generate Rewarding transactions!!
+            # workers = challenge.workers
+            # rewardTX : Transaction = Transaction(self.wallet.publicKeyString(), workers[0], 2, TransactionType.TRANSFER.name)
+            # self.transactionPool.addTransaction(rewardTX)
 
             # logger.info(f"add to the Transaction Pool!!!")
-            self.transactionPool.addTransaction(rewardTX)
+            self.transactionPool.addTransaction(challengeTx)
+           
 
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
