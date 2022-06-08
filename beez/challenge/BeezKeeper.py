@@ -194,12 +194,9 @@ class BeezKeeper():
 
 
     def workOnChallenge(self, challenge: Challenge) -> Optional[Challenge]:
-        logger.info(f"work on challenge...! {challenge.id} -- {challenge.state}")
+        logger.info(f"work on challenge...! {challenge.id}")
 
-
-        challengeStateOpen = False
-        if challenge.state == ChallengeState.OPEN.name:
-            challengeStateOpen = True
+        challengeStateOpen = challenge.state == ChallengeState.OPEN.name if True else False
 
         logger.info(f"challengeStateOpen {challengeStateOpen}")
         

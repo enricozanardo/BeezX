@@ -125,7 +125,7 @@ class BeezNode():
 
             if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
                 logger.info(f"work on challenge = {challenge.id}")
-                logger.info(f"challenge type {challenge.challengeType.name}")
+                logger.info(f"challenge type {challenge.challengeType}")
 
                 updatedChallenge = None
 
