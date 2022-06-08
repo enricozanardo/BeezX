@@ -198,7 +198,7 @@ class BeezKeeper():
 
         challengeStateOpen = challenge.state == ChallengeState.OPEN.name if  True else False
 
-        # logger.info(f"challengeStateOpen {challengeStateOpen}")
+        logger.info(f"challengeStateOpen {challengeStateOpen}")
         
         if challengeStateOpen:
             if challenge.counter < challenge.iteration + 1:
