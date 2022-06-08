@@ -15,7 +15,7 @@ class Challenge():
     Manage the challenge that must be broacasted to a cluster of peers.
     """
 
-    def __init__(self, ownerPublicKey: PublicKeyString, sharedFunction: Callable[[], Any], reward: Prize, iteration: int, challengeType: ChallengeType.name):
+    def __init__(self, ownerPublicKey: PublicKeyString, sharedFunction: Callable[[], Any], reward: Prize, iteration: int, challengeType: ChallengeType):
         self.id = uuid.uuid1().hex
         self.ownerPublicKey = ownerPublicKey
         self.sharedFunction = sharedFunction
