@@ -41,7 +41,7 @@ class BeezKeeper():
     def __init__(self):
         self.challenges : Dict[ChallengeID : Challenge] = {}
         # Download the dataset for silulation
-        self.getIrisDataset()
+        # self.getIrisDataset()
         
     
     def getIrisDataset(self):

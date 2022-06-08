@@ -125,14 +125,16 @@ class BeezNode():
 
             if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
                 logger.info(f"work on challenge = {challenge.id}")
-                logger.info(f"challenge type {challenge.challengeType}")
+                logger.info(f"challenge type {challenge.challengeType.name}")
 
                 updatedChallenge = None
 
-                if challenge.challengeType.name == ChallengeType.CALCULUS.name:
+                if challenge.challengeType == ChallengeType.CALCULUS.name:
 
                     logger.error(f" ############# ")
                     updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
+
+                updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
 
                 # if challenge.challengeType == ChallengeType.IRIS.name:
                 #     updatedChallenge = self.blockchain.beezKeeper.workOnMLChallenge(challenge)
