@@ -146,6 +146,8 @@ class BeezKeeper():
                 if challenge.counter % 2 == 0:
                     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
+                time.sleep(2)
+
 
                 # Show Accuracy
                 # Model Evaluation
@@ -163,6 +165,8 @@ class BeezKeeper():
                 accuracy = df['Correct'].sum() / len(df)
 
                 logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
+
+                time.sleep(2)
 
                 # update the values
                 challenge.model = model

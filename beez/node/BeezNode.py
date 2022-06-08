@@ -1,5 +1,5 @@
 from __future__ import annotations
-from time import sleep
+import time
 from typing import TYPE_CHECKING, Dict, List
 import os
 from dotenv import load_dotenv
@@ -7,6 +7,7 @@ import socket
 from loguru import logger
 import GPUtil
 import copy
+
 
 from beez.Types import ChallengeID, PublicKeyString
 from beez.challenge.ChallengeState import ChallengeState
@@ -148,7 +149,7 @@ class BeezNode():
                     if updatedChallenge.state == ChallengeState.OPEN.name:
                         logger.info(f"Challenge still open.. propagate it")
 
-                        sleep(2)
+                        time.sleep(2)
 
                         message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, updatedChallenge)
                         encodedMessage = BeezUtils.encode(message)
