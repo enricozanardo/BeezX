@@ -127,6 +127,8 @@ class BeezNode():
                 logger.info(f"work on challenge = {challenge.id}")
                 logger.info(f"challenge type {challenge.challengeType}")
 
+                logger.info(f"challenge type {ChallengeType.CALCULUS.name}")
+
                 # updatedChallenge = None
 
                 # if challenge.challengeType == ChallengeType.CALCULUS.name:
