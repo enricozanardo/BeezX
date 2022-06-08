@@ -1,11 +1,20 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Optional
 from loguru import logger
+import requests
 import copy
 import threading
 import os
 from dotenv import load_dotenv
 import time
+
+#### Machine Learning
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 
 # for function
 import random
@@ -16,6 +25,7 @@ if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
     from beez.transaction.ChallengeTX import ChallengeTX
     from beez.challenge.Challenge import Challenge
+    from beez.challenge.MLChallenge import MLChallenge
 
 from beez.BeezUtils import BeezUtils
 from beez.challenge.ChallengeState import ChallengeState
@@ -30,6 +40,25 @@ class BeezKeeper():
     """
     def __init__(self):
         self.challenges : Dict[ChallengeID : Challenge] = {}
+        # Download the dataset for silulation
+        self.getIrisDataset()
+        
+    
+    def getIrisDataset(self):
+        csv_url = "https://datahub.io/machine-learning/iris/r/iris.csv"
+        self.iris = pd.read_csv(csv_url)
+
+        # replace labels with numbers
+        mappings = {
+            'Iris-setosa': 0,
+            'Iris-versicolor': 1,
+            'Iris-virginica': 2
+        }
+        
+        self.iris['class'] = self.iris['class'].apply(lambda x: mappings[x])
+
+        logger.info(f"Iris Dataset imported.")
+
     
     def set(self, challenge: Challenge):
         challengeID : ChallengeID = challenge.id
@@ -75,6 +104,93 @@ class BeezKeeper():
             isAccepted = True
         
         return isAccepted
+
+
+    def workOnMLChallenge(self, challenge: MLChallenge):
+        logger.info(f"work on IRIS DATASET challenge...! {challenge.id}")
+
+        logger.info(self.iris.head())
+
+
+        challengeStateOpen = challenge.state == ChallengeState.OPEN.name if  True else False
+    
+        if challengeStateOpen:
+            if challenge.counter < challenge.iteration + 1:
+                logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
+
+                # execute the calculus
+
+                # Train/Test Split
+                X = self.iris.drop('class', axis=1).values
+                y = self.iris['class'].values
+
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+                X_train = torch.FloatTensor(X_train)
+                X_test = torch.FloatTensor(X_test)
+                y_train = torch.LongTensor(y_train)
+                y_test = torch.LongTensor(y_test)
+
+                logger.info(f"challenge model: {challenge.model}")
+
+                model = challenge.model
+                criterion = challenge.criterion
+                optimizer = challenge.optimizer
+
+                # Do one epoch (iteration)
+                y_hat = model.forward(X_train)
+                loss = criterion(y_hat, y_train)
+                optimizer.step()
+
+                if challenge.counter % 10 == 0:
+                    logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
+
+
+                # Show Accuracy
+                # Model Evaluation
+                preds = []
+
+                with torch.no_grad():
+                    for val in X_test:
+                        y_hat = model.forward(val)
+                        preds.append(y_hat.argmax().item())
+
+
+                df = pd.DataFrame({'Y': y_test, 'YHat': preds})
+                df['Correct'] = [1 if corr == pred else 0 for corr, pred in zip(df['Y'], df['YHat'])]   
+
+                accuracy = df['Correct'].sum() / len(df)
+
+                logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
+
+                # update the values
+                challenge.model = model
+                challenge.optimizer = optimizer
+                challenge.loss = loss
+                
+                # Store the new version of the Challenge
+                self.set(challenge)
+                
+                localChallenge = self.get(challenge.id)
+
+                return localChallenge
+
+            else:
+                logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
+                logger.warning(f"Challenge must be closed: {challenge.id}")
+
+                # update the values
+                challenge.state = ChallengeState.CLOSED.name
+                # Store the new version of the Challenge
+                self.set(challenge)
+                
+                localChallenge = self.get(challenge.id)
+
+                return localChallenge
+
+            
+        logger.warning(f"It was not possible to perform the calculus: {challenge.id}")
+        return None
 
 
     def workOnChallenge(self, challenge: Challenge) -> Optional[Challenge]:

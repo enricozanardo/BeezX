@@ -12,3 +12,7 @@ jsonpickle
 matplotlib
 ray
 gputil
+numpy
+sklearn
+torch
+pandas

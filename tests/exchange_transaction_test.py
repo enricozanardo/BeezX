@@ -43,7 +43,7 @@ def test_exchange_transaction():
     AliceWallet = Wallet()
     AliceWallet.fromKey(alicePrivateKeyPath)
     
-    amountEx = 500
+    amountEx = 50000
 
     typeExchange = TransactionType.EXCHANGE.name
 
