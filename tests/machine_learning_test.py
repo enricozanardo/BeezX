@@ -13,6 +13,7 @@ from beez.Types import WalletAddress
 from beez.challenge.Challenge import Challenge
 from beez.challenge.MLChallenge import MLChallenge
 from beez.transaction.ChallengeTX import ChallengeTX
+from beez.challenge.ChallengeType import ChallengeType
 
 
 #### Machine Learning
@@ -162,8 +163,10 @@ def test_machine_learning_challenge():
     iteration = 5
     owner = AliceWallet.publicKeyString()
 
+    challengeType = ChallengeType.IRIS.name
+
     # # Define the challenge
-    mlChallenge = MLChallenge(owner, sum, reward, iteration, model, criterion, optimizer, loss)
+    mlChallenge = MLChallenge(owner, sum, reward, iteration, challengeType, model, criterion, optimizer, loss)
 
     postChallengeTransaction(AliceWallet, reward, type, mlChallenge)
 

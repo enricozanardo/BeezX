@@ -12,6 +12,7 @@ from beez.BeezUtils import BeezUtils
 from beez.Types import WalletAddress
 from beez.challenge.Challenge import Challenge
 from beez.transaction.ChallengeTX import ChallengeTX
+from beez.challenge.ChallengeType import ChallengeType
 
 load_dotenv()  # load .env
 
@@ -60,9 +61,10 @@ def test_send_challenge_transaction():
     type = TransactionType.CHALLENGE.name
     iteration = 10
     owner = AliceWallet.publicKeyString()
+    
 
     # Define the challenge
-    challenge = Challenge(owner, sum, reward, iteration)
+    challenge = Challenge(owner, sum, reward, iteration, ChallengeType.CALCULUS.name)
 
     postChallengeTransaction(AliceWallet, reward, type, challenge)
 

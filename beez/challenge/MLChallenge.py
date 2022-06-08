@@ -13,14 +13,15 @@ from sklearn.model_selection import train_test_split
 
 if TYPE_CHECKING:
     from beez.Types import Prize, PublicKeyString
+    from beez.challenge.ChallengeType import ChallengeType
 
 from beez.challenge.Challenge import Challenge
 
     
 class MLChallenge(Challenge):
 
-    def __init__(self, ownerPublicKey: PublicKeyString, sharedFunction: Callable[[], Any], reward: Prize, iteration: int, model, criterion, optimizer, loss):
-        super().__init__(ownerPublicKey, sharedFunction, reward, iteration)
+    def __init__(self, ownerPublicKey: PublicKeyString, sharedFunction: Callable[[], Any], reward: Prize, iteration: int, challengeType: ChallengeType, model, criterion, optimizer, loss):
+        super().__init__(ownerPublicKey, sharedFunction, reward, iteration, challengeType)
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
