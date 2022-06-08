@@ -129,7 +129,7 @@ class BeezNode():
 
                 updatedChallenge = None
 
-                if challenge.challengeType == ChallengeType.CALCULUS.name:
+                if challenge.challengeType == ChallengeType.CALCULUS:
 
                     logger.error(f" ############# ")
                     updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
