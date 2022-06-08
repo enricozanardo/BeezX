@@ -19,6 +19,7 @@ if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
     from beez.challenge.Challenge import Challenge
     from beez.block.Block import Block
+    from beez.challenge.ChallengeType import ChallengeType
     
 from beez.BeezUtils import BeezUtils
 from beez.wallet.Wallet import Wallet
@@ -126,8 +127,13 @@ class BeezNode():
                 logger.info(f"work on challenge = {challenge.id}")
                 logger.info(f"challenge type {challenge.challengeType}")
 
+                updatedChallenge = None
 
-                updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
+                if challenge.challengeType == ChallengeType.CALCULUS.name:
+                    updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
+
+                elif challenge.challengeType == ChallengeType.IRIS.name:
+                    updatedChallenge = self.blockchain.beezKeeper.workOnMLChallenge(challenge)
 
                 if updatedChallenge is not None:
                     logger.info(f"A New Updated Challenge received back!!!")
