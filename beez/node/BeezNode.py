@@ -132,15 +132,14 @@ class BeezNode():
 
                 # updatedChallenge = None
 
-                # if challenge.challengeType == ChallengeType.CALCULUS.name:
+                if challenge.challengeType == ChallengeType.CALCULUS.name:
 
-                #     logger.error(f" ############# ")
-                #     updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
+                    logger.warning(f"Do a Calculus!!!")
+                    updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
 
-                updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
-
-                # if challenge.challengeType == ChallengeType.IRIS.name:
-                #     updatedChallenge = self.blockchain.beezKeeper.workOnMLChallenge(challenge)
+                elif challenge.challengeType == ChallengeType.IRIS.name:
+                    logger.warning(f"Do a IRIS MODEL TRAINING!!!")
+                    updatedChallenge = self.blockchain.beezKeeper.workOnMLChallenge(challenge)
 
                 if updatedChallenge is not None:
                     logger.info(f"A New Updated Challenge received back!!!")
