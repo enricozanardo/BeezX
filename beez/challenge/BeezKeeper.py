@@ -114,12 +114,13 @@ class BeezKeeper():
 
         challengeStateOpen = challenge.state == ChallengeState.OPEN.name if  True else False
     
+        logger.info(f"Machine Learning challenge state: {challengeStateOpen}")
+
         if challengeStateOpen:
             if challenge.counter < challenge.iteration + 1:
                 logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
 
                 # execute the calculus
-
                 # Train/Test Split
                 X = self.iris.drop('class', axis=1).values
                 y = self.iris['class'].values
@@ -167,6 +168,7 @@ class BeezKeeper():
                 challenge.model = model
                 challenge.optimizer = optimizer
                 challenge.loss = loss
+                challenge.counter = challenge.counter + 1
                 
                 # Store the new version of the Challenge
                 self.set(challenge)
