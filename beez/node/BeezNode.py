@@ -1,4 +1,5 @@
 from __future__ import annotations
+from time import sleep
 from typing import TYPE_CHECKING, Dict, List
 import os
 from dotenv import load_dotenv
@@ -147,6 +148,8 @@ class BeezNode():
                     if updatedChallenge.state == ChallengeState.OPEN.name:
                         logger.info(f"Challenge still open.. propagate it")
 
+                        sleep(2)
+
                         message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, updatedChallenge)
                         encodedMessage = BeezUtils.encode(message)
                         self.p2p.broadcast(encodedMessage)
@@ -174,13 +177,9 @@ class BeezNode():
                     # Update the localstete of the challenge
                     self.blockchain.beezKeeper.set(challenge)
 
-                    localChallenge = self.blockchain.beezKeeper.get(challenge.id)
-                
-                    localResult = localChallenge
+                    localChallenge = self.blockchain.beezKeeper.get(challenge.id)                    
                     incomingResult = challenge.result
 
-                    logger.info(f"localResult: {localResult}")
-                    logger.info(f"incomingResult: {incomingResult}")
                     logger.error(f"Final Result: {incomingResult}")
 
                     message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, localChallenge)

@@ -143,7 +143,7 @@ class BeezKeeper():
                 loss = criterion(y_hat, y_train)
                 optimizer.step()
 
-                if challenge.counter % 10 == 0:
+                if challenge.counter % 2 == 0:
                     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
 
