@@ -127,12 +127,12 @@ class BeezNode():
                 logger.info(f"work on challenge = {challenge.id}")
                 logger.info(f"challenge type {challenge.challengeType}")
 
-                updatedChallenge = None
+                # updatedChallenge = None
 
-                if challenge.challengeType == ChallengeType.CALCULUS.name:
+                # if challenge.challengeType == ChallengeType.CALCULUS.name:
 
-                    logger.error(f" ############# ")
-                    updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
+                #     logger.error(f" ############# ")
+                #     updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
 
                 updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
 
