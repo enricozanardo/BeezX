@@ -53,6 +53,8 @@ itsdangerous==2.1.2
     # via flask
 jinja2==3.1.2
     # via flask
+joblib==1.1.0
+    # via scikit-learn
 jsonpickle==2.2.0
     # via -r requirements/requirements.in
 jsonschema==4.5.1
@@ -69,14 +71,20 @@ msgpack==1.0.3
     # via ray
 numpy==1.22.4
     # via
+    #   -r requirements/requirements.in
     #   matplotlib
+    #   pandas
     #   ray
+    #   scikit-learn
+    #   scipy
 p2pnetwork==1.2
     # via -r requirements/requirements.in
 packaging==21.3
     # via
     #   matplotlib
     #   pytest
+pandas==1.4.2
+    # via -r requirements/requirements.in
 pillow==9.1.1
     # via matplotlib
 platformdirs==2.5.2
@@ -102,9 +110,13 @@ pytest==7.1.2
 pytest-asyncio==0.18.3
     # via -r requirements/requirements.in
 python-dateutil==2.8.2
-    # via matplotlib
+    # via
+    #   matplotlib
+    #   pandas
 python-dotenv==0.20.0
     # via -r requirements/requirements.in
+pytz==2022.1
+    # via pandas
 pyyaml==6.0
     # via ray
 ray==1.12.1
@@ -113,13 +125,25 @@ requests==2.27.1
     # via
     #   -r requirements/requirements.in
     #   ray
+scikit-learn==1.1.1
+    # via sklearn
+scipy==1.8.1
+    # via scikit-learn
 six==1.16.0
     # via
     #   grpcio
     #   python-dateutil
     #   virtualenv
+sklearn==0.0
+    # via -r requirements/requirements.in
+threadpoolctl==3.1.0
+    # via scikit-learn
 tomli==2.0.1
     # via pytest
+torch==1.11.0
+    # via -r requirements/requirements.in
+typing-extensions==4.2.0
+    # via torch
 urllib3==1.26.9
     # via requests
 virtualenv==20.14.1
