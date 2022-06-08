@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
     from beez.challenge.Challenge import Challenge
     from beez.block.Block import Block
-    from beez.challenge.ChallengeType import ChallengeType
+    
     
 from beez.BeezUtils import BeezUtils
 from beez.wallet.Wallet import Wallet
@@ -35,6 +35,7 @@ from beez.socket.MessageBlockchain import MessageBlockchain
 from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
 from beez.socket.MessageChallenge import MessageChallenge
+from beez.challenge.ChallengeType import ChallengeType
 
 class BeezNode():
 
