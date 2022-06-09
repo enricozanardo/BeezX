@@ -419,14 +419,14 @@ class BeezNode():
 
             # For Forger
             # check the BeezKeeper
-            time.sleep(5)
+            # time.sleep(5)
 
-            challenges : Dict[ChallengeID : Challenge] = self.blockchain.beezKeeper.challenges
-            challengesNumber = len(challenges.items())
-            logger.info(f"Forger challenges.... {challengesNumber}")
+            # challenges : Dict[ChallengeID : Challenge] = self.blockchain.beezKeeper.challenges
+            # challengesNumber = len(challenges.items())
+            # logger.info(f"Forger challenges.... {challengesNumber}")
 
-            if challengesNumber > 0:
-                self.acceptChallenges(challenges)
+            # if challengesNumber > 0:
+            #     self.acceptChallenges(challenges)
 
         else:
             logger.info(f"I'm not the forger")  
