@@ -183,6 +183,8 @@ class BeezNode():
 
                     logger.error(f"Final Result: {incomingResult}")
 
+                    # Fa il broadcast ma non forgia....!!!!!
+
                     message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, localChallenge)
                     encodedMessage = BeezUtils.encode(message)
                     self.p2p.broadcast(encodedMessage)
