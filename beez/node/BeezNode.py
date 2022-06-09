@@ -419,6 +419,8 @@ class BeezNode():
 
             # For Forger
             # check the BeezKeeper
+            time.sleep(5)
+
             challenges : Dict[ChallengeID : Challenge] = self.blockchain.beezKeeper.challenges
             challengesNumber = len(challenges.items())
             logger.info(f"Forger challenges.... {challengesNumber}")

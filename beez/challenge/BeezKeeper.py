@@ -41,7 +41,7 @@ class BeezKeeper():
     def __init__(self):
         self.challenges : Dict[ChallengeID : Challenge] = {}
         # Download the dataset for silulation
-        self.getIrisDataset()
+        # self.getIrisDataset()
         
     
     def getIrisDataset(self):
@@ -139,6 +139,8 @@ class BeezKeeper():
                 optimizer = challenge.optimizer
 
                 # Do one epoch (iteration)
+                
+
                 y_hat = model.forward(X_train)
                 loss = criterion(y_hat, y_train)
                 optimizer.step()

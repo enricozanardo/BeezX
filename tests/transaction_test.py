@@ -43,7 +43,7 @@ def test_send_transaction():
     # Generate a standard transaction
     BobWallet = Wallet()
     
-    amount = 12
+    amount = 120
     typeTransfer = TransactionType.TRANSFER.name
 
     postTransaction(AliceWallet, BobWallet, amount, typeTransfer)
