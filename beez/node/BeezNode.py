@@ -126,7 +126,7 @@ class BeezNode():
 
             logger.info(f"incomingChallengeCounter {incomingChallengeCounter} -- iteration  {challenge.iteration}")
 
-            if incomingChallengeCounter == localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
+            if incomingChallengeCounter >= localChallengeCounter and incomingChallengeCounter <= challenge.iteration:
                 logger.info(f"work on challenge = {challenge.id}")
                 logger.info(f"challenge type {challenge.challengeType}")
 
