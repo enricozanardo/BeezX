@@ -416,7 +416,7 @@ class BeezNode():
             logger.info(f"new block broadcasted... check challenges...")
 
             # check if the keeper has a some transactions that must be broadcasted!!
-            challenges : Dict[ChallengeID: Challenge] = len(self.blockchain.beezKeeper.challenges.items())
+            challenges : Dict[ChallengeID: Challenge] = self.blockchain.beezKeeper.challenges
             if challenges > 0:
                 for key, value in challenges.items():
                     challenge: Challenge = value
