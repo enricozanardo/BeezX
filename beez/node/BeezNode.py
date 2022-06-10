@@ -417,10 +417,12 @@ class BeezNode():
 
             # check if the keeper has a some transactions that must be broadcasted!!
             challenges : Dict[ChallengeID: Challenge] = self.blockchain.beezKeeper.challenges
-            if challenges > 0:
-                for key, value in challenges.items():
-                    challenge: Challenge = value
-                    logger.error(f"A challenge {key}, {challenge.state}")
+
+            logger.info(f" how many? {len(challenges.items())}")
+            # if challenges > 0:
+            #     for key, value in challenges.items():
+            #         challenge: Challenge = value
+            #         logger.error(f"A challenge {key}, {challenge.state}")
 
         else:
             logger.info(f"I'm not the forger")  
