@@ -87,12 +87,11 @@ class BeezNode():
         for tx in self.transactionPool.transactions:
             logger.info(f"transaction in pool:  {tx.id} -- {tx.type}")
 
-
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
         # Create a TX to REWARD the workers in the Blockchain
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
-        self.handleClosedChallengeTX(challengeTX)
+        # self.handleClosedChallengeTX(challengeTX)
 
         # Bradcast it!!!
         message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGETXCLOSED.name, challengeTX)
