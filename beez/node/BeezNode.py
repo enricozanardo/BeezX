@@ -351,10 +351,10 @@ class BeezNode():
             self.transactionPool.addTransaction(challengeTx)
 
             # check if is time to forge a new Block
-            # forgingRequired = self.transactionPool.forgerRequired()
-            # if forgingRequired == True:
-            #     logger.info(f"Forger required")
-            #     self.forge()
+            forgingRequired = self.transactionPool.forgerRequired()
+            if forgingRequired == True:
+                logger.info(f"Forger required")
+                self.forge()
 
             logger.info(f"########## Reward starts ###########")
             # self.handleRewards(challenge.workers, challenge.reward)
@@ -425,13 +425,19 @@ class BeezNode():
             # mint the new Block
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
+            logger.info(f"new block minted")
+
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
+
+            logger.info(f"pool transactions removed")
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
+
+            logger.info(f"new block broadcasted...")
 
             # For Forger
             # check the BeezKeeper
