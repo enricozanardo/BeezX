@@ -417,7 +417,8 @@ class BeezNode():
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
 
-            if challengeTx.challenge.state == ChallengeState.CLOSED:
+            if challengeTx.challenge.state == ChallengeState.CLOSED.name:
+                logger.info(f"what is this???")
                 message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
                 encodedMessage = BeezUtils.encode(message)
                 self.p2p.broadcast(encodedMessage)
@@ -436,6 +437,8 @@ class BeezNode():
     def forge(self):
         logger.info(f"Forger called")
         # Elect the next forger
+
+
         forger = self.blockchain.nextForger()
 
         forgerString = str(forger).strip()
