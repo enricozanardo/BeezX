@@ -1,7 +1,9 @@
 from __future__ import annotations
 from cmath import log
+from time import time
 from typing import TYPE_CHECKING, List, Optional
 import pathlib
+import time
 
 from loguru import logger
 from numpy import block
@@ -121,6 +123,8 @@ class Blockchain():
         newBlock = forgerWallet.createBlock(coveredTransactions, BeezUtils.hash(self.blocks[-1].payload()).hexdigest(), len(self.blocks))
 
         self.blocks.append(newBlock)
+
+        logger.info(f"blockchain blocks: {len(self.blocks)} [done by the forger!!!!] {time.time()}")
 
         return newBlock
     
