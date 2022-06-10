@@ -419,10 +419,10 @@ class BeezNode():
             challenges : Dict[ChallengeID: Challenge] = self.blockchain.beezKeeper.challenges
 
             logger.info(f" how many? {len(challenges.items())}")
-            # if challenges > 0:
-            #     for key, value in challenges.items():
-            #         challenge: Challenge = value
-            #         logger.error(f"A challenge {key}, {challenge.state}")
+            if len(challenges.items()) > 0:
+                for key, value in challenges.items():
+                    challenge: Challenge = value
+                    logger.error(f"A challenge {key}, {challenge.state}")
 
         else:
             logger.info(f"I'm not the forger")  
