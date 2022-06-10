@@ -1,4 +1,5 @@
 from __future__ import annotations
+from cmath import log
 from typing import TYPE_CHECKING, List, Optional
 import pathlib
 
@@ -178,6 +179,10 @@ class Blockchain():
     def lastBlockHashValid(self, block: Block):
         latestBlockainBlockHash = BeezUtils.hash(
             self.blocks[-1].payload()).hexdigest()
+
+        logger.warning(f"latestBlockainBlockHash {latestBlockainBlockHash}")
+        logger.warning(f"block.lastHash {block.lastHash}")
+        
         if latestBlockainBlockHash == block.lastHash:
             return True
         else:

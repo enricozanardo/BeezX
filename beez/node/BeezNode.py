@@ -245,8 +245,7 @@ class BeezNode():
         forgerValid = self.blockchain.forgerValid(block)
         transactionValid = self.blockchain.transactionValid(block.transactions)
 
-       
-
+    
         signatureValid = Wallet.signatureValid(blockHash, signature, forger)
 
         logger.error(f"blockCountValid :{blockCountValid}")
@@ -260,9 +259,7 @@ class BeezNode():
             logger.info("Request the updated version of the Blockchain")
             self.requestChain()
 
-        # if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
-        if forgerValid and transactionValid and signatureValid:
-
+        if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
             # Add the block to the Blockchain
             self.blockchain.addBlock(block)
 
