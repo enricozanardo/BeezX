@@ -91,6 +91,15 @@ class BeezNode():
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         self.handleClosedChallengeTX(challengeTX)
 
+        # Bradcast it!!!
+        message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGECLOSED, challengeTX)
+        encodedMessage = BeezUtils.encode(message)
+        self.p2p.broadcast(message)
+
+        
+        
+        
+
 
 
     def handleChallengeOpen(self, challenge: Challenge):
@@ -214,7 +223,6 @@ class BeezNode():
             self.transactionPool.addTransaction(transaction)
             # Propagate the transaction to other peers
             message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
-
             encodedMessage = BeezUtils.encode(message)
 
             if transaction.type != TransactionType.REWARD.name:
