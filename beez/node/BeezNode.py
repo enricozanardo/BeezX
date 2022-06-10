@@ -94,7 +94,7 @@ class BeezNode():
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         
         # Bradcast it!!!
-        message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGETXCLOSED.name, challengeTX)
+        message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.REWARD.name, challengeTX)
         encodedMessage = BeezUtils.encode(message)
         self.p2p.broadcast(encodedMessage)
 
@@ -159,10 +159,6 @@ class BeezNode():
                 logger.info(f"work on challenge = {challenge.id}")
                 logger.info(f"challenge type {challenge.challengeType}")
 
-                logger.info(f"challenge type {ChallengeType.CALCULUS.name}")
-
-                # updatedChallenge = None
-
                 if challenge.challengeType == ChallengeType.CALCULUS.name:
 
                     logger.warning(f"Do a Calculus!!!")
@@ -180,7 +176,7 @@ class BeezNode():
 
                         time.sleep(2)
 
-                        message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGEOPEN.name, updatedChallenge)
+                        message = MessageChallenge(self.p2p.socketConnector, MessageType.OPEN.name, updatedChallenge)
                         encodedMessage = BeezUtils.encode(message)
                         self.p2p.broadcast(encodedMessage)
 
@@ -214,7 +210,7 @@ class BeezNode():
 
                     # Fa il broadcast ma non forgia....!!!!!
 
-                    message = MessageChallenge(self.p2p.socketConnector, MessageType.CHALLENGECLOSED.name, localChallenge)
+                    message = MessageChallenge(self.p2p.socketConnector, MessageType.CLOSED.name, localChallenge)
                     encodedMessage = BeezUtils.encode(message)
                     self.p2p.broadcast(encodedMessage)
                 
@@ -366,6 +362,9 @@ class BeezNode():
             logger.info(f"########## Reward starts ###########")
             # self.handleRewards(challenge.workers, challenge.reward)
 
+
+    def handleChallengeReward(self, closedChallenge: Challenge):
+        logger.warning("reward the workers...")
 
     def handleRewards(self, workers: Dict[PublicKeyString: int], totalReward: int):
         logger.info(f"Pay workers!!!")

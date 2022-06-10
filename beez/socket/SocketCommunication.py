@@ -113,6 +113,18 @@ class SocketCommunication(Node):
             challenge: Challenge = message.challenge
             self.beezNode.handleChallengeOpen(challenge)
 
+        elif message.messageType == MessageType.CLOSED.name:
+            # handle the CLOSED
+            logger.info(f"manage the message {message.messageType}")
+            challenge: Challenge = message.challenge
+            self.beezNode.handleChallengeClosed(challenge)
+
+        elif message.messageType == MessageType.REWARD.name:
+            # handle the REWARD
+            logger.info(f"manage the message {message.messageType}")
+            challenge: Challenge = message.challenge
+            self.beezNode.handleChallengeReward(challenge)
+
         elif message.messageType == MessageType.CHALLENGECLOSED.name:
             # handle the CHALLENGECLOSED
             logger.info(f"manage the message {message.messageType}")
