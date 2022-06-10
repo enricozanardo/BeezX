@@ -94,7 +94,9 @@ class BeezNode():
         # Bradcast it!!!
         message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGECLOSED, challengeTX)
         encodedMessage = BeezUtils.encode(message)
-        self.p2p.broadcast(message)
+        self.p2p.broadcast(encodedMessage)
+
+        logger.error(f"DONE????")
 
         
         
