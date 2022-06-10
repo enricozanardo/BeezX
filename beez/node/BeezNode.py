@@ -250,18 +250,8 @@ class BeezNode():
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
             # Add the block to the Blockchain
             self.blockchain.addBlock(block)
-
             self.transactionPool.removeFromPool(block.transactions)
-
-            # For Peers
-            # check the BeezKeeper
-            # challenges : Dict[ChallengeID : Challenge] = self.blockchain.beezKeeper.challenges
-            # challengesNumber = len(challenges.items())
-            # logger.info(f"Peer challenges.... {challengesNumber}")
-
-            # if challengesNumber > 0:
-            #     self.acceptChallenges(challenges)
-            
+   
             # broadcast the block message
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
@@ -390,11 +380,7 @@ class BeezNode():
         if not challengeTransactionExist and not transactionInBlock and signatureValid:
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
-            # Propagate the transaction to other peers
-            # message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
-            # encodedMessage = BeezUtils.encode(message)
-            # self.p2p.broadcast(encodedMessage)
-
+            
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
             if forgingRequired == True:
@@ -427,7 +413,14 @@ class BeezNode():
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
 
-            logger.info(f"new block broadcasted...")
+            logger.info(f"new block broadcasted... check challenges...")
+
+            # check if the keeper has a some transactions that must be broadcasted!!
+            challenges : Dict[ChallengeID: Challenge] = len(self.blockchain.beezKeeper.challenges)
+            if challenges > 0:
+                for key, value in challenges.items():
+                    challenge: Challenge = value
+                    logger.error(f"A challenge {key}, {challenge.state}")
 
         else:
             logger.info(f"I'm not the forger")  
