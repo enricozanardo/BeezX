@@ -169,7 +169,9 @@ class Blockchain():
             return False
 
     def blockCountValid(self, block: Block):
-        prevLocalBlockCount = self.blocks[-2].blockCount
+
+        prevLocalBlockCount = len(self.blocks) > 1 if self.blocks[-2].blockCount else 0
+        
         localBlockCount = self.blocks[-1].blockCount
         blockCount = block.blockCount - 1
 
