@@ -345,10 +345,14 @@ class BeezNode():
         logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
         logger.info(f"challengeTx ID: {challengeTx.id}")
 
+        logger.error(f"whay the challenge is still open?????")
+
         # already exist in the Blockchain
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
-        if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
+        # if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
+        if not challengeTransactionExist and not transactionInBlock and signatureValid:
+        
             logger.info(f"add to the Closed ChallengeTX to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
 
