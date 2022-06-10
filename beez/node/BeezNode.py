@@ -92,37 +92,9 @@ class BeezNode():
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         
         # add the tx to the pool
-        challenge: Challenge = challengeTX.challenge
+        self.handleChallengeTX(challengeTX)
+
         
-        logger.info(f"Manage the challenge ID: {challenge.id}")
-
-        data = challengeTX.payload()
-        signature = challengeTX.signature
-        signaturePublicKey = challengeTX.senderPublicKey
-
-        # # # is valid?
-        signatureValid = Wallet.signatureValid(
-            data, signature, signaturePublicKey)
-
-        # already exist in the transaction pool
-        challengeTransactionExist = self.transactionPool.challengeExists(challengeTX)
-       
-        # already exist in the Blockchain
-        transactionInBlock = self.blockchain.transactionExist(challengeTX)
-
-        if not challengeTransactionExist and not transactionInBlock and signatureValid:
-            # logger.info(f"add to the Transaction Pool!!!")
-            self.transactionPool.addTransaction(challengeTX)
-
-            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTX)
-            encodedMessage = BeezUtils.encode(message)
-            self.p2p.broadcast(encodedMessage)
-            
-            # check if is time to forge a new Block
-            forgingRequired = self.transactionPool.forgerRequired()
-            if forgingRequired == True:
-                logger.info(f"Forger required")
-                self.forge()
 
         # call the forger!
 
@@ -445,10 +417,16 @@ class BeezNode():
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
 
-            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
-            encodedMessage = BeezUtils.encode(message)
-            self.p2p.broadcast(encodedMessage)
-            
+            if challengeTx.challenge.state == ChallengeState.CLOSED:
+                message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
+                encodedMessage = BeezUtils.encode(message)
+                self.p2p.broadcast(encodedMessage)
+
+            else: 
+                message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
+                encodedMessage = BeezUtils.encode(message)
+                self.p2p.broadcast(encodedMessage)
+                
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
             if forgingRequired == True:
