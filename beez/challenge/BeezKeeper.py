@@ -148,7 +148,7 @@ class BeezKeeper():
                 if challenge.counter % 2 == 0:
                     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
-                time.sleep(2)
+                time.sleep(1)
 
 
                 # Show Accuracy

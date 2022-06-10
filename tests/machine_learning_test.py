@@ -172,3 +172,5 @@ def test_machine_learning_challenge():
 
     # assert beezNode.ip == localIP
     assert 5 == 5
+
+    
