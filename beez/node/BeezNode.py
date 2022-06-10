@@ -103,10 +103,6 @@ class BeezNode():
     def handleChallengeOpen(self, challenge: Challenge):
         logger.info(f"Manage the challenge {challenge.id} -- STATE: {challenge.state}")
 
-        # localChallenge = self.blockchain.beezKeeper.get(challenge.id)
-
-        #TODO: remove doubles!!! add the worker to the list
-
         walletPubKey = str(self.wallet.publicKeyString()).strip()
         
         if walletPubKey in challenge.workers.keys():
@@ -265,7 +261,6 @@ class BeezNode():
 
             self.transactionPool.removeFromPool(block.transactions)
 
-
             # For Peers
             # check the BeezKeeper
             challenges : Dict[ChallengeID : Challenge] = self.blockchain.beezKeeper.challenges
@@ -275,7 +270,6 @@ class BeezNode():
             if challengesNumber > 0:
                 self.acceptChallenges(challenges)
             
-
             # broadcast the block message
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
             encodedMessage = BeezUtils.encode(message)
@@ -405,10 +399,9 @@ class BeezNode():
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
             # Propagate the transaction to other peers
-            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
-
-            encodedMessage = BeezUtils.encode(message)
-            self.p2p.broadcast(encodedMessage)
+            # message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
+            # encodedMessage = BeezUtils.encode(message)
+            # self.p2p.broadcast(encodedMessage)
 
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
@@ -443,17 +436,6 @@ class BeezNode():
             self.p2p.broadcast(encodedMessage)
 
             logger.info(f"new block broadcasted...")
-
-            # For Forger
-            # check the BeezKeeper
-            # time.sleep(5)
-
-            # challenges : Dict[ChallengeID : Challenge] = self.blockchain.beezKeeper.challenges
-            # challengesNumber = len(challenges.items())
-            # logger.info(f"Forger challenges.... {challengesNumber}")
-
-            # if challengesNumber > 0:
-            #     self.acceptChallenges(challenges)
 
         else:
             logger.info(f"I'm not the forger")  
