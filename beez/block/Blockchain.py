@@ -188,11 +188,11 @@ class Blockchain():
         
         latestBlockainBlockHash = BeezUtils.hash(self.blocks[-1].payload()).hexdigest()
 
-        logger.info(f"prevBlockainBlockHash: {prevBlockainBlockHash}")
+        logger.warning(f"prevBlockainBlockHash: {prevBlockainBlockHash}")
         logger.warning(f"latestBlockainBlockHash {latestBlockainBlockHash}")
         logger.warning(f"block.lastHash {block.lastHash}")
         
-        if latestBlockainBlockHash == block.lastHash:
+        if latestBlockainBlockHash == block.lastHash or prevBlockainBlockHash == block.lastHash:
             return True
         else:
             return False
