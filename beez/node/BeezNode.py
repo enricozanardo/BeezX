@@ -425,7 +425,7 @@ class BeezNode():
             # mint the new Block
             block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
 
-            logger.info(f"new block minted")
+            logger.info(f"new block minted with {len(block.transactions)} transactions...")
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
