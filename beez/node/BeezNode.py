@@ -103,6 +103,28 @@ class BeezNode():
     
     def handleChallengeCreated(self, challengeID: ChallengeID):
         logger.info(f"Challenge CREATED!!! {challengeID}")
+        # retrive the challenge from the keeper!
+        challengeExist = self.blockchain.beezKeeper.challegeExists(challengeID)
+
+        if challengeExist:
+            # accept the challenge!
+            self.acceptChallenge(challengeID)
+
+    
+    def acceptChallenge(self, challengeID: ChallengeID):
+        # get the localchallenge
+        localChallenge = self.blockchain.beezKeeper.get(challengeID)
+
+        if localChallenge.state == ChallengeState.CREATED.name:
+            # logger.info(f"Challenge {challenge.state}: Update challenge to OPEN!!!")    
+            localChallenge.state = ChallengeState.OPEN.name
+
+            self.blockchain.beezKeeper.set(localChallenge)
+
+            message = MessageChallenge(self.p2p.socketConnector, MessageType.OPEN.name, localChallenge)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
+
 
 
     def handleChallengeOpen(self, challenge: Challenge):
@@ -118,7 +140,6 @@ class BeezNode():
             # add the new worker
             challenge.workers[walletPubKey] = 1
             
-
         logger.info(f"Challenge Iterations: {challenge.iteration}")
 
         if challenge.state == ChallengeState.OPEN.name:
