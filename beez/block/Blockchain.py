@@ -192,7 +192,7 @@ class Blockchain():
         logger.warning(f"latestBlockainBlockHash {latestBlockainBlockHash}")
         logger.warning(f"block.lastHash {block.lastHash}")
         
-        if latestBlockainBlockHash == block.lastHash or prevBlockainBlockHash == block.lastHash:
+        if latestBlockainBlockHash == block.lastHash:
             return True
         else:
             return False
