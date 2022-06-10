@@ -242,7 +242,13 @@ class BeezNode():
         if not transactionExist and not transactionInBlock and signatureValid:
             # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
-          
+
+
+            # Broadcast the Transaction otherwise the forger do not know if it must do something
+            message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
+
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
             if forgingRequired == True:
@@ -410,6 +416,10 @@ class BeezNode():
         if not challengeTransactionExist and not transactionInBlock and signatureValid:
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
+
+            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
             
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
@@ -469,11 +479,9 @@ class BeezNode():
                         logger.info(f"delete the challenge in the keeper")
                         logger.info(f"broadcast the message 'REWARD")
 
-
-
-
         else:
             logger.info(f"I'm not the forger")  
+
 
     def handleBlockchainRequest(self, requestingNode: BeezNode):
         # send the updated version of the blockchain to the node that made the request
