@@ -73,6 +73,9 @@ class BeezNode():
         self.api.start(self.ip)
 
 
+    
+
+
     def handleChallengeClosed(self, closedChallenge: Challenge):
         logger.info(f"Manage the Closed Challenge")
         # remove the challenge from the Keeper
@@ -92,7 +95,7 @@ class BeezNode():
         self.handleClosedChallengeTX(challengeTX)
 
         # Bradcast it!!!
-        message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGECLOSED, challengeTX)
+        message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGETXCLOSED.name, challengeTX)
         encodedMessage = BeezUtils.encode(message)
         self.p2p.broadcast(encodedMessage)
 

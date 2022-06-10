@@ -105,7 +105,8 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             challenge: Challenge = message.challenge
             self.beezNode.handleChallengeClosed(challenge)
-            
+
+        
         elif message.messageType == MessageType.TRANSACTION.name:
             # handle the TRANSACTION
             logger.info(f"A Transaction Message will be broadcasted!! {message.messageType}")
@@ -117,6 +118,12 @@ class SocketCommunication(Node):
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
             challengeTransaction : ChallengeTX  = message.challengeTx
             self.beezNode.handleChallengeTX(challengeTransaction)
+
+        elif message.messageType == MessageType.CHALLENGETXCLOSED.name:
+            # handle the CHALLENGETXCLOSED
+            logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
+            challengeTransaction : ChallengeTX  = message.challengeTx
+            self.beezNode.handleClosedChallengeTX(challengeTransaction)
         
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK

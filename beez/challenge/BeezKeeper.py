@@ -168,7 +168,7 @@ class BeezKeeper():
 
                 logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
 
-                time.sleep(2)
+                time.sleep(1)
 
                 # update the values
                 challenge.model = model
