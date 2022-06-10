@@ -38,6 +38,7 @@ from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
 from beez.socket.MessageChallenge import MessageChallenge
 from beez.challenge.ChallengeType import ChallengeType
+from beez.socket.MessageChallengeID import MessageChallengeID
 
 class BeezNode():
 
@@ -100,6 +101,10 @@ class BeezNode():
         logger.error(f"DONE????")
 
     
+    def handleChallengeCreated(self, challengeID: ChallengeID):
+        logger.info(f"Challenge CREATED!!! {challengeID}")
+
+
     def handleChallengeOpen(self, challenge: Challenge):
         logger.info(f"Manage the challenge {challenge.id} -- STATE: {challenge.state}")
 
@@ -415,14 +420,26 @@ class BeezNode():
 
             logger.info(f"new block broadcasted... check challenges...")
 
+        
             # check if the keeper has a some transactions that must be broadcasted!!
             challenges : Dict[ChallengeID: Challenge] = self.blockchain.beezKeeper.challenges
 
             logger.info(f" how many? {len(challenges.items())}")
+            
             if len(challenges.items()) > 0:
                 for key, value in challenges.items():
+                    challengeID: ChallengeID = key
                     challenge: Challenge = value
-                    logger.error(f"A challenge {key}, {challenge.state}")
+                    logger.error(f"A challenge {challengeID}, {challenge.state}")
+
+                    # broadcast the message Challenge CREATED!!
+                    time.sleep(1)
+                    message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
+                    encodedMessage = BeezUtils.encode(message)
+                    self.p2p.broadcast(encodedMessage)
+
+
+
 
         else:
             logger.info(f"I'm not the forger")  

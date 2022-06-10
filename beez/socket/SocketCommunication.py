@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, Dict, List
 import json
+from beez.Types import ChallengeID
 from beez.challenge.Challenge import Challenge
 
 if TYPE_CHECKING:
@@ -99,6 +100,12 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             challenge: Challenge = message.challenge
             self.beezNode.handleChallengeOpen(challenge)
+
+        elif message.messageType == MessageType.CREATED.name:
+            # handle the CREATED
+            logger.info(f"manage the message {message.messageType}")
+            challengeID: ChallengeID = message.challengeID
+            self.beezNode.handleChallengeCreated(challengeID)
 
         elif message.messageType == MessageType.CHALLENGECLOSED.name:
             # handle the CHALLENGECLOSED

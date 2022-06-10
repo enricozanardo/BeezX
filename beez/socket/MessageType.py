@@ -26,3 +26,4 @@ class MessageType(Enum):
     CHALLENGEOPEN = "challengeopen"
     CHALLENGECLOSED = "challengeclosed"
     CHALLENGETXCLOSED = "challengetxclosed"
+    CREATED = "created"
