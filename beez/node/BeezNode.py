@@ -93,10 +93,15 @@ class BeezNode():
         # Create a TX to REWARD the workers in the Blockchain
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         
-        # Bradcast it!!!
-        message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.REWARD.name, challengeTX)
-        encodedMessage = BeezUtils.encode(message)
-        self.p2p.broadcast(encodedMessage)
+        # add the tx to the pool
+        self.handleChallengeTX(challengeTX)
+
+        # call the forger!
+
+        # # Bradcast it!!!
+        # message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.REWARD.name, challengeTX)
+        # encodedMessage = BeezUtils.encode(message)
+        # self.p2p.broadcast(encodedMessage)
 
         logger.error(f"DONE????")
 
@@ -450,13 +455,19 @@ class BeezNode():
                 for key, value in challenges.items():
                     challengeID: ChallengeID = key
                     challenge: Challenge = value
+                    challengeState = challenge.state
                     logger.error(f"A challenge {challengeID}, {challenge.state}")
 
                     # broadcast the message Challenge CREATED!!
-                    time.sleep(1)
-                    message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
-                    encodedMessage = BeezUtils.encode(message)
-                    self.p2p.broadcast(encodedMessage)
+                    if challengeState == ChallengeState.CREATED.name:
+                        time.sleep(1)
+                        message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
+                        encodedMessage = BeezUtils.encode(message)
+                        self.p2p.broadcast(encodedMessage)
+
+                    if challengeState == ChallengeState.CLOSED.name:
+                        logger.info(f"delete the challenge in the keeper")
+                        logger.info(f"broadcast the message 'REWARD")
 
 
 
