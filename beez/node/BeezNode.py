@@ -417,6 +417,8 @@ class BeezNode():
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
 
+            logger.info(f"????????????????????????????????? {challengeTx.challenge.state}")
+
             if challengeTx.challenge.state == ChallengeState.CLOSED.name:
                 logger.info(f"what is this???")
                 message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
