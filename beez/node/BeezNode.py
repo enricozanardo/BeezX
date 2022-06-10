@@ -338,14 +338,18 @@ class BeezNode():
         challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challengeTx.challenge.id)
 
         logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
-        logger.info(f"challengeTx.challenge.id: {challengeTx.challenge.id}")
+        if challengeBeezKeeperExist:
+            # remove the challenge from the keeper!
+            self.blockchain.beezKeeper.delete(challengeTx.challenge.id)
+
+        logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
         logger.info(f"challengeTx ID: {challengeTx.id}")
 
         # already exist in the Blockchain
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
         if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
-            # logger.info(f"add to the Transaction Pool!!!")
+            logger.info(f"add to the Closed ChallengeTX to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
 
             # check if is time to forge a new Block
@@ -355,7 +359,7 @@ class BeezNode():
                 self.forge()
 
             logger.info(f"########## Reward starts ###########")
-            self.handleRewards(challenge.workers, challenge.reward)
+            # self.handleRewards(challenge.workers, challenge.reward)
 
 
     def handleRewards(self, workers: Dict[PublicKeyString: int], totalReward: int):
