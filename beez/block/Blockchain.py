@@ -168,16 +168,10 @@ class Blockchain():
         else:
             return False
 
-    def blockCountValid(self, block: Block):
-
-        prevLocalBlockCount = 0
-        if len(self.blocks) > 1:
-            prevLocalBlockCount =  self.blocks[-2].blockCount
-        
+    def blockCountValid(self, block: Block):        
         localBlockCount = self.blocks[-1].blockCount
         blockCount = block.blockCount - 1
 
-        logger.info(f"prevLocalBlockCount: {prevLocalBlockCount}")
         logger.info(f"localBlockCount: {localBlockCount}")
         logger.info(f"blockCount: {blockCount}")
 
@@ -187,9 +181,14 @@ class Blockchain():
             return False
 
     def lastBlockHashValid(self, block: Block):
-        latestBlockainBlockHash = BeezUtils.hash(
-            self.blocks[-1].payload()).hexdigest()
 
+        prevBlockainBlockHash = ""
+        if len(self.blocks) > 1:
+            prevBlockainBlockHash =  BeezUtils.hash(self.blocks[-2].payload()).hexdigest()
+        
+        latestBlockainBlockHash = BeezUtils.hash(self.blocks[-1].payload()).hexdigest()
+
+        logger.info(f"prevBlockainBlockHash: {prevBlockainBlockHash}")
         logger.warning(f"latestBlockainBlockHash {latestBlockainBlockHash}")
         logger.warning(f"block.lastHash {block.lastHash}")
         
