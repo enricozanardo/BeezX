@@ -169,13 +169,15 @@ class Blockchain():
             return False
 
     def blockCountValid(self, block: Block):
+        prevLocalBlockCount = self.blocks[-2].blockCount
         localBlockCount = self.blocks[-1].blockCount
         blockCount = block.blockCount - 1
 
+        logger.info(f"prevLocalBlockCount: {prevLocalBlockCount}")
         logger.info(f"localBlockCount: {localBlockCount}")
         logger.info(f"blockCount: {blockCount}")
 
-        if localBlockCount == blockCount:
+        if localBlockCount == blockCount or prevLocalBlockCount == blockCount:
             return True
         else:
             return False
