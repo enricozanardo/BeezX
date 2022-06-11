@@ -88,11 +88,17 @@ class BeezNode():
 
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
+        
         # Create a TX to REWARD the workers in the Blockchain
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         
         # add the tx to the pool
-        self.handleChallengeTX(challengeTX)
+        # broadcast the Challenge Transactions to peers!
+        self.handleClosedChallengeTX(challengeTX)
+
+        
+
+        # self.handleChallengeTX(challengeTX)
 
         
 
@@ -364,11 +370,17 @@ class BeezNode():
             logger.info(f"add to the Closed ChallengeTX to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
 
-            # check if is time to forge a new Block
-            forgingRequired = self.transactionPool.forgerRequired()
-            if forgingRequired == True:
-                logger.info(f"Forger required")
-                self.forge()
+            # Broadcast the challengeTX to peers!!!
+            message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGETXCLOSED, challenge)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
+
+
+            # TODO: next... check if is time to forge a new Block
+            # forgingRequired = self.transactionPool.forgerRequired()
+            # if forgingRequired == True:
+            #     logger.info(f"Forger required")
+            #     self.forge()
 
             logger.info(f"########## Reward starts ###########")
             # self.handleRewards(challenge.workers, challenge.reward)
