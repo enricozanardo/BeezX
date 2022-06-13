@@ -371,7 +371,7 @@ class BeezNode():
             self.transactionPool.addTransaction(challengeTx)
 
             # Broadcast the challengeTX to peers!!!
-            message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGETXCLOSED, challenge)
+            message = MessageChallengeTransation(self.wallet.publicKeyString(), MessageType.CHALLENGETXCLOSED.name, challenge)
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
 
