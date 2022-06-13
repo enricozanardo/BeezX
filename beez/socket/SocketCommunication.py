@@ -147,7 +147,7 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.CHALLENGETXCLOSED.name:
             # handle the CHALLENGETXCLOSED
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
-            logger.info(f"{type(message.messageType)}")
+            logger.info(f"{type(message.challengeTx)}")
             challengeTransaction : ChallengeTX  = message.challengeTx
             self.beezNode.handleClosedChallengeTX(challengeTransaction)
         
