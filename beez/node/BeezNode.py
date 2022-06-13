@@ -377,10 +377,10 @@ class BeezNode():
 
 
             # TODO: next... check if is time to forge a new Block
-            # forgingRequired = self.transactionPool.forgerRequired()
-            # if forgingRequired == True:
-            #     logger.info(f"Forger required")
-            #     self.forge()
+            forgingRequired = self.transactionPool.forgerRequired()
+            if forgingRequired == True:
+                logger.info(f"Forger required")
+                self.forge()
 
             logger.info(f"########## Reward starts ###########")
             # self.handleRewards(challenge.workers, challenge.reward)
