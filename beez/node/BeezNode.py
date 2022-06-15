@@ -431,6 +431,8 @@ class BeezNode():
 
             logger.info(f"????????????????????????????????? {challengeTx.challenge.state}")
 
+            
+
             if challengeTx.challenge.state == ChallengeState.CLOSED.name:
                 logger.info(f"what is this???")
                 message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
@@ -438,6 +440,9 @@ class BeezNode():
                 self.p2p.broadcast(encodedMessage)
 
             else: 
+
+                # TODO: check the state of the transaction and, in case add to the Keeper..
+
                 message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
                 encodedMessage = BeezUtils.encode(message)
                 self.p2p.broadcast(encodedMessage)
@@ -493,7 +498,9 @@ class BeezNode():
 
                     # broadcast the message Challenge CREATED!!
                     if challengeState == ChallengeState.CREATED.name:
-                        time.sleep(1)
+                        # Wait until the BLOCK message is completely broadcasted!!!!
+                        logger.info(f"Wait 5 seconds to be sure that the BLOCK message is completely broadcasted!!!!")
+                        time.sleep(5)
                         message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
                         encodedMessage = BeezUtils.encode(message)
                         self.p2p.broadcast(encodedMessage)
