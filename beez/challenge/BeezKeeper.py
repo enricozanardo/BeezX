@@ -7,6 +7,8 @@ import threading
 import os
 from dotenv import load_dotenv
 import time
+import pathlib
+
 
 #### Machine Learning
 import torch
@@ -45,9 +47,14 @@ class BeezKeeper():
         
     
     def getIrisDataset(self):
-        csv_url = "https://datahub.io/machine-learning/iris/r/iris.csv"
+        # remote Dataset
+        # csv_url = "https://datahub.io/machine-learning/iris/r/iris.csv"
         # self.iris = pd.read_csv(csv_url)
-        self.iris = pd.read_csv("../input/iris.csv")
+
+        # local Dataset
+        currentPath = pathlib.Path().resolve()
+        irisDatasetPath = f"{currentPath}/beez/input/iris.csv"
+        self.iris = pd.read_csv(irisDatasetPath)
 
         # replace labels with numbers
         mappings = {
