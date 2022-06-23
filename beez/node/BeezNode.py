@@ -452,8 +452,8 @@ class BeezNode():
                 logger.info(f"Forger required")
                 self.forge()
 
-        # if challengeExist:
-        #     logger.info(f"Challenge already exist!")
+        if challengeExist:
+            logger.info(f"Challenge already exist!")
 
         #     # broadcast the message Challenge CREATED!!
         #     if challengeTx.challenge.state == ChallengeState.CREATED.name:
