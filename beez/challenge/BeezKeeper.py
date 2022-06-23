@@ -41,14 +41,13 @@ class BeezKeeper():
     def __init__(self):
         self.challenges : Dict[ChallengeID : Challenge] = {}
         # Download the dataset for silulation
-        # self.getIrisDataset()
+        self.getIrisDataset()
         
     
     def getIrisDataset(self):
         csv_url = "https://datahub.io/machine-learning/iris/r/iris.csv"
-        self.iris = pd.read_csv(csv_url)
-
-        # dataset = pd.read_csv("../input/iris-dataset/iris.data.csv")
+        # self.iris = pd.read_csv(csv_url)
+        self.iris = pd.read_csv("../input/iris.csv")
 
         # replace labels with numbers
         mappings = {
@@ -140,9 +139,21 @@ class BeezKeeper():
                 criterion = challenge.criterion
                 optimizer = challenge.optimizer
 
-                # Do one epoch (iteration)
+                # TODO: do 2/3 epochs at iteraction...
+                # for i in range(epochs):
+                #     y_hat = model.forward(X_train)
+                #     loss = criterion(y_hat, y_train)
+                #     loss_arr.append(loss)
                 
+                #     if i % 10 == 0:
+                #         print(f'Epoch: {i} Loss: {loss}')
+                
+                #     optimizer.zero_grad()
+                #     loss.backward()
+                #     optimizer.step()
 
+
+                # Do one epoch (iteration)
                 y_hat = model.forward(X_train)
                 loss = criterion(y_hat, y_train)
                 optimizer.step()
