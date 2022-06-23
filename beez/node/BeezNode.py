@@ -334,8 +334,9 @@ class BeezNode():
 
     def handleClosedChallengeTX(self, challengeTx: ChallengeTX):
         challenge: Challenge = challengeTx.challenge
+        challengeID: ChallengeID = challenge.id
         
-        logger.warning(f"Handle Closed Transaction: [To reward the workers....] {challenge.id}")
+        logger.warning(f"Handle Closed Transaction: [To reward the workers....] {challengeID}")
 
         data = challengeTx.payload()
         signature = challengeTx.signature
@@ -349,12 +350,14 @@ class BeezNode():
         challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
 
         # already exist in the beezKeeper
-        challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challenge.id)
+        challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challengeID)
 
         logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
         if challengeBeezKeeperExist:
             # remove the challenge from the keeper!
-            self.blockchain.beezKeeper.delete(challenge.id)
+            self.blockchain.beezKeeper.delete(challengeID)
+
+        challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challenge.id)
 
         logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
         logger.info(f"challengeTx ID: {challengeTx.id}")
