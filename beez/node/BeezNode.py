@@ -349,12 +349,12 @@ class BeezNode():
         challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
 
         # already exist in the beezKeeper
-        challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challengeTx.challenge.id)
+        challengeBeezKeeperExist = self.blockchain.beezKeeper.challegeExists(challenge.id)
 
         logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
         if challengeBeezKeeperExist:
             # remove the challenge from the keeper!
-            self.blockchain.beezKeeper.delete(challengeTx.challenge.id)
+            self.blockchain.beezKeeper.delete(challenge.id)
 
         logger.info(f"challengeBeezKeeperExist: {challengeBeezKeeperExist}")
         logger.info(f"challengeTx ID: {challengeTx.id}")
@@ -406,8 +406,7 @@ class BeezNode():
 
             reward = int(totalReward / totalCount * count)
             rewardTX : Transaction = self.wallet.createTransaction(publicKeyString, reward, TransactionType.REWARD.name)
-            
-            time.sleep(2)
+
             self.handleTransaction(rewardTX)
             logger.info(f"times: {times}")
 
