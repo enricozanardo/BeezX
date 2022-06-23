@@ -88,6 +88,8 @@ class BeezNode():
 
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
+        closedChallenge.state == ChallengeState.CLOSED.name
+
         # Create a TX to REWARD the workers in the Blockchain
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         
