@@ -391,7 +391,7 @@ class BeezNode():
 
             if imTheForger:
                 logger.info(f"########## Reward starts because I am the forger: {imTheForger} ###########")
-                # self.handleRewards(challenge.workers, challenge.reward)
+                self.handleRewards(challenge.workers, challenge.reward)
 
 
     def handleChallengeReward(self, closedChallenge: Challenge):
