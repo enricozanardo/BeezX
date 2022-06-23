@@ -384,12 +384,14 @@ class BeezNode():
 
             # TODO: next... check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
+            imTheForger = False
             if forgingRequired == True:
                 logger.info(f"Forger required")
-                self.forge()
+                imTheForger = self.forge()
 
-            logger.info(f"########## Reward starts ###########")
-            # self.handleRewards(challenge.workers, challenge.reward)
+            if imTheForger:
+                logger.info(f"########## Reward starts because I am the forger: {imTheForger} ###########")
+                # self.handleRewards(challenge.workers, challenge.reward)
 
 
     def handleChallengeReward(self, closedChallenge: Challenge):
@@ -469,8 +471,6 @@ class BeezNode():
 
             # broadcast the message Challenge CREATED!!
             if challengeTx.challenge.state == ChallengeState.CREATED.name:
-                logger.info(f"Wait 1 seconds to be sure that the BLOCK message is completely broadcasted!!!!")
-                time.sleep(1)
                 message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
                 encodedMessage = BeezUtils.encode(message)
                 self.p2p.broadcast(encodedMessage)
@@ -487,10 +487,9 @@ class BeezNode():
         #         encodedMessage = BeezUtils.encode(message)
         #         self.p2p.broadcast(encodedMessage)
 
-    def forge(self):
+    def forge(self) -> bool:
         logger.info(f"Forger called")
         # Elect the next forger
-
 
         forger = self.blockchain.nextForger()
 
@@ -517,6 +516,7 @@ class BeezNode():
 
             logger.info(f"new block broadcasted... check challenges...")
 
+            return True
         
             # check if the keeper has a some transactions that must be broadcasted!!
             # challenges : Dict[ChallengeID: Challenge] = self.blockchain.beezKeeper.challenges
@@ -545,6 +545,7 @@ class BeezNode():
 
         else:
             logger.info(f"I'm not the forger")  
+            return False
 
 
     def handleBlockchainRequest(self, requestingNode: BeezNode):
