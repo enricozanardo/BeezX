@@ -425,33 +425,55 @@ class BeezNode():
         # already exist in the Blockchain
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
-        if not challengeTransactionExist and not transactionInBlock and signatureValid:
+        # already exist in the BeezKeeper
+        logger.info(f"challengeID: {challengeTx.challenge.id}")
+        challengeID : ChallengeID = challengeTx.challenge.id
+        challengeExist = self.blockchain.beezKeeper.challegeExists(challengeID)
+
+        if not challengeTransactionExist and not transactionInBlock and not challengeExist and signatureValid:
             # logger.info(f"add to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
 
+            logger.info(f"a new challenge is coming... challengeID: {challengeTx.challenge.id}")
             logger.info(f"????????????????????????????????? {challengeTx.challenge.state}")
 
-            
+            logger.info(f"Add the challenge to the BeezKeeper")
+            newChallenge: Challenge = challengeTx.challenge
+            self.blockchain.beezKeeper.set(newChallenge)
 
-            if challengeTx.challenge.state == ChallengeState.CLOSED.name:
-                logger.info(f"what is this???")
-                message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
-                encodedMessage = BeezUtils.encode(message)
-                self.p2p.broadcast(encodedMessage)
-
-            else: 
-
-                # TODO: check the state of the transaction and, in case add to the Keeper..
-
-                message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
-                encodedMessage = BeezUtils.encode(message)
-                self.p2p.broadcast(encodedMessage)
-                
+            # broadcast the CHALLENGE to other peers
+            message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
+            encodedMessage = BeezUtils.encode(message)
+            self.p2p.broadcast(encodedMessage)
+     
             # check if is time to forge a new Block
             forgingRequired = self.transactionPool.forgerRequired()
             if forgingRequired == True:
                 logger.info(f"Forger required")
                 self.forge()
+
+        # if challengeExist:
+        #     logger.info(f"Challenge already exist!")
+
+        #     # broadcast the message Challenge CREATED!!
+        #     if challengeTx.challenge.state == ChallengeState.CREATED.name:
+        #         logger.info(f"Wait 1 seconds to be sure that the BLOCK message is completely broadcasted!!!!")
+        #         time.sleep(1)
+        #         message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
+        #         encodedMessage = BeezUtils.encode(message)
+        #         self.p2p.broadcast(encodedMessage)
+
+        #     elif challengeTx.challenge.state == ChallengeState.CLOSED.name:
+        #         logger.info(f"what is this??? - A CLOSED challenge is received..")
+        #         message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
+        #         encodedMessage = BeezUtils.encode(message)
+        #         self.p2p.broadcast(encodedMessage)
+
+        #     else: 
+        #         # broadcast the CHALLENGE to other peers
+        #         message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.CHALLENGE.name, challengeTx)
+        #         encodedMessage = BeezUtils.encode(message)
+        #         self.p2p.broadcast(encodedMessage)
 
     def forge(self):
         logger.info(f"Forger called")
@@ -485,29 +507,29 @@ class BeezNode():
 
         
             # check if the keeper has a some transactions that must be broadcasted!!
-            challenges : Dict[ChallengeID: Challenge] = self.blockchain.beezKeeper.challenges
+            # challenges : Dict[ChallengeID: Challenge] = self.blockchain.beezKeeper.challenges
 
-            logger.info(f" how many? {len(challenges.items())}")
+            # logger.info(f" how many? {len(challenges.items())}")
             
-            if len(challenges.items()) > 0:
-                for key, value in challenges.items():
-                    challengeID: ChallengeID = key
-                    challenge: Challenge = value
-                    challengeState = challenge.state
-                    logger.error(f"A challenge {challengeID}, {challenge.state}")
+            # if len(challenges.items()) > 0:
+            #     for key, value in challenges.items():
+            #         challengeID: ChallengeID = key
+            #         challenge: Challenge = value
+            #         challengeState = challenge.state
+            #         logger.error(f"A challenge {challengeID}, {challenge.state}")
 
-                    # broadcast the message Challenge CREATED!!
-                    if challengeState == ChallengeState.CREATED.name:
-                        # Wait until the BLOCK message is completely broadcasted!!!!
-                        logger.info(f"Wait 5 seconds to be sure that the BLOCK message is completely broadcasted!!!!")
-                        time.sleep(5)
-                        message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
-                        encodedMessage = BeezUtils.encode(message)
-                        self.p2p.broadcast(encodedMessage)
+            #         # broadcast the message Challenge CREATED!!
+            #         if challengeState == ChallengeState.CREATED.name:
+            #             # Wait until the BLOCK message is completely broadcasted!!!!
+            #             logger.info(f"Wait 5 seconds to be sure that the BLOCK message is completely broadcasted!!!!")
+            #             time.sleep(5)
+            #             message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
+            #             encodedMessage = BeezUtils.encode(message)
+            #             self.p2p.broadcast(encodedMessage)
 
-                    if challengeState == ChallengeState.CLOSED.name:
-                        logger.info(f"delete the challenge in the keeper")
-                        logger.info(f"broadcast the message 'REWARD")
+            #         if challengeState == ChallengeState.CLOSED.name:
+            #             logger.info(f"delete the challenge in the keeper")
+            #             logger.info(f"broadcast the message 'REWARD")
 
         else:
             logger.info(f"I'm not the forger")  

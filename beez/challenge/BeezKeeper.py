@@ -48,6 +48,8 @@ class BeezKeeper():
         csv_url = "https://datahub.io/machine-learning/iris/r/iris.csv"
         self.iris = pd.read_csv(csv_url)
 
+        # dataset = pd.read_csv("../input/iris-dataset/iris.data.csv")
+
         # replace labels with numbers
         mappings = {
             'Iris-setosa': 0,
