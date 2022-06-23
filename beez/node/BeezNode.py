@@ -397,12 +397,17 @@ class BeezNode():
         # TODO: calculate the reward!
         totalCount = sum(workers.values())
        
+        times = 0
+
         for pubKeyString, count in workers.items():
             publicKeyString : PublicKeyString = pubKeyString
+
+            times = times + 1
 
             reward = int(totalReward / totalCount * count)
             rewardTX : Transaction = self.wallet.createTransaction(publicKeyString, reward, TransactionType.REWARD.name)
             self.handleTransaction(rewardTX)
+            logger.info(f"times: {times}")
 
 
     def handleChallengeTX(self, challengeTx: ChallengeTX):
