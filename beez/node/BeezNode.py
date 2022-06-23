@@ -88,16 +88,12 @@ class BeezNode():
 
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
-        logger.error(f"")
-
-        newClosedChallenge: Challenge = closedChallenge
-        newClosedChallenge.state == ChallengeState.CLOSED.name
+        closedChallenge.state = ChallengeState.CLOSED.name
 
         logger.error(f"closedChallenge.state {closedChallenge.state}")
-        logger.error(f"newClosedChallenge.state {newClosedChallenge.state}")
 
         # Create a TX to REWARD the workers in the Blockchain
-        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, newClosedChallenge)
+        challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         
         # add the tx to the pool
         # broadcast the Challenge Transactions to peers!
