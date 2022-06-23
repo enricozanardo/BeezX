@@ -455,19 +455,19 @@ class BeezNode():
         if challengeExist:
             logger.info(f"Challenge already exist!")
 
-        #     # broadcast the message Challenge CREATED!!
-        #     if challengeTx.challenge.state == ChallengeState.CREATED.name:
-        #         logger.info(f"Wait 1 seconds to be sure that the BLOCK message is completely broadcasted!!!!")
-        #         time.sleep(1)
-        #         message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
-        #         encodedMessage = BeezUtils.encode(message)
-        #         self.p2p.broadcast(encodedMessage)
+            # broadcast the message Challenge CREATED!!
+            if challengeTx.challenge.state == ChallengeState.CREATED.name:
+                logger.info(f"Wait 1 seconds to be sure that the BLOCK message is completely broadcasted!!!!")
+                time.sleep(1)
+                message = MessageChallengeID(self.p2p.socketConnector, MessageType.CREATED.name, challengeID)
+                encodedMessage = BeezUtils.encode(message)
+                self.p2p.broadcast(encodedMessage)
 
-        #     elif challengeTx.challenge.state == ChallengeState.CLOSED.name:
-        #         logger.info(f"what is this??? - A CLOSED challenge is received..")
-        #         message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
-        #         encodedMessage = BeezUtils.encode(message)
-        #         self.p2p.broadcast(encodedMessage)
+            elif challengeTx.challenge.state == ChallengeState.CLOSED.name:
+                logger.info(f"what is this??? - A CLOSED challenge is received..")
+                message = MessageChallengeTransation(self.p2p.socketConnector, MessageType.REWARD.name, challengeTx)
+                encodedMessage = BeezUtils.encode(message)
+                self.p2p.broadcast(encodedMessage)
 
         #     else: 
         #         # broadcast the CHALLENGE to other peers
