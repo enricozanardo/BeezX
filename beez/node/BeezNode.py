@@ -383,7 +383,7 @@ class BeezNode():
                 self.forge()
 
             logger.info(f"########## Reward starts ###########")
-            # self.handleRewards(challenge.workers, challenge.reward)
+            self.handleRewards(challenge.workers, challenge.reward)
 
 
     def handleChallengeReward(self, closedChallenge: Challenge):
