@@ -88,7 +88,6 @@ class BeezNode():
 
         logger.info(f"Challenges in Keeper???? {len(self.blockchain.beezKeeper.challenges.items())}")
 
-        
         # Create a TX to REWARD the workers in the Blockchain
         challengeTX : ChallengeTX = self.wallet.createChallengeTransaction(closedChallenge.reward, TransactionType.CLOSED.name, closedChallenge)
         
@@ -368,7 +367,7 @@ class BeezNode():
         transactionInBlock = self.blockchain.transactionExist(challengeTx)
 
         # if not challengeTransactionExist and not transactionInBlock and not challengeBeezKeeperExist and signatureValid:
-        if not challengeTransactionExist and not transactionInBlock and signatureValid:
+        if not challengeTransactionExist and not transactionInBlock  and not challengeBeezKeeperExist and signatureValid:
         
             logger.info(f"add to the Closed ChallengeTX to the Transaction Pool!!!")
             self.transactionPool.addTransaction(challengeTx)
@@ -386,11 +385,11 @@ class BeezNode():
                 self.forge()
 
             logger.info(f"########## Reward starts ###########")
-            self.handleRewards(challenge.workers, challenge.reward)
+            # self.handleRewards(challenge.workers, challenge.reward)
 
 
     def handleChallengeReward(self, closedChallenge: Challenge):
-        logger.warning("reward the workers...")
+        logger.warning("reward the workers... BETTER WAY!!!")
 
     def handleRewards(self, workers: Dict[PublicKeyString: int], totalReward: int):
         logger.info(f"Pay workers!!!")
