@@ -157,7 +157,7 @@ class BeezKeeper():
                 loss.backward()
                 optimizer.step()
 
-                time.sleep(1)
+                time.sleep(2)
 
                 # Show Accuracy
                 # Model Evaluation
