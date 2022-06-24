@@ -145,7 +145,7 @@ class BeezKeeper():
                 model = challenge.model
                 criterion = challenge.criterion
                 optimizer = challenge.optimizer
-                challenge.loss
+                
 
                 # Do one epoch (iteration)
                 y_hat = model.forward(X_train)
