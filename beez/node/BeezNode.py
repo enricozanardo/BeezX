@@ -188,7 +188,7 @@ class BeezNode():
                     if updatedChallenge.state == ChallengeState.OPEN.name:
                         logger.info(f"Challenge still open.. propagate it")
 
-                        time.sleep(2)
+                        time.sleep(1)
 
                         message = MessageChallenge(self.p2p.socketConnector, MessageType.OPEN.name, updatedChallenge)
                         encodedMessage = BeezUtils.encode(message)

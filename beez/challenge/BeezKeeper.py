@@ -168,9 +168,6 @@ class BeezKeeper():
                 if challenge.counter % 2 == 0:
                     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
-                time.sleep(1)
-
-
                 # Show Accuracy
                 # Model Evaluation
                 preds = []
@@ -188,7 +185,6 @@ class BeezKeeper():
 
                 logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
 
-                time.sleep(1)
 
                 # update the values
                 challenge.model = model
@@ -200,6 +196,9 @@ class BeezKeeper():
                 self.set(challenge)
                 
                 localChallenge = self.get(challenge.id)
+
+                if localChallenge:
+                    logger.info(f"############################# All right. {challenge.id}")
 
                 return localChallenge
 
