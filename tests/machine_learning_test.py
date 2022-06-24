@@ -160,7 +160,7 @@ def test_machine_learning_challenge():
 
     reward = 1000
     type = TransactionType.CHALLENGE.name
-    iteration = 20
+    iteration = 100
     owner = AliceWallet.publicKeyString()
 
     challengeType = ChallengeType.IRIS.name
