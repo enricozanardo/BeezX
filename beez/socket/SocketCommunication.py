@@ -75,14 +75,12 @@ class SocketCommunication(Node):
 
     # Callback method of receiving requests from nodes
     def inbound_node_connected(self, connectedNode: Node):
-        logger.info(
-            f"inbound connection (some node wants to connect to this node)")
+        # logger.info(f"inbound connection (some node wants to connect to this node)")
         self.peerDiscoveryHandler.handshake(connectedNode)
         
     # Callback method of sending requests to nodes
     def outbound_node_connected(self, connectedNode: Node):
-        logger.info(
-            f"outbound connection (this node wants to connect to other node)")
+        # logger.info(f"outbound connection (this node wants to connect to other node)")
         self.peerDiscoveryHandler.handshake(connectedNode)
     
     # Once connected send a message
