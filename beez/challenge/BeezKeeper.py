@@ -117,7 +117,7 @@ class BeezKeeper():
     def workOnMLChallenge(self, challenge: MLChallenge):
         logger.info(f"work on IRIS DATASET challenge...! {challenge.id}")
 
-        logger.info(self.iris.head())
+        # logger.info(self.iris.head())
 
 
         challengeStateOpen = challenge.state == ChallengeState.OPEN.name if  True else False
@@ -140,7 +140,7 @@ class BeezKeeper():
                 y_train = torch.LongTensor(y_train)
                 y_test = torch.LongTensor(y_test)
 
-                logger.info(f"challenge model: {challenge.model}")
+                # logger.info(f"challenge model: {challenge.model}")
 
                 model = challenge.model
                 criterion = challenge.criterion
