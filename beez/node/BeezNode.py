@@ -415,6 +415,8 @@ class BeezNode():
             reward = int(totalReward / totalCount * count)
             rewardTX : Transaction = self.wallet.createTransaction(publicKeyString, reward, TransactionType.REWARD.name)
 
+            time.sleep(2)
+
             self.handleTransaction(rewardTX)
             logger.info(f"times: {times}")
 
