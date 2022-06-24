@@ -43,7 +43,7 @@ class PeerDiscoveryHandler():
     """
     def status(self):
         while True:
-            logger.info(f"Current connections:")
+            # logger.info(f"Current connections:")
             for connection in self.socketCommunication.ownConnections:
                 logger.info(f"Peer: {str(connection.ip)}:{str(connection.port)}")
 
@@ -52,7 +52,7 @@ class PeerDiscoveryHandler():
 
     def discovery(self):
          while True:
-            logger.info(f"discovery")
+            # logger.info(f"discovery")
             handshakeMessage = self.handshakeMessage()
             # Broadcast the message
             self.socketCommunication.broadcast(handshakeMessage)
