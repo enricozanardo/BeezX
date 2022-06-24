@@ -183,10 +183,11 @@ class BeezNode():
                     updatedChallenge = self.blockchain.beezKeeper.workOnMLChallenge(challenge)
 
                 if updatedChallenge is not None:
-                    logger.info(f"A New Updated Challenge received back!!!")
+                    
+                    logger.info(f"A New Updated Challenge received back!!!  {type(updatedChallenge)}")
 
                     if updatedChallenge.state == ChallengeState.OPEN.name:
-                        logger.info(f"Challenge still open.. propagate it")
+                        logger.info(f"Challenge still open.. propagate it {updatedChallenge.counter}")
 
                         time.sleep(1)
 
