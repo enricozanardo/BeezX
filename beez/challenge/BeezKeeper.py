@@ -128,26 +128,25 @@ class BeezKeeper():
             if challenge.counter < challenge.iteration + 1:
                 logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
 
-                # # execute the calculus
-                # # Train/Test Split
-                # X = self.iris.drop('class', axis=1).values
-                # y = self.iris['class'].values
+                # execute the calculus
+                # Train/Test Split
+                X = self.iris.drop('class', axis=1).values
+                y = self.iris['class'].values
 
-                # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-                # X_train = torch.FloatTensor(X_train)
-                # X_test = torch.FloatTensor(X_test)
-                # y_train = torch.LongTensor(y_train)
-                # y_test = torch.LongTensor(y_test)
+                X_train = torch.FloatTensor(X_train)
+                X_test = torch.FloatTensor(X_test)
+                y_train = torch.LongTensor(y_train)
+                y_test = torch.LongTensor(y_test)
 
-                # logger.info(f"challenge model: {challenge.model}")
+                logger.info(f"challenge model: {challenge.model}")
 
-                # model = challenge.model
-                # criterion = challenge.criterion
-                # optimizer = challenge.optimizer
+                model = challenge.model
+                criterion = challenge.criterion
+                optimizer = challenge.optimizer
 
-              
-
+                logger.info(f"model {model}")
 
                 # # Do one epoch (iteration)
                 # y_hat = model.forward(X_train)
