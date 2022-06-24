@@ -173,7 +173,7 @@ class BeezKeeper():
 
 
                 # # update the values
-                # challenge.model = model
+                challenge.model = model
                 # challenge.optimizer = optimizer
                 # challenge.loss = loss
                 challenge.counter = challenge.counter + 1
