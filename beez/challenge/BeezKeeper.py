@@ -142,14 +142,14 @@ class BeezKeeper():
 
                 logger.info(f"challenge model: {challenge.model}")
 
-                model = challenge.model
-                criterion = challenge.criterion
-                optimizer = challenge.optimizer
+                # model = challenge.model
+                # criterion = challenge.criterion
+                # optimizer = challenge.optimizer
 
                 # Do one epoch (iteration)
-                y_hat = model.forward(X_train)
-                loss = criterion(y_hat, y_train)
-                optimizer.step()
+                y_hat = challenge.model.forward(X_train)
+                loss = challenge.criterion(y_hat, y_train)
+                challenge.optimizer.step()
 
                 if challenge.counter % 2 == 0:
                     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
@@ -173,8 +173,8 @@ class BeezKeeper():
 
 
                 # # update the values
-                challenge.model = model
-                challenge.optimizer = optimizer
+                # challenge.model = model
+                # challenge.optimizer = optimizer
                 # challenge.loss = loss
                 challenge.counter = challenge.counter + 1
                 
