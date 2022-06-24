@@ -175,36 +175,24 @@ class BeezNode():
                 logger.info(f"challenge type {challenge.challengeType}")
 
                 updatedChallenge = None
-                updatedMLChallenge = None
 
                 if challenge.challengeType == ChallengeType.CALCULUS.name:
                     logger.warning(f"Do a Calculus!!!")
                     updatedChallenge = self.blockchain.beezKeeper.workOnChallenge(challenge)
-
-                    if updatedChallenge is not None:
-                        logger.info(f"A New Updated Challenge received back!!!  {type(updatedChallenge)}")
-
-                        if updatedChallenge.state == ChallengeState.OPEN.name:
-                            logger.info(f"Challenge still open.. propagate it {updatedChallenge.counter}")
-
-                            message = MessageChallenge(self.p2p.socketConnector, MessageType.OPEN.name, updatedChallenge)
-                            encodedMessage = BeezUtils.encode(message)
-                            self.p2p.broadcast(encodedMessage)
-
+            
                 elif challenge.challengeType == ChallengeType.IRIS.name:
-                    logger.warning(f"Do a IRIS MODEL TRAINING!!!")
-                    updatedMLChallenge = self.blockchain.beezKeeper.workOnMLChallenge(challenge)
+                        logger.warning(f"Do a IRIS MODEL TRAINING!!!")
+                        updatedChallenge = self.blockchain.beezKeeper.workOnMLChallenge(challenge)
 
-                    if updatedMLChallenge is not None:
-                        
-                        logger.info(f"A New Updated Challenge received back!!!  {type(updatedMLChallenge)}")
+                if updatedChallenge is not None:
+                    logger.info(f"A New Updated Challenge received back!!!  {type(updatedChallenge)}")
 
-                        if updatedMLChallenge.state == ChallengeState.OPEN.name:
-                            logger.info(f"Challenge still open.. propagate it {updatedMLChallenge.counter}")
+                    if updatedChallenge.state == ChallengeState.OPEN.name:
+                        logger.info(f"Challenge still open.. propagate it {updatedChallenge.counter}")
 
-                            message = MessageChallengeML(self.p2p.socketConnector, MessageType.OPENML.name, updatedMLChallenge)
-                            encodedMessage = BeezUtils.encode(message)
-                            self.p2p.broadcast(encodedMessage)
+                        message = MessageChallenge(self.p2p.socketConnector, MessageType.OPEN.name, updatedChallenge)
+                        encodedMessage = BeezUtils.encode(message)
+                        self.p2p.broadcast(encodedMessage)
 
                     # elif updatedChallenge.state == ChallengeState.CLOSED.name:
                     #     logger.warning(f"Challenge closed.. create the Final TX")
