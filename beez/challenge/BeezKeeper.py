@@ -157,7 +157,7 @@ class BeezKeeper():
                 loss.backward()
                 optimizer.step()
 
-                time.sleep(2)
+                # time.sleep(2)
 
                 # Show Accuracy
                 # Model Evaluation
@@ -176,11 +176,9 @@ class BeezKeeper():
 
                 logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
 
-
                 # # update the values
                 challenge.model = model
                 # challenge.optimizer = optimizer
-                # challenge.loss = loss
                 challenge.counter = challenge.counter + 1
                 
                 # Store the new version of the Challenge
