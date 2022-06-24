@@ -146,15 +146,13 @@ class BeezKeeper():
                 criterion = challenge.criterion
                 optimizer = challenge.optimizer
 
-                logger.info(f"model {model}")
+                # Do one epoch (iteration)
+                y_hat = model.forward(X_train)
+                loss = criterion(y_hat, y_train)
+                optimizer.step()
 
-                # # Do one epoch (iteration)
-                # y_hat = model.forward(X_train)
-                # loss = criterion(y_hat, y_train)
-                # optimizer.step()
-
-                # if challenge.counter % 2 == 0:
-                #     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
+                if challenge.counter % 2 == 0:
+                    logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
                 # # Show Accuracy
                 # # Model Evaluation
