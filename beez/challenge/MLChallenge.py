@@ -20,10 +20,9 @@ from beez.challenge.Challenge import Challenge
     
 class MLChallenge(Challenge):
 
-    def __init__(self, ownerPublicKey: PublicKeyString, sharedFunction: Callable[[], Any], reward: Prize, iteration: int, challengeType: ChallengeType, model, criterion, optimizer, loss):
+    def __init__(self, ownerPublicKey: PublicKeyString, sharedFunction: Callable[[], Any], reward: Prize, iteration: int, challengeType: ChallengeType, model, criterion, optimizer):
         super().__init__(ownerPublicKey, sharedFunction, reward, iteration, challengeType)
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
-        self.loss = loss
 

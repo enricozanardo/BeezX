@@ -59,7 +59,7 @@ def test_send_challenge_transaction():
 
     reward = 100
     type = TransactionType.CHALLENGE.name
-    iteration = 10
+    iteration = 1000
     owner = AliceWallet.publicKeyString()
     
 

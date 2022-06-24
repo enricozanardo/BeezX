@@ -114,8 +114,7 @@ def test_machine_learning_challenge():
     model = ANN()
     criterion = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)   
-    loss = 0
-
+    
     # Model Training
     # epochs = 100
     # loss_arr = []
@@ -160,13 +159,13 @@ def test_machine_learning_challenge():
 
     reward = 1000
     type = TransactionType.CHALLENGE.name
-    iteration = 6
+    iteration = 90
     owner = AliceWallet.publicKeyString()
 
     challengeType = ChallengeType.IRIS.name
 
     # # Define the challenge
-    mlChallenge = MLChallenge(owner, sum, reward, iteration, challengeType, model, criterion, optimizer, loss)
+    mlChallenge = MLChallenge(owner, sum, reward, iteration, challengeType, model, criterion, optimizer)
 
     postChallengeTransaction(AliceWallet, reward, type, mlChallenge)
 

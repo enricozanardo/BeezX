@@ -151,8 +151,7 @@ class BeezKeeper():
                 y_hat = model.forward(X_train)
                 loss = criterion(y_hat, y_train)
                
-                if challenge.counter % 2 == 0:
-                    logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
+                logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
                 optimizer.zero_grad()
                 loss.backward()
