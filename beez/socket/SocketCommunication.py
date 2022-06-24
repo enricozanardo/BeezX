@@ -7,14 +7,15 @@ from loguru import logger
 from typing import TYPE_CHECKING, Dict, List
 import json
 from beez.Types import ChallengeID
-from beez.challenge.Challenge import Challenge
-from beez.challenge.MLChallenge import MLChallenge
+
 
 if TYPE_CHECKING:
     from beez.Types import Address
     from beez.node.BeezNode import BeezNode
     from beez.socket.Message import Message
     from beez.block.Block import Block
+    from beez.challenge.Challenge import Challenge
+    from beez.challenge.MLChallenge import MLChallenge
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler

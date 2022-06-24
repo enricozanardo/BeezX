@@ -11,6 +11,7 @@ import copy
 
 from beez.Types import ChallengeID, PublicKeyString
 from beez.challenge.ChallengeState import ChallengeState
+from beez.socket.MessageChallengeML import MessageChallengeML
 
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv('P_2_P_PORT', 8122))
@@ -196,12 +197,12 @@ class BeezNode():
 
                     if updatedMLChallenge is not None:
                         
-                        logger.info(f"A New Updated Challenge received back!!!  {type(updatedChallenge)}")
+                        logger.info(f"A New Updated Challenge received back!!!  {type(updatedMLChallenge)}")
 
                         if updatedMLChallenge.state == ChallengeState.OPEN.name:
                             logger.info(f"Challenge still open.. propagate it {updatedMLChallenge.counter}")
 
-                            message = MessageChallenge(self.p2p.socketConnector, MessageType.OPENML.name, updatedMLChallenge)
+                            message = MessageChallengeML(self.p2p.socketConnector, MessageType.OPENML.name, updatedMLChallenge)
                             encodedMessage = BeezUtils.encode(message)
                             self.p2p.broadcast(encodedMessage)
 
