@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, Dict, List
 import json
 from beez.Types import ChallengeID
 from beez.challenge.Challenge import Challenge
+from beez.challenge.MLChallenge import MLChallenge
 
 if TYPE_CHECKING:
     from beez.Types import Address
@@ -112,6 +113,12 @@ class SocketCommunication(Node):
             logger.info(f"manage the message {message.messageType}")
             challenge: Challenge = message.challenge
             self.beezNode.handleChallengeOpen(challenge)
+        
+        elif message.messageType == MessageType.OPENML.name:
+            # handle the OPENML
+            logger.info(f"manage the message {message.messageType}")
+            mlChallenge: MLChallenge = message.challenge
+            self.beezNode.handleChallengeOpen(mlChallenge)
 
         elif message.messageType == MessageType.CLOSED.name:
             # handle the CLOSED

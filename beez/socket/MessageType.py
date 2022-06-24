@@ -28,5 +28,6 @@ class MessageType(Enum):
     CHALLENGETXCLOSED = "challengetxclosed"
     CREATED = "created"
     OPEN = "open"
+    OPENML = "openml"
     CLOSED = "closed"
     REWARD = "reward"
