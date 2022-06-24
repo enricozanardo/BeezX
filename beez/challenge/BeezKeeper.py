@@ -174,8 +174,8 @@ class BeezKeeper():
 
                 # # update the values
                 challenge.model = model
-                # challenge.optimizer = optimizer
-                challenge.loss = loss
+                challenge.optimizer = optimizer
+                # challenge.loss = loss
                 challenge.counter = challenge.counter + 1
                 
                 # Store the new version of the Challenge
