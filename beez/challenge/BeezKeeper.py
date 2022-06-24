@@ -128,68 +128,57 @@ class BeezKeeper():
             if challenge.counter < challenge.iteration + 1:
                 logger.info(f"counter: {challenge.counter} : iteration: {challenge.iteration}")
 
-                # execute the calculus
-                # Train/Test Split
-                X = self.iris.drop('class', axis=1).values
-                y = self.iris['class'].values
+                # # execute the calculus
+                # # Train/Test Split
+                # X = self.iris.drop('class', axis=1).values
+                # y = self.iris['class'].values
 
-                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+                # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-                X_train = torch.FloatTensor(X_train)
-                X_test = torch.FloatTensor(X_test)
-                y_train = torch.LongTensor(y_train)
-                y_test = torch.LongTensor(y_test)
+                # X_train = torch.FloatTensor(X_train)
+                # X_test = torch.FloatTensor(X_test)
+                # y_train = torch.LongTensor(y_train)
+                # y_test = torch.LongTensor(y_test)
 
-                logger.info(f"challenge model: {challenge.model}")
+                # logger.info(f"challenge model: {challenge.model}")
 
-                model = challenge.model
-                criterion = challenge.criterion
-                optimizer = challenge.optimizer
+                # model = challenge.model
+                # criterion = challenge.criterion
+                # optimizer = challenge.optimizer
 
-                # TODO: do 2/3 epochs at iteraction...
-                # for i in range(epochs):
-                #     y_hat = model.forward(X_train)
-                #     loss = criterion(y_hat, y_train)
-                #     loss_arr.append(loss)
-                
-                #     if i % 10 == 0:
-                #         print(f'Epoch: {i} Loss: {loss}')
-                
-                #     optimizer.zero_grad()
-                #     loss.backward()
-                #     optimizer.step()
+              
 
 
-                # Do one epoch (iteration)
-                y_hat = model.forward(X_train)
-                loss = criterion(y_hat, y_train)
-                optimizer.step()
+                # # Do one epoch (iteration)
+                # y_hat = model.forward(X_train)
+                # loss = criterion(y_hat, y_train)
+                # optimizer.step()
 
-                if challenge.counter % 2 == 0:
-                    logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
+                # if challenge.counter % 2 == 0:
+                #     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
-                # Show Accuracy
-                # Model Evaluation
-                preds = []
+                # # Show Accuracy
+                # # Model Evaluation
+                # preds = []
 
-                with torch.no_grad():
-                    for val in X_test:
-                        y_hat = model.forward(val)
-                        preds.append(y_hat.argmax().item())
-
-
-                df = pd.DataFrame({'Y': y_test, 'YHat': preds})
-                df['Correct'] = [1 if corr == pred else 0 for corr, pred in zip(df['Y'], df['YHat'])]   
-
-                accuracy = df['Correct'].sum() / len(df)
-
-                logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
+                # with torch.no_grad():
+                #     for val in X_test:
+                #         y_hat = model.forward(val)
+                #         preds.append(y_hat.argmax().item())
 
 
-                # update the values
-                challenge.model = model
-                challenge.optimizer = optimizer
-                challenge.loss = loss
+                # df = pd.DataFrame({'Y': y_test, 'YHat': preds})
+                # df['Correct'] = [1 if corr == pred else 0 for corr, pred in zip(df['Y'], df['YHat'])]   
+
+                # accuracy = df['Correct'].sum() / len(df)
+
+                # logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
+
+
+                # # update the values
+                # challenge.model = model
+                # challenge.optimizer = optimizer
+                # challenge.loss = loss
                 challenge.counter = challenge.counter + 1
                 
                 # Store the new version of the Challenge
