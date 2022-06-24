@@ -154,28 +154,28 @@ class BeezKeeper():
                 if challenge.counter % 2 == 0:
                     logger.warning(f'Epoch: {challenge.counter} Loss: {loss}')
 
-                # # Show Accuracy
-                # # Model Evaluation
-                # preds = []
+                # Show Accuracy
+                # Model Evaluation
+                preds = []
 
-                # with torch.no_grad():
-                #     for val in X_test:
-                #         y_hat = model.forward(val)
-                #         preds.append(y_hat.argmax().item())
+                with torch.no_grad():
+                    for val in X_test:
+                        y_hat = model.forward(val)
+                        preds.append(y_hat.argmax().item())
 
 
-                # df = pd.DataFrame({'Y': y_test, 'YHat': preds})
-                # df['Correct'] = [1 if corr == pred else 0 for corr, pred in zip(df['Y'], df['YHat'])]   
+                df = pd.DataFrame({'Y': y_test, 'YHat': preds})
+                df['Correct'] = [1 if corr == pred else 0 for corr, pred in zip(df['Y'], df['YHat'])]   
 
-                # accuracy = df['Correct'].sum() / len(df)
+                accuracy = df['Correct'].sum() / len(df)
 
-                # logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
+                logger.warning(f"Epoch: {challenge.counter} -- Accuracy: {accuracy}")
 
 
                 # # update the values
-                challenge.model = model
-                challenge.optimizer = optimizer
-                challenge.loss = loss
+                # challenge.model = model
+                # challenge.optimizer = optimizer
+                # challenge.loss = loss
                 challenge.counter = challenge.counter + 1
                 
                 # Store the new version of the Challenge
