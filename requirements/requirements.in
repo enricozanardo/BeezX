@@ -16,3 +16,4 @@ numpy
 sklearn
 torch
 pandas
+whoosh

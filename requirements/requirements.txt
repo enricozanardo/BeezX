@@ -152,5 +152,7 @@ waitress==2.1.1
     # via -r requirements/requirements.in
 werkzeug==2.1.2
     # via flask
+whoosh==2.7.4
+    # via -r requirements/requirements.in
 zipp==3.8.0
     # via importlib-metadata

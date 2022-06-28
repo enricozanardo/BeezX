@@ -68,6 +68,8 @@ class Wallet():
         signature = self.sign(transaction.payload())
         transaction.sign(signature)
 
+        logger.info(f"Transaction ID: {transaction.id}")
+        
         return transaction
 
     # Manage ChallengeTransation
