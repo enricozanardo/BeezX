@@ -107,7 +107,7 @@ python-dotenv==0.20.0
     # via -r requirements/requirements.in
 pyyaml==6.0
     # via ray
-ray==1.12.1
+# ray==1.12.1
     # via -r requirements/requirements.in
 requests==2.27.1
     # via

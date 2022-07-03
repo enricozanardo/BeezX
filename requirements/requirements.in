@@ -10,5 +10,5 @@ python-dotenv
 pytest-asyncio
 jsonpickle
 matplotlib
-ray
+# ray # currently not working on python3.9
 gputil
