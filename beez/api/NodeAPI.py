@@ -5,6 +5,9 @@ from waitress import serve
 from loguru import logger
 from typing import TYPE_CHECKING
 import os
+from whoosh.fields import Schema, TEXT, NUMERIC,ID
+from whoosh.index import create_in
+from whoosh.query import Term
 from dotenv import load_dotenv
 import json
 
@@ -27,6 +30,11 @@ class NodeAPI(FlaskView):
 
     def __init__(self):
         self.app = Flask(__name__) # create the Flask application
+        # for testing index
+        self.tx_schema = Schema(id=ID, type=TEXT, tx_encoded=TEXT)
+        if not os.path.exists("index"):
+            os.mkdir("index")
+        self.ix = create_in("index", self.tx_schema)
     
     def start(self, nodeIP: Address):
         logger.info(f"Node API started at {nodeIP}:{NODE_API_PORT}")
@@ -40,6 +48,19 @@ class NodeAPI(FlaskView):
         global beezNode
         beezNode = incjectedNode
 
+    
+    @route("/indextest", methods=['GET'])
+    def indextest(self):
+        logger.info(f"Checking indexed transaction")
+        myquery = Term("type", u"TX")
+        with self.ix.searcher() as searcher:
+            results = searcher.search(myquery)
+            results = searcher.documents()
+            for document in results:
+                logger.info(document)
+            logger.info(results)
+
+        return "This is Beez Blockchain with Whoosh Index!. 🦾 🐝 🐝 🐝 🦾", 200
     
     @route("/info", methods=['GET'])
     def info(self):

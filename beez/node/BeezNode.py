@@ -1,11 +1,14 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import os
+from whoosh.fields import Schema, TEXT, NUMERIC, ID
+from whoosh.index import create_in
 from dotenv import load_dotenv
 import socket
 from loguru import logger
 import GPUtil
 import copy
+import base64
 
 
 load_dotenv()  # load .env
@@ -45,6 +48,11 @@ class BeezNode():
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
+        self.tx_schema = Schema(id=ID, type=TEXT, tx_encoded=TEXT)
+        if not os.path.exists("index"):
+            os.mkdir("index")
+        self.ix = create_in("index", self.tx_schema)
+        self.ix_writer = self.ix.writer()
 
         if key is not None:
             self.wallet.fromKey(key)
@@ -57,8 +65,8 @@ class BeezNode():
 
             return nodeAddress
 
-    def startP2P(self):
-        self.p2p = SocketCommunication(self.ip, self.port)
+    def startP2P(self, port=None):
+        self.p2p = SocketCommunication(self.ip, port or self.port)
         self.p2p.startSocketCommunication(self)
     
     def startAPI(self):
@@ -66,6 +74,10 @@ class BeezNode():
         # Inject Node to NodeAPI
         self.api.injectNode(self)
         self.api.start(self.ip)
+
+    def reloadFromIndex(self):
+        pass
+
 
 
     # Manage requests that come from the NodeAPI
@@ -90,6 +102,11 @@ class BeezNode():
         if not transactionExist and not transactionInBlock and signatureValid:
             # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
+            # index transaction
+            self.ix_writer.add_document(id=transaction.id, type="TX", tx_encoded=str(base64.b64encode(bytes(str(transaction.toJson()), "UTF-8"))))
+            self.ix_writer.commit()
+
+
             # Propagate the transaction to other peers
             message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
 
@@ -204,6 +221,9 @@ class BeezNode():
             logger.info(f"GO!!!!!!")
             self.blockchain.accountStateModel = block.header.accountStateModel
             self.blockchain.beezKeeper = block.header.beezKeeper
+
+            # TODO: Persist
+
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
