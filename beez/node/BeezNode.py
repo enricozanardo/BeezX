@@ -1,14 +1,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 import os
-from whoosh.fields import Schema, TEXT, NUMERIC, ID
-from whoosh.index import create_in
+from whoosh.fields import Schema, TEXT, ID
 from dotenv import load_dotenv
 import socket
 from loguru import logger
 import GPUtil
 import copy
-import base64
+from whoosh.filedb.filestore import FileStorage
 
 
 load_dotenv()  # load .env
@@ -30,6 +29,7 @@ from beez.socket.MessageTransaction import MessageTransation
 from beez.socket.MessageType import MessageType
 from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.Blockchain import Blockchain
+from beez.index.IndexEngine import IndexEngine
 from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
 from beez.challenge.BeezKeeper import BeezKeeper
@@ -48,11 +48,8 @@ class BeezNode():
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
-        self.tx_schema = Schema(id=ID, type=TEXT, tx_encoded=TEXT)
-        if not os.path.exists("index"):
-            os.mkdir("index")
-        self.ix = create_in("index", self.tx_schema)
-        self.ix_writer = self.ix.writer()
+        self.tx_schema = Schema(id=ID(stored=True), type=TEXT(stored=True), tx_encoded=TEXT(stored=True))
+        self.index_engine = IndexEngine.get_engine(self.tx_schema)
 
         if key is not None:
             self.wallet.fromKey(key)
@@ -103,9 +100,7 @@ class BeezNode():
             # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
             # index transaction
-            self.ix_writer.add_document(id=transaction.id, type="TX", tx_encoded=str(base64.b64encode(bytes(str(transaction.toJson()), "UTF-8"))))
-            self.ix_writer.commit()
-
+            self.index_engine.index_documents([{"id":transaction.id, "type": "TX", "tx_encoded": str(transaction.toJson())}])
 
             # Propagate the transaction to other peers
             message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
