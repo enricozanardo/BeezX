@@ -72,11 +72,6 @@ class BeezNode():
         self.api.injectNode(self)
         self.api.start(self.ip)
 
-    def reloadFromIndex(self):
-        pass
-
-
-
     # Manage requests that come from the NodeAPI
     def handleTransaction(self, transaction: Transaction):
 

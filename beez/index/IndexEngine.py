@@ -16,9 +16,11 @@ class IndexEngine:
     def __init__(self, schema):
         self.schema = schema
         schema.add('raw', TEXT(stored=True))
-        if not os.path.isdir("transactions_index"):
-            os.makedirs("transactions_index", exist_ok=True)
-        self.ix = FileStorage("transactions_index").create_index(self.schema)
+        if not os.path.isdir("indices"):
+            os.makedirs("indices", exist_ok=True)
+            self.ix = FileStorage("indices").create_index(self.schema, indexname="transactions_index")
+        else:
+            self.ix = FileStorage("indices").open_index("transactions_index")
         IndexEngine.engine = self
 
     # Singleton
