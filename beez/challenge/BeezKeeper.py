@@ -21,6 +21,9 @@ if TYPE_CHECKING:
 
 from beez.BeezUtils import BeezUtils
 from beez.challenge.ChallengeState import ChallengeState
+from beez.index.IndexEngine import ChallengeModelEngine
+from whoosh.fields import Schema, TEXT, KEYWORD,ID
+from typing import Any
 
 
 
@@ -31,17 +34,43 @@ class BeezKeeper():
     on the transactions accured.
     """
     def __init__(self):
-        self.challenges : Dict[ChallengeID : Challenge] = {}
+        self.challenges_index = ChallengeModelEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), challenge_pickled=TEXT(stored=True)))
 
     def start(self):
         # start node threads... 
         statusThread = threading.Thread(target=self.status, args={})
         statusThread.start()
 
+    def serialize(self) -> dict[str, Challenge]:
+        # Load all challenges from index
+        return self.challanges()
+
+    @staticmethod
+    def deserialize(serialized_challenges, index=True):
+        return BeezKeeper()._deserialize(serialized_challenges)
+
+    def _deserialize(self, serialized_challenges):
+        # Reset challenges from serialized challenges
+        self.challenges_index.delete_document("type", "CHALLENGE")
+        for challenge_id, challenge in serialized_challenges.items():
+            self.append(challenge_id, challenge)
+            
+    def challanges(self) -> dict[str, Challenge]:
+        challenges: dict[str, Challenge] = {}
+        challenge_docs = self.challenges_index.query(q="CHALLENGE", fields=["type"], highlight=True)
+        for doc in challenge_docs:
+            ch = Challenge.fromPickle(doc["challenge_pickled"])
+            challenges[doc["id"]] = ch
+        return challenges
+
+    def append(self, id: str, challenge: Challenge):
+        self.challenges_index.index_documents([{"id": id, "type": "CHALLENGE", "challenge_pickled": Challenge.toPickle(challenge)}])
+
     def status(self):
          while True:
-            logger.info(f"challenge status.... {len(self.challenges.items())}")
-            for key, value in self.challenges.items():
+            logger.info(f"challenge status.... {len(self.challenges().items())}")
+            
+            for key, value in self.challanges().items():
                 challenge: Challenge = value
                 challengeID : ChallengeID = key
                 
@@ -57,24 +86,24 @@ class BeezKeeper():
         challengeID : ChallengeID = challenge.id
         reward = challenge.reward
 
-        if challengeID in self.challenges.keys():
+        if challengeID in self.challenges().keys():
             logger.info(f"Challenge already created")
         else:
             # new challenge! Thinkto broadcast the challenge and no more!
             logger.info(f"Challenge id: {challengeID} of reward {reward} tokens kept. Challenge STATE: {challenge.state}")
 
-            self.challenges[challengeID] = challenge
+            self.append(challengeID, challenge)
 
             self.workOnChallenge(challenge)
 
     def get(self, challengeID: ChallengeID) -> Optional[Challenge]:
-        if challengeID in self.challenges.keys():
-            return self.challenges[challengeID]
+        if challengeID in self.challenges().keys():
+            return self.challenges()[challengeID]
         else:
             return None
 
     def challegeExists(self, challengeID: ChallengeID) -> bool:
-        if challengeID in self.challenges.keys():
+        if challengeID in self.challenges().keys():
             return True
         else:
             return False
@@ -106,7 +135,9 @@ class BeezKeeper():
         challengeExists = self.challegeExists(receivedChallenge.id)
         if challengeExists:
             logger.info(f"Update the local version of the Challenge")
-            self.challenges[receivedChallenge.id] = receivedChallenge
+            self.challenges_index.delete_document("id", receivedChallenge.id)
+            self.append(receivedChallenge.id, receivedChallenge)
+
 
 
     # TODO: Generate the rewarding function!!!

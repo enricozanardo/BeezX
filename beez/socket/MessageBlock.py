@@ -10,6 +10,6 @@ from beez.socket.MessageType import MessageType
 
 class MessageBlock(Message):
 
-    def __init__(self, senderConnector: SocketConnector, messageType: MessageType, block: Block):
+    def __init__(self, senderConnector: SocketConnector, messageType: MessageType, block):
         super().__init__(senderConnector, messageType)
         self.block = block

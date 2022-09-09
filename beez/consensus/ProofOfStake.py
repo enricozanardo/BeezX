@@ -10,6 +10,9 @@ if TYPE_CHECKING:
 from beez.consensus.Lot import Lot
 from beez.BeezUtils import BeezUtils
 from beez.keys.GenesisPublicKey import GenesisPublicKey
+from beez.index.IndexEngine import PosModelEngine
+from whoosh.fields import Schema, TEXT, NUMERIC,ID, KEYWORD
+
 
 class ProofOfStake():
     """
@@ -17,8 +20,24 @@ class ProofOfStake():
     """
 
     def __init__(self):
-        self.stakers : Dict[PublicKeyString : Stake] = {}
+        self.stakers_index = PosModelEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), public_key_string=TEXT(stored=True), stake=NUMERIC(stored=True)))
         self.setGenesisNodeStake()
+
+    def serialize(self):
+        stakers: dict[str, int] = {}
+        for stakers_doc in self.stakers_index.query(q="STAKE", fields=["type"], highlight=True):
+            stakers[stakers_doc["public_key_string"]] = stakers_doc["stake"]
+        return stakers
+    
+    def _deserialize(self, serialized_stakers):
+        # delete stakers
+        self.stakers_index.delete_document("type", "STAKE")
+        for staker, stake in serialized_stakers:
+            self.update(staker, stake)
+
+    @staticmethod
+    def deserialize(serialized_stakers):
+        return ProofOfStake()._deserialize(serialized_stakers)
 
     def setGenesisNodeStake(self):
         # currentPath = pathlib.Path().resolve()
@@ -31,24 +50,38 @@ class ProofOfStake():
 
         # logger.info(f"GenesisublicKey: {genisisPublicKey}")
         # give to the genesis staker 1 stake to allow him to forge the initial Block
-        self.stakers[genisisPublicKey.pubKey] = 1
+        self.update(genisisPublicKey.pubKey, 1)
+
+    def stakers(self):
+        stakers_public_keys = []
+        docs = self.stakers_index.query(q="STAKE", fields=["type"], highlight=True)
+        for doc in docs:
+            stakers_public_keys.append(doc["public_key_string"])
+        return stakers_public_keys
+        
 
     def update(self, publicKeyString: PublicKeyString, stake: Stake):
-        if publicKeyString in self.stakers.keys():
-            self.stakers[publicKeyString] += stake
-        else:
-            self.stakers[publicKeyString] = stake
 
-    def get(self, publicKeyString: PublicKeyString) -> Option[Stake]:
-        if publicKeyString in self.stakers.keys():
-            return self.stakers[publicKeyString]
+        id = BeezUtils.hash(publicKeyString.replace("'", "").replace("\n", "")).hexdigest()
+
+        if len(self.stakers_index.query(q=id, fields=["id"], highlight=True)) != 0:
+            old_stake = self.get(id)
+            self.stakers_index.delete_document("id", id)
+            self.stakers_index.index_documents([{"id": id, "type": "STAKE", "public_key_string":publicKeyString, "stake": old_stake + stake}])
         else:
+            self.stakers_index.index_documents([{"id": id, "type": "STAKE", "public_key_string":publicKeyString, "stake": stake}])
+
+
+    def get(self, id) -> Option[Stake]:
+        if len(self.stakers_index.query(q=id, fields=["id"], highlight=True)) == 0:
             return None
+        return self.stakers_index.query(q=id, fields=["id"], highlight=True)[0]["stake"]
+
     
     def validatorLots(self, seed: str) -> List[Lot]:
         lots : List[Lot] = []
-        for validator in self.stakers.keys():
-            for stake in range(self.get(validator)):
+        for validator in self.stakers():
+            for stake in range(self.get(BeezUtils.hash(validator.replace("'", "").replace("\n", "")).hexdigest())):
                 lots.append(Lot(validator, stake + 1, seed))
         return lots
 

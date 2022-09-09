@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Callable
 import uuid
+import jsonpickle
 
 if TYPE_CHECKING:
     from beez.Types import SharedFunction, Prize
@@ -17,5 +18,13 @@ class Challenge():
         self.sharedFunction = sharedFunction
         self.state = ChallengeState.CREATED.name
         self.reward = reward
+
+    @staticmethod
+    def fromPickle(pickle):
+        return jsonpickle.decode(pickle)
+
+    @staticmethod
+    def toPickle(challenge: Challenge):
+        return jsonpickle.encode(challenge)
 
 

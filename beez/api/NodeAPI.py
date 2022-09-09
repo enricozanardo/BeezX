@@ -5,12 +5,12 @@ from waitress import serve
 from loguru import logger
 from typing import TYPE_CHECKING
 import os
-from whoosh.fields import Schema, TEXT, NUMERIC,ID
+from whoosh.fields import Schema, TEXT, KEYWORD,ID
 from whoosh.query import Term
 from dotenv import load_dotenv
 import json
 
-from beez.index.IndexEngine import IndexEngine
+from beez.index.IndexEngine import TxIndexEngine, TxpIndexEngine, BlockIndexEngine
 load_dotenv()  # load .env
 
 NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
@@ -43,18 +43,47 @@ class NodeAPI(FlaskView):
         global beezNode
         beezNode = incjectedNode
 
-    
-    @route("/indextest", methods=['GET'])
-    def indextest(self):
-        logger.info(f"Checking indexed transaction")
+    @route("/txpindex", methods=['GET'])
+    def txpindex(self):
+        logger.info(f"Fetching indexed transactionpool transactions")
+        fields_to_search = ["id", "type", "txp_encoded"]
+
+        for q in ["TXP"]:
+            print(f"Query:: {q}")
+            print("\t", TxpIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), txp_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+            print("-"*70)
+
+        txp_index_str = str(TxpIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), txp_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+
+        return txp_index_str, 200
+
+    @route("/txindex", methods=['GET'])
+    def txindex(self):
+        logger.info(f"Fetching indexed transaction")
         fields_to_search = ["id", "type", "tx_encoded"]
 
         for q in ["TX"]:
             print(f"Query:: {q}")
-            print("\t", IndexEngine.get_engine(Schema(id=ID(stored=True), type=TEXT(stored=True), tx_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+            print("\t", TxIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), tx_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
             print("-"*70)
 
-        return "This is Beez Blockchain with Whoosh Index!. 🦾 🐝 🐝 🐝 🦾", 200
+        tx_index_str = str(TxIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), tx_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+
+        return tx_index_str, 200
+
+    @route("/blockindex", methods=['GET'])
+    def blockindex(self):
+        logger.info(f"Checking indexed blocks")
+        fields_to_search = ["id", "type", "block_serialized"]
+
+        for q in ["BL"]:
+            print(f"Query:: {q}")
+            print("\t", BlockIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), block_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+            print("-"*70)
+        
+        block_index_str = str(BlockIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), block_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+
+        return block_index_str, 200
     
     @route("/info", methods=['GET'])
     def info(self):
