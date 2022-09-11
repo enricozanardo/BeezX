@@ -38,7 +38,6 @@ class AccountStateModel():
             # Remove all balances and accounts and load from serialized ones
             self.accounts_index_engine.delete_document("type", "ACCOUNT")
             self.balance_index_engine.delete_document("type", "BALANCE")
-            logger.info("DESERIALIZING ACCOUNT STATE MODEL")
             for acc_id, bal in serialized_balances.items():
                 self.updateBalance(acc_id, bal)
         return self
@@ -85,7 +84,6 @@ class AccountStateModel():
             self.addAccount(publicKeyString)
 
         old_balance = self.getBalance(publicKeyString)
-        logger.info(f"BALANCE IS {old_balance+amount}")
         self.balance_index_engine.delete_document("id", id)
         self.balance_index_engine.index_documents([{"id": id, "type": "BALANCE", "account_id":publicKeyString, "balance": old_balance + amount}])
 

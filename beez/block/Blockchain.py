@@ -50,8 +50,6 @@ class Blockchain():
             "beezKeeper": self.beezKeeper.serialize(),
             "genesisPublicKey": self.genesisPubKey
         }
-        logger.info("SERIALIZED BLOCKCHAIN")
-        logger.info(serialized_chain)
         return serialized_chain
         
     def _deserialize(self, serialized_blockchain):
@@ -69,8 +67,6 @@ class Blockchain():
 
     @staticmethod
     def deserialize(serialized_blockchain):
-        logger.info("DESERIALIZE BLOCKCHAIN")
-        logger.info(serialized_blockchain)
         return Blockchain()._deserialize(serialized_blockchain)
 
     def blocks(self):

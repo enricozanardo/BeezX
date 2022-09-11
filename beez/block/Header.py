@@ -19,13 +19,10 @@ class Header():
         self.accountStateModel = accountStateModel
 
     def serialize(self):
-        logger.info('serializing the header')
-        logger.info(self.accountStateModel)
         return {"beezKeeper": self.beezKeeper.serialize() if self.beezKeeper else {}, "accountStateModel": self.accountStateModel.serialize() if self.accountStateModel else {}}
 
     @staticmethod
     def deserialize(serialized_beezKeeper, serialized_accountStateModel, index=True) -> Header:
-        logger.info("DESERIALIZING HEADER")
         return Header(BeezKeeper.deserialize(serialized_beezKeeper, index), AccountStateModel.deserialize(serialized_accountStateModel["balances"], index))
 
     def _deserialize(self, serialized_beezKeeper, serialized_accountStateModel):
@@ -33,9 +30,7 @@ class Header():
         self.accountStateModel.deserialize(serialized_accountStateModel) 
 
     def getBeezKeeper(self) -> BeezKeeper:
-        logger.info(f"get BeezKeeper")
         return self.beezKeeper
 
     def getAccountStateModel(self) -> AccountStateModel:
-        logger.info(f"get AccountStateModel")
         return self.accountStateModel

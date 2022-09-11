@@ -88,7 +88,6 @@ class BeezNode():
         transactionInBlock = self.blockchain.transactionExist(transaction)
 
         if not transactionExist and not transactionInBlock and signatureValid:
-            # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
             # Propagate the transaction to other peers
             message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
@@ -104,7 +103,6 @@ class BeezNode():
                 self.forge()
 
     def handleBlock(self, block: Block):
-        logger.info(f"Manage the Block: {block.blockCount}")
         forger = block.forger
         blockHash = block.payload()
         signature = block.signature
@@ -122,7 +120,6 @@ class BeezNode():
 
         if not blockCountValid:
             # ask to peers their state of the blockchain
-            logger.info("Request the updated version of the Blockchain")
             self.requestChain()
 
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:

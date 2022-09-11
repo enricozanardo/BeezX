@@ -46,8 +46,6 @@ class Block():
             "timestamp": self.timestamp,
             "signature": self.signature
         }
-        logger.info("DESERIALIZED BLOCK")
-        logger.info(block_serialized)
         return block_serialized
 
     @staticmethod

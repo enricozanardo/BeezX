@@ -118,6 +118,4 @@ class SocketCommunication(Node):
             # handle the BLOCKCHAIN
             logger.info(f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.messageType}")
             blockchain:Blockchain = Blockchain.deserialize(message.serialized_blockchain)
-            logger.info("BLOCKCHAIN GOTTEN")
-            logger.info(blockchain)
             self.beezNode.handleBlockchain(blockchain)

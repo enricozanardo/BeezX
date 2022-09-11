@@ -10,7 +10,6 @@ def startAPI(node, port):
     node.startAPI(port)
 
 if __name__ == "__main__":
-    logger.info(f"Hi there.")
     node = BeezNode(key="/Users/lukashubl/tmp/BeezX/beez/keys/genesisPrivateKey.pem")
 
     p2p_port = sys.argv[1] if len(sys.argv) > 1 else None
