@@ -73,17 +73,12 @@ class Blockchain():
         logger.info(serialized_blockchain)
         return Blockchain()._deserialize(serialized_blockchain)
 
-    # def deserialized(self):
-    #     blocks = self.blocks()
-    #     accountStateModel = self.accountStateModel.deserialized()
-    #     pos = self.pos.deserialized()
-    #     return blocks, accountStateModel, pos
-
     def blocks(self):
         blocks = []
         block_docs = self.blocks_index.query(q="BL", fields=["type"], highlight=True)
         for doc in block_docs:
             blocks.append(Block.deserialize(doc["block_serialized"], index=False))
+        blocks = sorted(blocks, key=lambda block: block.blockCount)
         return blocks
 
     def toJson(self):
