@@ -57,15 +57,15 @@ class BeezNode():
 
             return nodeAddress
 
-    def startP2P(self):
-        self.p2p = SocketCommunication(self.ip, self.port)
+    def startP2P(self, port=None):
+        self.p2p = SocketCommunication(self.ip, port if port else self.port)
         self.p2p.startSocketCommunication(self)
     
-    def startAPI(self):
+    def startAPI(self, port=None):
         self.api = NodeAPI()
         # Inject Node to NodeAPI
         self.api.injectNode(self)
-        self.api.start(self.ip)
+        self.api.start(self.ip, port)
 
 
     # Manage requests that come from the NodeAPI

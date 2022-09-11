@@ -31,11 +31,11 @@ class NodeAPI(FlaskView):
         self.app = Flask(__name__) # create the Flask application
         # for testing index
     
-    def start(self, nodeIP: Address):
+    def start(self, nodeIP: Address, port=None):
         logger.info(f"Node API started at {nodeIP}:{NODE_API_PORT}")
         # register the application to routes
         NodeAPI.register(self.app, route_base="/")
-        serve(self.app, host=nodeIP, port=NODE_API_PORT)
+        serve(self.app, host=nodeIP, port=port if port else NODE_API_PORT)
         # self.app.run(host=nodeIP, port=NODE_API_PORT)
 
     # find a way to use the properties of the node in the nodeAPI

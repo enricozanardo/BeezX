@@ -41,6 +41,7 @@ class AccountStateModel():
             logger.info("DESERIALIZING ACCOUNT STATE MODEL")
             for acc_id, bal in serialized_balances.items():
                 self.updateBalance(acc_id, bal)
+        return self
 
     def balances(self) -> dict[str, int]:
         balances: dict[str, int] = {}

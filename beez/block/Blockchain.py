@@ -50,6 +50,8 @@ class Blockchain():
             "beezKeeper": self.beezKeeper.serialize(),
             "genesisPublicKey": self.genesisPubKey
         }
+        logger.info("SERIALIZED BLOCKCHAIN")
+        logger.info(serialized_chain)
         return serialized_chain
         
     def _deserialize(self, serialized_blockchain):
@@ -62,11 +64,13 @@ class Blockchain():
         self.pos = ProofOfStake.deserialize(serialized_blockchain["pos"])
         self.beezKeeper = BeezKeeper.deserialize(serialized_blockchain["beezKeeper"])
         self.genesisPubKey = serialized_blockchain["genesisPublicKey"]
+        return self
 
 
     @staticmethod
     def deserialize(serialized_blockchain):
         logger.info("DESERIALIZE BLOCKCHAIN")
+        logger.info(serialized_blockchain)
         return Blockchain()._deserialize(serialized_blockchain)
 
     # def deserialized(self):
@@ -93,13 +97,15 @@ class Blockchain():
 
     def appendGenesis(self, block:Block):
         if len(self.blocks_index.query("BL", ["type"])) == 0:
+            header = Header(self.beezKeeper, self.accountStateModel)
+            block.header = header
             self.appendBlock(block)
 
     def appendBlock(self, block:Block):
         self.blocks_index.index_documents([{"id": str(block.blockCount), "type": "BL", "block_serialized": str(block.serialize())}])
 
     def addBlock(self, block: Block):
-        self.executeTransactions(block)
+        self.executeTransactions(block.transactions)
         if self.blocks()[-1].blockCount < block.blockCount:
             self.appendBlock(block)
 

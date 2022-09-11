@@ -37,7 +37,7 @@ class Block():
         return genesisBlock
 
     def serialize(self):
-        return {
+        block_serialized = {
             "header": self.header.serialize() if self.header else "",
             "transactions": [tx.toJson() for tx in self.transactions],
             "lastHash": self.lastHash,
@@ -46,11 +46,15 @@ class Block():
             "timestamp": self.timestamp,
             "signature": self.signature
         }
+        logger.info("DESERIALIZED BLOCK")
+        logger.info(block_serialized)
+        return block_serialized
 
     @staticmethod
     def deserialize(serialized_block, index=True):
         print("DESERIALIZE BLOCK")
-        serialized_block = json.loads(serialized_block.replace("'", "\""))
+        print(str(serialized_block))
+        serialized_block = json.loads(str(serialized_block).replace("'", "\""))
         block = Block(
             header=Header.deserialize(serialized_block["header"]["beezKeeper"], serialized_block["header"]["accountStateModel"], index) if serialized_block["header"] != "" else None,
             transactions=[Transaction.fromJson(tx_json) for tx_json in serialized_block["transactions"]],

@@ -32,7 +32,7 @@ class ProofOfStake():
     def _deserialize(self, serialized_stakers):
         # delete stakers
         self.stakers_index.delete_document("type", "STAKE")
-        for staker, stake in serialized_stakers:
+        for staker, stake in serialized_stakers.items():
             self.update(staker, stake)
 
     @staticmethod

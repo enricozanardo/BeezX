@@ -19,7 +19,9 @@ class Header():
         self.accountStateModel = accountStateModel
 
     def serialize(self):
-        return {"beezKeeper": self.beezKeeper.serialize(), "accountStateModel": self.accountStateModel.serialize()}
+        logger.info('serializing the header')
+        logger.info(self.accountStateModel)
+        return {"beezKeeper": self.beezKeeper.serialize() if self.beezKeeper else {}, "accountStateModel": self.accountStateModel.serialize() if self.accountStateModel else {}}
 
     @staticmethod
     def deserialize(serialized_beezKeeper, serialized_accountStateModel, index=True) -> Header:
