@@ -199,8 +199,8 @@ class BeezNode():
 
             # Update the current version of the in-memory AccountStateModel and BeezKeeper
             logger.info(f"GO!!!!!!")
-            self.blockchain.account_state_model = block.header.accountStateModel
-            self.blockchain.beez_keeper = block.header.beezKeeper
+            self.blockchain.account_state_model = block.header.account_state_model
+            self.blockchain.beez_keeper = block.header.beez_keeper
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block.serialize())

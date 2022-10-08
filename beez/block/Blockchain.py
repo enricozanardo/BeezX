@@ -13,7 +13,7 @@ from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
-from beez.block.Header import Header
+from beez.block.header import Header
 from beez.challenge.BeezKeeper import BeezKeeper
 from beez.index.IndexEngine import BlockIndexEngine
 
@@ -204,7 +204,7 @@ class Blockchain:
         # Get the updated version of the in-memory objects and create the Block Header
         header = Header(self.beez_keeper, self.account_state_model)
 
-        logger.info(f"Header: {len(header.beezKeeper.challanges().items())}")
+        logger.info(f"Header: {len(header.beez_keeper.challanges().items())}")
 
         # create the Block
         new_block = forger_wallet.createBlock(

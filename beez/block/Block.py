@@ -8,7 +8,7 @@ import json
 
 from beez.transaction.TransactionType import TransactionType
 from beez.transaction.Transaction import Transaction
-from beez.block.Header import Header
+from beez.block.header import Header
 
 if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
