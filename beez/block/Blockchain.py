@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from beez.challenge.Challenge import Challenge
 
 from beez.block.Block import Block
-from beez.BeezUtils import BeezUtils
+from beez.beez_utils import BeezUtils
 from beez.state.AccountStateModel import AccountStateModel
 from beez.consensus.ProofOfStake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType

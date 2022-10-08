@@ -15,7 +15,7 @@ if TYPE_CHECKING:
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
-from beez.BeezUtils import BeezUtils
+from beez.beez_utils import BeezUtils
 from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX

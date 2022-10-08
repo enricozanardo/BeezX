@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from beez.Types import PublicKeyString, Stake
 
-from beez.BeezUtils import BeezUtils
+from beez.beez_utils import BeezUtils
 
 class Lot():
     """

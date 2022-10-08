@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Any, List, Dict
 import threading
 from loguru import logger
 import time
-from beez.BeezUtils import BeezUtils
+from beez.beez_utils import BeezUtils
 
 from beez.index.IndexEngine import AccountModelEngine, BalancesModelEngine
 from whoosh.fields import Schema, TEXT, NUMERIC,ID, KEYWORD

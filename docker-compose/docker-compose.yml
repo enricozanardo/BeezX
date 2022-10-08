@@ -1,0 +1,7 @@
+version: "3.9"
+services:
+  node:
+    build:
+      context: ..
+      dockerfile: docker/dockerfile
+    command: python3 main.py

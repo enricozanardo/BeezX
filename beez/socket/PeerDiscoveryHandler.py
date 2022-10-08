@@ -9,7 +9,7 @@ from dotenv import load_dotenv
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.MessageType import MessageType
 from beez.socket.MessageOwnConnections import MessageOwnConnections
-from beez.BeezUtils import BeezUtils
+from beez.beez_utils import BeezUtils
 
 if TYPE_CHECKING:
     from beez.socket.SocketCommunication import SocketCommunication

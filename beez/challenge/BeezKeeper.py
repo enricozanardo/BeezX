@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
     from beez.challenge.Challenge import Challenge
 
-from beez.BeezUtils import BeezUtils
+from beez.beez_utils import BeezUtils
 from beez.challenge.ChallengeState import ChallengeState
 from beez.index.IndexEngine import ChallengeModelEngine
 from whoosh.fields import Schema, TEXT, KEYWORD,ID

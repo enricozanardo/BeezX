@@ -18,10 +18,10 @@ if TYPE_CHECKING:
     from beez.challenge.Challenge import Challenge
     from beez.block.Block import Block
     
-from beez.BeezUtils import BeezUtils
+from beez.beez_utils import BeezUtils
 from beez.wallet.Wallet import Wallet
 from beez.socket.SocketCommunication import SocketCommunication
-from beez.api.NodeAPI import NodeAPI
+from beez.api.node_api import NodeAPI
 from beez.transaction.TransactionPool import TransactionPool
 from beez.socket.MessageTransaction import MessageTransation
 from beez.socket.MessageType import MessageType
@@ -64,7 +64,7 @@ class BeezNode():
     def startAPI(self, port=None):
         self.api = NodeAPI()
         # Inject Node to NodeAPI
-        self.api.injectNode(self)
+        self.api.inject_node(self)
         self.api.start(self.ip, port)
 
 
