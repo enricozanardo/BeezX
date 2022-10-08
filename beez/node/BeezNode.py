@@ -29,7 +29,7 @@ from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
 from beez.block.blockchain import Blockchain
 from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
-from beez.challenge.BeezKeeper import BeezKeeper
+from beez.challenge.beez_keeper import BeezKeeper
 from beez.socket.Message import Message
 from beez.transaction.TransactionType import TransactionType
 from beez.challenge.ChallengeState import ChallengeState

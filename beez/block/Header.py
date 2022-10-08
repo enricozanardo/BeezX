@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from beez.challenge.BeezKeeper import BeezKeeper
+from beez.challenge.beez_keeper import BeezKeeper
 from beez.state.AccountStateModel import AccountStateModel
 
 

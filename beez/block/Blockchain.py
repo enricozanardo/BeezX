@@ -14,7 +14,7 @@ from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
 from beez.block.header import Header
-from beez.challenge.BeezKeeper import BeezKeeper
+from beez.challenge.beez_keeper import BeezKeeper
 from beez.index.IndexEngine import BlockIndexEngine
 
 
@@ -152,7 +152,7 @@ class Blockchain:
             if sender == receiver:
                 # Check with the challenge Keeeper
                 challenge: Challenge = challenge_transaction.challenge
-                challenge_exists = self.beez_keeper.challegeExists(challenge.id)
+                challenge_exists = self.beez_keeper.challege_exists(challenge.id)
                 logger.info(f"challengeExists: {challenge_exists}")
 
                 if not challenge_exists:
