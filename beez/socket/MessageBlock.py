@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from beez.socket.SocketConnector import SocketConnector
-    from beez.block.Block import Block
+    from beez.block.block import Block
 
 from beez.socket.Message import Message
 from beez.socket.MessageType import MessageType

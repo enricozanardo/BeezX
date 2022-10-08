@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from beez.wallet.Wallet import Wallet
     from beez.challenge.Challenge import Challenge
 
-from beez.block.Block import Block
+from beez.block.block import Block
 from beez.beez_utils import BeezUtils
 from beez.state.AccountStateModel import AccountStateModel
 from beez.consensus.ProofOfStake import ProofOfStake
@@ -93,11 +93,11 @@ class Blockchain():
             self.appendBlock(block)
 
     def appendBlock(self, block:Block):
-        self.blocks_index.index_documents([{"id": str(block.blockCount), "type": "BL", "block_serialized": str(block.serialize())}])
+        self.blocks_index.index_documents([{"id": str(block.block_count), "type": "BL", "block_serialized": str(block.serialize())}])
 
     def addBlock(self, block: Block):
         self.executeTransactions(block.transactions)
-        if self.blocks()[-1].blockCount < block.blockCount:
+        if self.blocks()[-1].blockCount < block.block_count:
             self.appendBlock(block)
 
     def executeTransactions(self, transactions: List[Transaction]):
@@ -225,7 +225,7 @@ class Blockchain():
             return False
 
     def blockCountValid(self, block: Block):
-        if self.blocks()[-1].blockCount == block.blockCount - 1:
+        if self.blocks()[-1].blockCount == block.block_count - 1:
             return True
         else:
             return False
@@ -233,13 +233,13 @@ class Blockchain():
     def lastBlockHashValid(self, block: Block):
         latestBlockainBlockHash = BeezUtils.hash(
             self.blocks()[-1].payload()).hexdigest()
-        if latestBlockainBlockHash == block.lastHash:
+        if latestBlockainBlockHash == block.last_hash:
             return True
         else:
             return False
 
     def forgerValid(self, block: Block):
-        forgerPublicKey = str(self.pos.forger(block.lastHash)).strip()
+        forgerPublicKey = str(self.pos.forger(block.last_hash)).strip()
         proposedBlockForger = str(block.forger).strip()
 
         if forgerPublicKey == proposedBlockForger:

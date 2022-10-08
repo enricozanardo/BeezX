@@ -20,7 +20,7 @@ from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.block.Blockchain import Blockchain
-from beez.block.Block import Block
+from beez.block.block import Block
 
 
 load_dotenv()  # load .env

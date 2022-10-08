@@ -1,107 +1,136 @@
+"""Beez Blockchain - Block."""
+
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 import time
 import copy
 import json
 
-from loguru import logger
-from beez.challenge.BeezKeeper import BeezKeeper
+from beez.transaction.TransactionType import TransactionType
 from beez.transaction.Transaction import Transaction
 from beez.block.Header import Header
 
 if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
-    from beez.wallet.Wallet import Wallet
-    from beez.Types import WalletAddress, PublicKeyString
+    from beez.Types import PublicKeyString
 
-from beez.transaction.TransactionType import TransactionType
-import jsonpickle
 
-class Block():
+
+class Block:
     """
     A Block contain a list of Transaction that are validated from a Forger into the Network.
     """
-    def __init__(self, header: Optional[Header], transactions: List[Transaction], lastHash: str, forger: PublicKeyString, blockCount: int):
+
+    def __init__(   # pylint: disable=too-many-arguments
+        self,
+        header: Optional[Header],
+        transactions: List[Transaction],
+        last_hash: str,
+        forger: PublicKeyString,
+        block_count: int,
+    ):
         self.header = header
         self.transactions = transactions
-        self.lastHash = lastHash
+        self.last_hash = last_hash
         self.forger = forger
-        self.blockCount = blockCount
+        self.block_count = block_count
         self.timestamp = time.time()
-        self.signature = ''
+        self.signature = ""
 
     @staticmethod
     def genesis() -> Block:
-        genesisBlock = Block(None, [], 'Hello Beezkeepers! 🐝', 'BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐', 0)
-        genesisBlock.timestamp = 0 # every node will start with the same genesis Block
-        return genesisBlock
+        """Returning a predefined genesis block."""
+        genesis_block = Block(
+            None,
+            [],
+            "Hello Beezkeepers! 🐝",
+            "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐",
+            0,
+        )
+        genesis_block.timestamp = (
+            0  # every node will start with the same genesis Block
+        )
+        return genesis_block
 
     def serialize(self):
+        """Serializing the block to json."""
         block_serialized = {
             "header": self.header.serialize() if self.header else "",
             "transactions": [tx.toJson() for tx in self.transactions],
-            "lastHash": self.lastHash,
+            "lastHash": self.last_hash,
             "forger": self.forger,
-            "blockCount": self.blockCount,
+            "blockCount": self.block_count,
             "timestamp": self.timestamp,
-            "signature": self.signature
+            "signature": self.signature,
         }
         return block_serialized
 
     @staticmethod
     def deserialize(serialized_block, index=True):
+        """Recreating a block object from a serialized blockchain json."""
         print("DESERIALIZE BLOCK")
         print(str(serialized_block))
-        serialized_block = json.loads(str(serialized_block).replace("'", "\""))
+        serialized_block = json.loads(str(serialized_block).replace("'", '"'))
         block = Block(
-            header=Header.deserialize(serialized_block["header"]["beezKeeper"], serialized_block["header"]["accountStateModel"], index) if serialized_block["header"] != "" else None,
-            transactions=[Transaction.fromJson(tx_json) for tx_json in serialized_block["transactions"]],
-            lastHash=serialized_block["lastHash"],
+            header=Header.deserialize(
+                serialized_block["header"]["beezKeeper"],
+                serialized_block["header"]["accountStateModel"],
+                index,
+            )
+            if serialized_block["header"] != ""
+            else None,
+            transactions=[
+                Transaction.fromJson(tx_json)
+                for tx_json in serialized_block["transactions"]
+            ],
+            last_hash=serialized_block["lastHash"],
             forger=serialized_block["forger"],
-            blockCount=serialized_block["blockCount"],
+            block_count=serialized_block["blockCount"],
         )
-        block.timestamp=serialized_block["timestamp"]
+        block.timestamp = serialized_block["timestamp"]
         block.signature = serialized_block["signature"]
         return block
 
-    
-    def toJson(self):
-        jsonBlock = {}
-        jsonBlock['lastHash'] = self.lastHash
-        jsonBlock['forger'] = self.forger
-        jsonBlock['blockCount'] = self.blockCount
-        jsonBlock['timestamp'] = self.timestamp
-        jsonBlock['signature'] = self.signature
+    def to_json(self):
+        """Converting the block to json."""
+        json_block = {}
+        json_block["lastHash"] = self.last_hash
+        json_block["forger"] = self.forger
+        json_block["blockCount"] = self.block_count
+        json_block["timestamp"] = self.timestamp
+        json_block["signature"] = self.signature
         transactions = []
 
-        for tx in self.transactions:
-            if tx.type == TransactionType.CHALLENGE:
-                challengeTx: ChallengeTX = tx
-                transactions.append(challengeTx.toJson())
+        for transaction in self.transactions:
+            if transaction.type == TransactionType.CHALLENGE:
+                challenge_tx: ChallengeTX = transaction
+                transactions.append(challenge_tx.toJson())
             else:
-                transactions.append(tx.toJson())
+                transactions.append(transaction.toJson())
 
-        jsonBlock['transactions'] = transactions
+        json_block["transactions"] = transactions
 
-        return jsonBlock
+        return json_block
 
     # @staticmethod
     # def fromPickle(pickle) -> Block:
     #     block = jsonpickle.decode(pickle["object"])
     #     beezKeeper = BeezKeeper()
     #     header = Header()
-        
+
     #     return jsonpickle.decode(pickle)
 
     # @staticmethod
     # def toPickle(block):
     #     return {"object": jsonpickle.encode(block), "header": block.header.deserialized()}
-    
-    def payload(self):
-        jsonRepresentation = copy.deepcopy(self.toJson())
-        jsonRepresentation['signature'] = ''
 
-        return jsonRepresentation
+    def payload(self):
+        """Returning the payload of the block only without the signature."""
+        json_representation = copy.deepcopy(self.to_json())
+        json_representation["signature"] = ""
+
+        return json_representation
 
     def sign(self, signature):
+        """Signing the block by setting the block's signature."""
         self.signature = signature

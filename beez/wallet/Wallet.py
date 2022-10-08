@@ -16,7 +16,7 @@ from beez.beez_utils import BeezUtils
 from beez.challenge.Challenge import Challenge
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
-from beez.block.Block import Block
+from beez.block.block import Block
 
 
 class Wallet:
