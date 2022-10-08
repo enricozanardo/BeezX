@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, List
 
 if TYPE_CHECKING:
     from beez.socket.SocketConnector import SocketConnector
-    from beez.block.Blockchain import Blockchain
+    from beez.block.blockchain import Blockchain
 
 from beez.socket.Message import Message
 from beez.socket.MessageType import MessageType

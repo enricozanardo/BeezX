@@ -233,4 +233,4 @@ class NodeAPI(FlaskView):
     def blockchain(self):
         """Returns the state of the in-memory blockchain."""
         logger.info("Blockchain called...")
-        return BEEZ_NODE.blockchain.toJson(), 200
+        return BEEZ_NODE.blockchain.to_json(), 200

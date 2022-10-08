@@ -26,7 +26,7 @@ from beez.transaction.TransactionPool import TransactionPool
 from beez.socket.MessageTransaction import MessageTransation
 from beez.socket.MessageType import MessageType
 from beez.socket.MessageChallengeTransaction import MessageChallengeTransation
-from beez.block.Blockchain import Blockchain
+from beez.block.blockchain import Blockchain
 from beez.socket.MessageBlock import MessageBlock
 from beez.socket.MessageBlockchain import MessageBlockchain
 from beez.challenge.BeezKeeper import BeezKeeper
@@ -85,7 +85,7 @@ class BeezNode():
         transactionExist = self.transactionPool.transactionExists(transaction)
 
         # already exist in the Blockchain
-        transactionInBlock = self.blockchain.transactionExist(transaction)
+        transactionInBlock = self.blockchain.transaction_exist(transaction)
 
         if not transactionExist and not transactionInBlock and signatureValid:
             self.transactionPool.addTransaction(transaction)
@@ -108,11 +108,11 @@ class BeezNode():
         signature = block.signature
 
         # checks all the possible validations!
-        blockCountValid = self.blockchain.blockCountValid(block)
+        blockCountValid = self.blockchain.blockcount_valid(block)
 
-        lastBlockHashValid = self.blockchain.lastBlockHashValid(block)
-        forgerValid = self.blockchain.forgerValid(block)
-        transactionValid = self.blockchain.transactionValid(block.transactions)
+        lastBlockHashValid = self.blockchain.last_blockhash_valid(block)
+        forgerValid = self.blockchain.forger_valid(block)
+        transactionValid = self.blockchain.transaction_valid(block.transactions)
 
         signatureValid = Wallet.signatureValid(blockHash, signature, forger)
 
@@ -125,7 +125,7 @@ class BeezNode():
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
 
             # Add the block to the Blockchain
-            self.blockchain.addBlock(block)
+            self.blockchain.add_block(block)
 
             self.transactionPool.removeFromPool(block.transactions)
           
@@ -164,7 +164,7 @@ class BeezNode():
         challengeTransactionExist = self.transactionPool.challengeExists(challengeTx)
 
         # already exist in the Blockchain
-        transactionInBlock = self.blockchain.transactionExist(challengeTx)
+        transactionInBlock = self.blockchain.transaction_exist(challengeTx)
 
         if not challengeTransactionExist and not transactionInBlock and signatureValid:
             # logger.info(f"add to the Transaction Pool!!!")
@@ -183,7 +183,7 @@ class BeezNode():
     def forge(self):
         logger.info(f"Forger called")
         # Elect the next forger
-        forger = self.blockchain.nextForger()
+        forger = self.blockchain.next_forger()
 
         forgerString = str(forger).strip()
         thisWalletString = str(self.wallet.publicKeyString()).strip()
@@ -192,15 +192,15 @@ class BeezNode():
             logger.info(f"I'm the next forger")
 
             # mint the new Block
-            block = self.blockchain.mintBlock(self.transactionPool.transactions(), self.wallet)
+            block = self.blockchain.mint_block(self.transactionPool.transactions(), self.wallet)
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
 
             # Update the current version of the in-memory AccountStateModel and BeezKeeper
             logger.info(f"GO!!!!!!")
-            self.blockchain.accountStateModel = block.header.accountStateModel
-            self.blockchain.beezKeeper = block.header.beezKeeper
+            self.blockchain.account_state_model = block.header.accountStateModel
+            self.blockchain.beez_keeper = block.header.beezKeeper
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block.serialize())
@@ -229,11 +229,11 @@ class BeezNode():
             for blockNumber, block in enumerate(blockchain.blocks()):
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
-                    self.blockchain.appendBlock(block)
+                    self.blockchain.append_block(block)
                     logger.warning(f"Here is the problem?")
                     # Update the current version of the in-memory AccountStateModel and BeezKeeper
-                    self.blockchain.accountStateModel = block.header.accountStateModel
-                    self.blockchain.beezKeeper = block.header.beezKeeper
+                    self.blockchain.account_state_model = block.header.accountStateModel
+                    self.blockchain.beez_keeper = block.header.beezKeeper
 
                     self.transactionPool.removeFromPool(block.transactions)
 

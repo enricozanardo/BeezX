@@ -19,7 +19,7 @@ from beez.beez_utils import BeezUtils
 from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
-from beez.block.Blockchain import Blockchain
+from beez.block.blockchain import Blockchain
 from beez.block.block import Block
 
 
