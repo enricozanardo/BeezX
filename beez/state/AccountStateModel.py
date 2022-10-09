@@ -5,7 +5,7 @@ from loguru import logger
 import time
 from beez.beez_utils import BeezUtils
 
-from beez.index.IndexEngine import AccountModelEngine, BalancesModelEngine
+from beez.index.index_engine import AccountModelEngine, BalancesModelEngine
 from whoosh.fields import Schema, TEXT, NUMERIC,ID, KEYWORD
 
 if TYPE_CHECKING:

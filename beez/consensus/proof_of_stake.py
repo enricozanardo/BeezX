@@ -8,7 +8,7 @@ from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD
 from beez.consensus.lot import Lot
 from beez.beez_utils import BeezUtils
 from beez.keys.GenesisPublicKey import GenesisPublicKey
-from beez.index.IndexEngine import PosModelEngine
+from beez.index.index_engine import PosModelEngine
 
 if TYPE_CHECKING:
     from beez.Types import Stake, PublicKeyString

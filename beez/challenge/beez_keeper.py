@@ -11,7 +11,7 @@ from loguru import logger
 from dotenv import load_dotenv
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID
-from beez.index.IndexEngine import ChallengeModelEngine
+from beez.index.index_engine import ChallengeModelEngine
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString

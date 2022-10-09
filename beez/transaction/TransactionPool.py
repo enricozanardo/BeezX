@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List
 from whoosh.fields import Schema, TEXT, ID, KEYWORD
-from beez.index.IndexEngine import TxpIndexEngine
+from beez.index.index_engine import TxpIndexEngine
 from beez.transaction.Transaction import Transaction
 
 from loguru import logger

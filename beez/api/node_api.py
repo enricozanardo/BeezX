@@ -10,7 +10,7 @@ from whoosh.fields import Schema, TEXT, KEYWORD, ID
 from dotenv import load_dotenv
 from beez.beez_utils import BeezUtils
 
-from beez.index.IndexEngine import (
+from beez.index.index_engine import (
     TxIndexEngine,
     TxpIndexEngine,
     BlockIndexEngine,

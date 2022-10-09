@@ -15,7 +15,7 @@ from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
 from beez.block.header import Header
 from beez.challenge.beez_keeper import BeezKeeper
-from beez.index.IndexEngine import BlockIndexEngine
+from beez.index.index_engine import BlockIndexEngine
 
 
 if TYPE_CHECKING:
