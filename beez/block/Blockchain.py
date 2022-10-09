@@ -9,7 +9,7 @@ from whoosh.fields import Schema, TEXT, KEYWORD, ID
 from beez.block.block import Block
 from beez.beez_utils import BeezUtils
 from beez.state.AccountStateModel import AccountStateModel
-from beez.consensus.ProofOfStake import ProofOfStake
+from beez.consensus.proof_of_stake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
