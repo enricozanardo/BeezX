@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from beez.Types import WalletAddress, PublicKeyString
 
 from beez.transaction.Transaction import Transaction
-from beez.challenge.Challenge import Challenge
+from beez.challenge.challenge import Challenge
 
 class ChallengeTX(Transaction):
 
@@ -30,7 +30,7 @@ class ChallengeTX(Transaction):
         jsonBlock['signature'] = self.signature
         jsonBlock['challenge'] = {
             "state": self.challenge.state,
-            "id": self.challenge.id,
+            "id": self.challenge.identifier,
             "reward": self.challenge.reward,
             "workers": ["w1", "w2"],
             "enrolment": "Mon 30.06.2022@23:59"

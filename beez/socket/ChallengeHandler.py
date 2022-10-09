@@ -15,7 +15,7 @@ from beez.beez_utils import BeezUtils
 if TYPE_CHECKING:
     from beez.socket.SocketCommunication import SocketCommunication
     from p2pnetwork.node import Node
-    from beez.challenge.Challenge import Challenge
+    from beez.challenge.challenge import Challenge
     from beez.Types import ChallengeID
     from beez.node.BeezNode import BeezNode
 

@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from beez.transaction.TransactionType import TransactionType
 
 from beez.beez_utils import BeezUtils
-from beez.challenge.Challenge import Challenge
+from beez.challenge.challenge import Challenge
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.block.block import Block

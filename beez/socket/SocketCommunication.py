@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from loguru import logger
 from typing import TYPE_CHECKING, Dict, List
 import json
-from beez.challenge.Challenge import Challenge
+from beez.challenge.challenge import Challenge
 
 if TYPE_CHECKING:
     from beez.Types import Address

@@ -1,5 +1,6 @@
 """Beez blockchain - beez keeper."""
 from __future__ import annotations
+
 # for function
 import random
 import threading
@@ -14,11 +15,11 @@ from beez.index.IndexEngine import ChallengeModelEngine
 
 if TYPE_CHECKING:
     from beez.Types import Prize, ChallengeID, PublicKeyString
-    from beez.challenge.Challenge import Challenge
+    from beez.challenge.challenge import Challenge
 
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
-INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))    # pylint: disable=invalid-envvar-default
+INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))  # pylint: disable=invalid-envvar-default
 
 
 class BeezKeeper:
@@ -47,9 +48,9 @@ class BeezKeeper:
         return self.challanges()
 
     @staticmethod
-    def deserialize(serialized_challenges, index=True):     # pylint: disable=unused-argument
+    def deserialize(serialized_challenges, index=True):  # pylint: disable=unused-argument
         """Returning a beez keeper from serialized challenges."""
-        return BeezKeeper()._deserialize(serialized_challenges)     # pylint: disable=protected-access
+        return BeezKeeper()._deserialize(serialized_challenges)  # pylint: disable=protected-access
 
     def _deserialize(self, serialized_challenges):
         """Deserialize beez keeper."""
@@ -63,18 +64,20 @@ class BeezKeeper:
         challenges: dict[str, Challenge] = {}
         challenge_docs = self.challenges_index.query(q="CHALLENGE", fields=["type"], highlight=True)
         for doc in challenge_docs:
-            challenge = Challenge.fromPickle(doc["challenge_pickled"])
+            challenge = Challenge.from_pickle(doc["challenge_pickled"])
             challenges[doc["id"]] = challenge
         return challenges
 
     def append(self, identifier: str, challenge: Challenge):
         """Adds a new challenge."""
         self.challenges_index.index_documents(
-            [{
-                "id": identifier,
-                "type": "CHALLENGE",
-                "challenge_pickled": Challenge.toPickle(challenge)
-            }]
+            [
+                {
+                    "id": identifier,
+                    "type": "CHALLENGE",
+                    "challenge_pickled": Challenge.to_pickle(challenge),
+                }
+            ]
         )
 
     def status(self):
@@ -98,10 +101,12 @@ class BeezKeeper:
 
     def set(self, challenge: Challenge):
         """Set a challenge."""
-        challenge_id: ChallengeID = challenge.id
+        challenge_id: ChallengeID = challenge.identifier
         reward = challenge.reward
 
-        if challenge_id in self.challanges().keys():    # pylint: disable=consider-iterating-dictionary
+        if (
+            challenge_id in self.challanges().keys()    # pylint: disable=consider-iterating-dictionary
+        ):
             logger.info("Challenge already created")
         else:
             # new challenge! Thinkto broadcast the challenge and no more!
@@ -116,19 +121,25 @@ class BeezKeeper:
 
     def get(self, challenge_id: ChallengeID) -> Optional[Challenge]:
         """Get a challenge by id."""
-        if challenge_id in self.challanges().keys():    # pylint: disable=consider-iterating-dictionary
+        if (
+            challenge_id in self.challanges().keys()    # pylint: disable=consider-iterating-dictionary
+        ):
             return self.challanges()[challenge_id]
         return None
 
     def challege_exists(self, challenge_id: ChallengeID) -> bool:
         """Check if challenge exists."""
-        if challenge_id in self.challanges().keys():    # pylint: disable=consider-iterating-dictionary
+        if (
+            challenge_id in self.challanges().keys()    # pylint: disable=consider-iterating-dictionary
+        ):
             return True
         return False
 
     def work_on_challenge(self, challenge: Challenge):
         """Work on given challenge."""
-        logger.info(f"work on challenge... move to the ChallengesHandler this job! {challenge.id}")
+        logger.info(
+            f"work on challenge... move to the ChallengesHandler this job! {challenge.identifier}"
+        )
 
         # Accept the challenge!
         # update the challenge state!
@@ -148,10 +159,10 @@ class BeezKeeper:
     def update(self, received_challenge: Challenge) -> bool:
         """Updating the local version of a challenge."""
         # do a copy of the local challenge!
-        challenge_exists = self.challege_exists(received_challenge.id)
+        challenge_exists = self.challege_exists(received_challenge.identifier)
         if challenge_exists:
             logger.info("Update the local version of the Challenge")
-            self.challenges_index.delete_document("id", received_challenge.id)
-            self.append(received_challenge.id, received_challenge)
+            self.challenges_index.delete_document("id", received_challenge.identifier)
+            self.append(received_challenge.identifier, received_challenge)
 
     # TODO: Generate the rewarding function!!!

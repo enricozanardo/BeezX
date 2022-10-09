@@ -11,7 +11,7 @@ from beez.transaction.TransactionType import TransactionType
 from beez.wallet.Wallet import Wallet
 from beez.beez_utils import BeezUtils
 from beez.Types import WalletAddress
-from beez.challenge.Challenge import Challenge
+from beez.challenge.challenge import Challenge
 from beez.transaction.ChallengeTX import ChallengeTX
 
 # for function
