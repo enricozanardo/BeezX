@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from p2pnetwork.node import Node
     from beez.challenge.challenge import Challenge
     from beez.Types import ChallengeID
-    from beez.node.BeezNode import BeezNode
+    from beez.node.beez_node import BeezNode
 
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10

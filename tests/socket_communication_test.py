@@ -1,7 +1,7 @@
 from loguru import logger
 
 from beez.socket.SocketCommunication import SocketCommunication
-from beez.node.BeezNode import BeezNode
+from beez.node.beez_node import BeezNode
 
 def test_socketCommunication():
     logger.info(f"start testing socket communication")

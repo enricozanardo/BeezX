@@ -1,5 +1,5 @@
 from loguru import logger
-from beez.node.BeezNode import BeezNode
+from beez.node.beez_node import BeezNode
 import threading
 import sys
 

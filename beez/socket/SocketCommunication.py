@@ -10,7 +10,7 @@ from beez.challenge.challenge import Challenge
 
 if TYPE_CHECKING:
     from beez.Types import Address
-    from beez.node.BeezNode import BeezNode
+    from beez.node.beez_node import BeezNode
     from beez.socket.Message import Message
     
 from beez.socket.SocketConnector import SocketConnector
@@ -94,28 +94,28 @@ class SocketCommunication(Node):
             # handle the TRANSACTION
             logger.info(f"A Transaction Message will be broadcasted!! {message.messageType}")
             transaction : Transaction = message.transaction
-            self.beezNode.handleTransaction(transaction)
+            self.beezNode.handle_transaction(transaction)
 
         elif message.messageType == MessageType.CHALLENGE.name:
             # handle the CHALLENGE
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.messageType}")
             challengeTransaction : ChallengeTX  = message.challengeTx
-            self.beezNode.handleChallengeTX(challengeTransaction)
+            self.beezNode.handle_challenge_tx(challengeTransaction)
 
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
             block:Block = Block.deserialize(message.block)
-            self.beezNode.handleBlock(block)
+            self.beezNode.handle_block(block)
 
         elif message.messageType == MessageType.BLOCKCHAINREQUEST.name:
             # handle the BLOCKCHAINREQUEST
             logger.info(f"A BLOCKCHAINREQUEST Message will be broadcasted!! {message.messageType}")
             # this message do not contain any object
-            self.beezNode.handleBlockchainRequest(connectedNode)
+            self.beezNode.handle_blockchain_request(connectedNode)
 
         elif message.messageType == MessageType.BLOCKCHAIN.name:
             # handle the BLOCKCHAIN
             logger.info(f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.messageType}")
             blockchain:Blockchain = Blockchain.deserialize(message.serialized_blockchain)
-            self.beezNode.handleBlockchain(blockchain)
+            self.beezNode.handle_blockchain(blockchain)

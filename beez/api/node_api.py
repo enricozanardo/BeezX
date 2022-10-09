@@ -21,7 +21,7 @@ load_dotenv()  # load .env
 NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
 
 if TYPE_CHECKING:
-    from beez.node.BeezNode import BeezNode
+    from beez.node.beez_node import BeezNode
     from beez.Types import Address
     from beez.transaction.Transaction import Transaction
     from beez.transaction.ChallengeTX import ChallengeTX
@@ -163,7 +163,7 @@ class NodeAPI(FlaskView):
         transaction: Transaction = BeezUtils.decode(values["transaction"])
 
         # manage the transaction on the Blockchain
-        BEEZ_NODE.handleTransaction(transaction)
+        BEEZ_NODE.handle_transaction(transaction)
 
         response = {"message": "Received transaction"}
 
@@ -180,7 +180,7 @@ class NodeAPI(FlaskView):
         transaction: ChallengeTX = BeezUtils.decode(values["challenge"])
 
         # manage the transaction on the Blockchain
-        BEEZ_NODE.handleChallengeTX(transaction)
+        BEEZ_NODE.handle_challenge_tx(transaction)
 
         response = {"message": "Received challenge"}
 
@@ -198,7 +198,7 @@ class NodeAPI(FlaskView):
         # logger.info(f"Transactions: {node.transactionPool.transactions}")
 
         for idx, transaction in enumerate(
-            BEEZ_NODE.transactionPool.transactions
+            BEEZ_NODE.transaction_pool.transactions
         ):
             logger.info(f"Transaction: {idx} : {transaction.id}")
             transactions[idx] = transaction.toJson()

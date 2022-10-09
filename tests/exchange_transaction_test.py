@@ -9,7 +9,7 @@ import pathlib
 from beez.transaction.Transaction import Transaction
 from beez.transaction.TransactionType import TransactionType
 from beez.wallet.Wallet import Wallet
-from beez.node.BeezNode import BeezNode
+from beez.node.beez_node import BeezNode
 from beez.beez_utils import BeezUtils
 from beez.Types import PublicKeyString, WalletAddress
 
