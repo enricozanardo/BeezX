@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, List
 from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD
 from beez.consensus.lot import Lot
 from beez.beez_utils import BeezUtils
-from beez.keys.GenesisPublicKey import GenesisPublicKey
+from beez.keys.genesis_public_key import GenesisPublicKey
 from beez.index.index_engine import PosModelEngine
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class ProofOfStake:
 
         # logger.info(f"GenesisublicKey: {genisisPublicKey}")
         # give to the genesis staker 1 stake to allow him to forge the initial Block
-        self.update(genesis_public_key.pubKey, 1)
+        self.update(genesis_public_key.pub_key, 1)
 
     def stakers(self):
         """Returns the stakers public keys."""

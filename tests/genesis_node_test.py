@@ -3,7 +3,7 @@ import pathlib
 
 
 from beez.node.BeezNode import BeezNode
-from beez.keys.GenesisPublicKey import GenesisPublicKey
+from beez.keys.genesis_public_key import GenesisPublicKey
 
 def test_genesis_node():
     logger.info(f"start testing forger node")

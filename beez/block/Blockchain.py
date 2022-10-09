@@ -12,7 +12,7 @@ from beez.state.AccountStateModel import AccountStateModel
 from beez.consensus.proof_of_stake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
-from beez.keys.GenesisPublicKey import GenesisPublicKey
+from beez.keys.genesis_public_key import GenesisPublicKey
 from beez.block.header import Header
 from beez.challenge.beez_keeper import BeezKeeper
 from beez.index.index_engine import BlockIndexEngine
