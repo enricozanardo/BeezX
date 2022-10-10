@@ -1,3 +1,5 @@
+"""Beez blockchain - message types."""
+
 from enum import Enum
 
 
@@ -28,3 +30,4 @@ class MessageType(Enum):
     KEEPER = "keeper"
     ACCEPT = "accept"
     UPDATE = "update"
+    

@@ -1,6 +1,6 @@
 from loguru import logger
 
-from beez.socket.SocketCommunication import SocketCommunication
+from beez.socket.socket_communication import SocketCommunication
 from beez.node.beez_node import BeezNode
 
 def test_socketCommunication():
@@ -11,7 +11,7 @@ def test_socketCommunication():
     port = 8181
 
     socketCommunication = SocketCommunication(ip, port)
-    socketCommunication.startSocketCommunication(beezNode)
+    socketCommunication.start_socket_communication(beezNode)
 
     assert socketCommunication.port == port
     assert socketCommunication.id != None
