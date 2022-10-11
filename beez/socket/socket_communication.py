@@ -12,8 +12,8 @@ from beez.socket.socket_connector import SocketConnector
 from beez.socket.peer_discovery_handler import PeerDiscoveryHandler
 from beez.beez_utils import BeezUtils
 from beez.socket.message_type import MessageType
-from beez.transaction.Transaction import Transaction
-from beez.transaction.ChallengeTX import ChallengeTX
+from beez.transaction.transaction import Transaction
+from beez.transaction.challenge_tx import ChallengeTX
 from beez.block.blockchain import Blockchain
 from beez.block.block import Block
 

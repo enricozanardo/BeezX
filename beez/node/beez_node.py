@@ -12,7 +12,7 @@ from beez.beez_utils import BeezUtils
 from beez.wallet.Wallet import Wallet
 from beez.socket.socket_communication import SocketCommunication
 from beez.api.node_api import NodeAPI
-from beez.transaction.TransactionPool import TransactionPool
+from beez.transaction.transaction_pool import TransactionPool
 from beez.socket.MessageTransaction import MessageTransation
 from beez.socket.message_type import MessageType
 from beez.socket.message_challenge_transaction import MessageChallengeTransation
@@ -23,8 +23,8 @@ from beez.socket.message import Message
 
 if TYPE_CHECKING:
     from beez.Types import Address
-    from beez.transaction.Transaction import Transaction
-    from beez.transaction.ChallengeTX import ChallengeTX
+    from beez.transaction.transaction import Transaction
+    from beez.transaction.challenge_tx import ChallengeTX
     from beez.challenge.challenge import Challenge
     from beez.block.block import Block
 
@@ -73,23 +73,23 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
     # Manage requests that come from the NodeAPI
     def handle_transaction(self, transaction: Transaction):
         """Handles an incomming transaction."""
-        logger.info(f"Manage the transaction ID: {transaction.id}")
+        logger.info(f"Manage the transaction ID: {transaction.identifier}")
 
         data = transaction.payload()
         signature = transaction.signature
-        signature_public_key = transaction.senderPublicKey
+        signature_public_key = transaction.sender_public_key
 
         # # # is valid?
         signature_valid = Wallet.signatureValid(data, signature, signature_public_key)
 
         # already exist in the transaction pool
-        transaction_exist = self.transaction_pool.transactionExists(transaction)
+        transaction_exist = self.transaction_pool.transaction_exists(transaction)
 
         # already exist in the Blockchain
         transaction_in_block = self.blockchain.transaction_exist(transaction)
 
         if not transaction_exist and not transaction_in_block and signature_valid:
-            self.transaction_pool.addTransaction(transaction)
+            self.transaction_pool.add_transaction(transaction)
             # Propagate the transaction to other peers
             message = MessageTransation(
                 self.p2p.socket_connector, MessageType.TRANSACTION.name, transaction
@@ -100,7 +100,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
             self.p2p.broadcast(encoded_message)
 
             # check if is time to forge a new Block
-            forging_required = self.transaction_pool.forgerRequired()
+            forging_required = self.transaction_pool.forger_required()
             if forging_required:
                 logger.info("Forger required")
                 self.forge()
@@ -131,7 +131,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
             # Add the block to the Blockchain
             self.blockchain.add_block(block)
 
-            self.transaction_pool.removeFromPool(block.transactions)
+            self.transaction_pool.remove_from_pool(block.transactions)
 
             # broadcast the block message
             message = MessageBlock(
@@ -163,20 +163,20 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
         data = challenge_tx.payload()
         signature = challenge_tx.signature
-        signature_public_key = challenge_tx.senderPublicKey
+        signature_public_key = challenge_tx.sender_public_key
 
         # # # is valid?
         signature_valid = Wallet.signatureValid(data, signature, signature_public_key)
 
         # already exist in the beezKeeper
-        challenge_transaction_exist = self.transaction_pool.challengeExists(challenge_tx)
+        challenge_transaction_exist = self.transaction_pool.challenge_exists(challenge_tx)
 
         # already exist in the Blockchain
         transaction_in_block = self.blockchain.transaction_exist(challenge_tx)
 
         if not challenge_transaction_exist and not transaction_in_block and signature_valid:
             # logger.info(f"add to the Transaction Pool!!!")
-            self.transaction_pool.addTransaction(challenge_tx)
+            self.transaction_pool.add_transaction(challenge_tx)
             # Propagate the transaction to other peers
             message = MessageChallengeTransation(
                 self.p2p.socket_connector, MessageType.CHALLENGE.name, challenge_tx
@@ -185,7 +185,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
             self.p2p.broadcast(encoded_message)
 
             # check if is time to forge a new Block
-            forging_required = self.transaction_pool.forgerRequired()
+            forging_required = self.transaction_pool.forger_required()
             if forging_required:
                 logger.info("Forger required")
                 self.forge()
@@ -206,7 +206,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
             block = self.blockchain.mint_block(self.transaction_pool.transactions(), self.wallet)
 
             # clean the transaction pool
-            self.transaction_pool.removeFromPool(block.transactions)
+            self.transaction_pool.remove_from_pool(block.transactions)
 
             # Update the current version of the in-memory AccountStateModel and BeezKeeper
             logger.info("GO!!!!!!")
@@ -253,4 +253,4 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
                     self.blockchain.account_state_model = block.header.accountStateModel
                     self.blockchain.beez_keeper = block.header.beezKeeper
 
-                    self.transaction_pool.removeFromPool(block.transactions)
+                    self.transaction_pool.remove_from_pool(block.transactions)

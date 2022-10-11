@@ -6,12 +6,12 @@ import time
 import copy
 import json
 
-from beez.transaction.TransactionType import TransactionType
-from beez.transaction.Transaction import Transaction
+from beez.transaction.transaction_type import TransactionType
+from beez.transaction.transaction import Transaction
 from beez.block.header import Header
 
 if TYPE_CHECKING:
-    from beez.transaction.ChallengeTX import ChallengeTX
+    from beez.transaction.challenge_tx import ChallengeTX
     from beez.Types import PublicKeyString
 
 
@@ -56,7 +56,7 @@ class Block:
         """Serializing the block to json."""
         block_serialized = {
             "header": self.header.serialize() if self.header else "",
-            "transactions": [tx.toJson() for tx in self.transactions],
+            "transactions": [tx.to_json() for tx in self.transactions],
             "lastHash": self.last_hash,
             "forger": self.forger,
             "blockCount": self.block_count,
@@ -80,7 +80,7 @@ class Block:
             if serialized_block["header"] != ""
             else None,
             transactions=[
-                Transaction.fromJson(tx_json)
+                Transaction.from_json(tx_json)
                 for tx_json in serialized_block["transactions"]
             ],
             last_hash=serialized_block["lastHash"],
@@ -102,11 +102,11 @@ class Block:
         transactions = []
 
         for transaction in self.transactions:
-            if transaction.type == TransactionType.CHALLENGE:
+            if transaction.transaction_type == TransactionType.CHALLENGE:
                 challenge_tx: ChallengeTX = transaction
-                transactions.append(challenge_tx.toJson())
+                transactions.append(challenge_tx.to_json())
             else:
-                transactions.append(transaction.toJson())
+                transactions.append(transaction.to_json())
 
         json_block["transactions"] = transactions
 

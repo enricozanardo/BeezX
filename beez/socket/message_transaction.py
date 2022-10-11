@@ -8,7 +8,7 @@ from beez.socket.message_type import MessageType
 
 if TYPE_CHECKING:
     from beez.socket.socket_connector import SocketConnector
-    from beez.transaction.Transaction import Transaction
+    from beez.transaction.transaction import Transaction
 
 
 class MessageTransation(Message):   # pylint: disable=too-few-public-methods

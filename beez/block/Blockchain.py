@@ -10,8 +10,8 @@ from beez.block.block import Block
 from beez.beez_utils import BeezUtils
 from beez.state.account_state_model import AccountStateModel
 from beez.consensus.proof_of_stake import ProofOfStake
-from beez.transaction.TransactionType import TransactionType
-from beez.transaction.ChallengeTX import ChallengeTX
+from beez.transaction.transaction_type import TransactionType
+from beez.transaction.challenge_tx import ChallengeTX
 from beez.keys.genesis_public_key import GenesisPublicKey
 from beez.block.header import Header
 from beez.challenge.beez_keeper import BeezKeeper
@@ -19,7 +19,7 @@ from beez.index.index_engine import BlockIndexEngine
 
 
 if TYPE_CHECKING:
-    from beez.transaction.Transaction import Transaction
+    from beez.transaction.transaction import Transaction
     from beez.wallet.Wallet import Wallet
     from beez.challenge.challenge import Challenge
 
@@ -130,25 +130,25 @@ class Blockchain:
 
     def execute_transaction(self, transaction: Transaction):
         """Executes a single transaction."""
-        logger.info(f"Execute transaction of type: {transaction.type}")
+        logger.info(f"Execute transaction of type: {transaction.transaction_type}")
 
         # case of Stake transaction [involve POS]
-        if transaction.type == TransactionType.STAKE.name:
+        if transaction.transaction_type == TransactionType.STAKE.name:
             logger.info("STAKE")
-            sender = transaction.senderPublicKey
-            receiver = transaction.receiverPublicKey
+            sender = transaction.sender_public_key
+            receiver = transaction.receiver_public_key
             if sender == receiver:
                 amount = transaction.amount
                 self.pos.update(sender, amount)
                 self.account_state_model.update_balance(sender, -amount)
 
         # case of Challenge transaction [involve beezKeeper]
-        elif transaction.type == TransactionType.CHALLENGE.name:
+        elif transaction.transaction_type == TransactionType.CHALLENGE.name:
             logger.info("CHALLENGE")
             # cast the kind of transaction
             challenge_transaction: ChallengeTX = transaction
-            sender = challenge_transaction.senderPublicKey
-            receiver = transaction.receiverPublicKey
+            sender = challenge_transaction.sender_public_key
+            receiver = transaction.receiver_public_key
             if sender == receiver:
                 # Check with the challenge Keeeper
                 challenge: Challenge = challenge_transaction.challenge
@@ -169,8 +169,8 @@ class Blockchain:
         else:
             # case of [TRANSACTION]
             logger.info("OTHER")
-            sender = transaction.senderPublicKey
-            receiver = transaction.receiverPublicKey
+            sender = transaction.sender_public_key
+            receiver = transaction.receiver_public_key
             amount: int = transaction.amount
             # first update the sender balance
             self.account_state_model.update_balance(sender, -amount)
@@ -229,7 +229,7 @@ class Blockchain:
                 covered_transactions.append(transaction)
             else:
                 logger.info(
-                    f"""This transaction {transaction.id} is not covered
+                    f"""This transaction {transaction.identifier} is not covered
                     [no enogh tokes ({transaction.amount})]"""
                 )
 
@@ -242,7 +242,7 @@ class Blockchain:
         not check if it covered
         """
 
-        if transaction.type == TransactionType.EXCHANGE.name:
+        if transaction.transaction_type == TransactionType.EXCHANGE.name:
             # Only genesis wallet can perform an EXCHANGE transaction
             # genesisPubKeyString = str(self.genesisPubKey.pubKey).strip()
             # genesisPubKeyString = str(transaction.senderPublicKey).strip()
@@ -254,7 +254,7 @@ class Blockchain:
             # return False
             return True
 
-        sender_balance = self.account_state_model.get_balance(transaction.senderPublicKey)
+        sender_balance = self.account_state_model.get_balance(transaction.sender_public_key)
 
         if sender_balance >= transaction.amount:
             return True

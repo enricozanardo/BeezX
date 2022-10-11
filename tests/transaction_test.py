@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 import requests
 import pathlib
 
-from beez.transaction.Transaction import Transaction
-from beez.transaction.TransactionType import TransactionType
+from beez.transaction.transaction import Transaction
+from beez.transaction.transaction_type import TransactionType
 from beez.wallet.Wallet import Wallet
 from beez.node.beez_node import BeezNode
 from beez.beez_utils import BeezUtils

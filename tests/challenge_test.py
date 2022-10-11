@@ -6,13 +6,13 @@ from dotenv import load_dotenv
 import requests
 import pathlib
 
-from beez.transaction.Transaction import Transaction
-from beez.transaction.TransactionType import TransactionType
+from beez.transaction.transaction import Transaction
+from beez.transaction.transaction_type import TransactionType
 from beez.wallet.Wallet import Wallet
 from beez.beez_utils import BeezUtils
 from beez.Types import WalletAddress
 from beez.challenge.challenge import Challenge
-from beez.transaction.ChallengeTX import ChallengeTX
+from beez.transaction.challenge_tx import ChallengeTX
 
 # for function
 import random
