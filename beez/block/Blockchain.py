@@ -8,7 +8,7 @@ from loguru import logger
 from whoosh.fields import Schema, TEXT, KEYWORD, ID
 from beez.block.block import Block
 from beez.beez_utils import BeezUtils
-from beez.state.AccountStateModel import AccountStateModel
+from beez.state.account_state_model import AccountStateModel
 from beez.consensus.proof_of_stake import ProofOfStake
 from beez.transaction.TransactionType import TransactionType
 from beez.transaction.ChallengeTX import ChallengeTX
@@ -140,7 +140,7 @@ class Blockchain:
             if sender == receiver:
                 amount = transaction.amount
                 self.pos.update(sender, amount)
-                self.account_state_model.updateBalance(sender, -amount)
+                self.account_state_model.update_balance(sender, -amount)
 
         # case of Challenge transaction [involve beezKeeper]
         elif transaction.type == TransactionType.CHALLENGE.name:
@@ -164,7 +164,7 @@ class Blockchain:
 
                 # Update the balance of the sender!
                 amount = challenge_transaction.amount
-                self.account_state_model.updateBalance(sender, -amount)
+                self.account_state_model.update_balance(sender, -amount)
 
         else:
             # case of [TRANSACTION]
@@ -173,9 +173,9 @@ class Blockchain:
             receiver = transaction.receiverPublicKey
             amount: int = transaction.amount
             # first update the sender balance
-            self.account_state_model.updateBalance(sender, -amount)
+            self.account_state_model.update_balance(sender, -amount)
             # second update the receiver balance
-            self.account_state_model.updateBalance(receiver, amount)
+            self.account_state_model.update_balance(receiver, amount)
 
     def transaction_exist(self, transaction: Transaction):
         """Check if a given transaction exists in the current blockchain state."""
@@ -254,7 +254,7 @@ class Blockchain:
             # return False
             return True
 
-        sender_balance = self.account_state_model.getBalance(transaction.senderPublicKey)
+        sender_balance = self.account_state_model.get_balance(transaction.senderPublicKey)
 
         if sender_balance >= transaction.amount:
             return True

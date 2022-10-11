@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from beez.challenge.beez_keeper import BeezKeeper
-from beez.state.AccountStateModel import AccountStateModel
+from beez.state.account_state_model import AccountStateModel
 
 
 class Header:
