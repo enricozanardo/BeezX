@@ -11,7 +11,7 @@ from beez.beez_utils import BeezUtils
 from beez.index.index_engine import AccountModelEngine, BalancesModelEngine
 
 if TYPE_CHECKING:
-    from beez.Types import PublicKeyString
+    from beez.types import PublicKeyString
 
 
 class AccountStateModel:

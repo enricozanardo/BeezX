@@ -13,7 +13,7 @@ from beez.wallet.wallet import Wallet
 from beez.socket.socket_communication import SocketCommunication
 from beez.api.node_api import NodeAPI
 from beez.transaction.transaction_pool import TransactionPool
-from beez.socket.MessageTransaction import MessageTransation
+from beez.socket.message_transaction import MessageTransation
 from beez.socket.message_type import MessageType
 from beez.socket.message_challenge_transaction import MessageChallengeTransation
 from beez.block.blockchain import Blockchain
@@ -22,7 +22,7 @@ from beez.socket.message_blockchain import MessageBlockchain
 from beez.socket.message import Message
 
 if TYPE_CHECKING:
-    from beez.Types import Address
+    from beez.types import Address
     from beez.transaction.transaction import Transaction
     from beez.transaction.challenge_tx import ChallengeTX
     from beez.challenge.challenge import Challenge

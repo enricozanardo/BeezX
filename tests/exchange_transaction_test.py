@@ -11,7 +11,7 @@ from beez.transaction.transaction_type import TransactionType
 from beez.wallet.wallet import Wallet
 from beez.node.beez_node import BeezNode
 from beez.beez_utils import BeezUtils
-from beez.Types import PublicKeyString, WalletAddress
+from beez.types import PublicKeyString, WalletAddress
 
 load_dotenv()  # load .env
 

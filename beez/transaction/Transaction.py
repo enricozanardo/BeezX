@@ -9,7 +9,7 @@ import copy
 
 if TYPE_CHECKING:
     from .transaction_type import TransactionType
-    from beez.Types import PublicKeyString, WalletAddress
+    from beez.types import PublicKeyString, WalletAddress
 
 
 class Transaction:

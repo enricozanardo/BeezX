@@ -18,7 +18,7 @@ from beez.block.blockchain import Blockchain
 from beez.block.block import Block
 
 if TYPE_CHECKING:
-    from beez.Types import Address
+    from beez.types import Address
     from beez.node.beez_node import BeezNode
     from beez.socket.message import Message
 

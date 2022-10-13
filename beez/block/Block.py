@@ -12,7 +12,7 @@ from beez.block.header import Header
 
 if TYPE_CHECKING:
     from beez.transaction.challenge_tx import ChallengeTX
-    from beez.Types import PublicKeyString
+    from beez.types import PublicKeyString
 
 
 

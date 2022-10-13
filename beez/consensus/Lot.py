@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 from beez.beez_utils import BeezUtils
 
 if TYPE_CHECKING:
-    from beez.Types import PublicKeyString, Stake
+    from beez.types import PublicKeyString, Stake
 
 
 class Lot:  # pylint: disable=too-few-public-methods

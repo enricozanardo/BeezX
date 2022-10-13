@@ -17,7 +17,7 @@ from beez.block.block import Block
 
 
 if TYPE_CHECKING:
-    from beez.Types import WalletAddress, PublicKeyString
+    from beez.types import WalletAddress, PublicKeyString
     from beez.transaction.transaction_type import TransactionType
 
 

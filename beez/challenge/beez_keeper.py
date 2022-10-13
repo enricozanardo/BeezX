@@ -14,12 +14,14 @@ from whoosh.fields import Schema, TEXT, KEYWORD, ID
 from beez.index.index_engine import ChallengeModelEngine
 
 if TYPE_CHECKING:
-    from beez.Types import Prize, ChallengeID, PublicKeyString
+    from beez.types import Prize, ChallengeID, PublicKeyString
     from beez.challenge.challenge import Challenge
 
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
-INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))  # pylint: disable=invalid-envvar-default
+INTERVALS = int(
+    os.getenv("INTERVALS", LOCAL_INTERVALS) # pylint: disable=invalid-envvar-default
+)
 
 
 class BeezKeeper:
@@ -32,7 +34,9 @@ class BeezKeeper:
     def __init__(self):
         self.challenges_index = ChallengeModelEngine.get_engine(
             Schema(
-                id=ID(stored=True), type=KEYWORD(stored=True), challenge_pickled=TEXT(stored=True)
+                id=ID(stored=True),
+                type=KEYWORD(stored=True),
+                challenge_pickled=TEXT(stored=True),
             )
         )
 
@@ -50,7 +54,9 @@ class BeezKeeper:
     @staticmethod
     def deserialize(serialized_challenges, index=True):  # pylint: disable=unused-argument
         """Returning a beez keeper from serialized challenges."""
-        return BeezKeeper()._deserialize(serialized_challenges)  # pylint: disable=protected-access
+        return BeezKeeper()._deserialize(   # pylint: disable=protected-access
+            serialized_challenges
+        )
 
     def _deserialize(self, serialized_challenges):
         """Deserialize beez keeper."""
@@ -62,7 +68,9 @@ class BeezKeeper:
     def challanges(self) -> dict[str, Challenge]:
         """Returns all challenges."""
         challenges: dict[str, Challenge] = {}
-        challenge_docs = self.challenges_index.query(q="CHALLENGE", fields=["type"], highlight=True)
+        challenge_docs = self.challenges_index.query(
+            query="CHALLENGE", fields=["type"], highlight=True
+        )
         for doc in challenge_docs:
             challenge = Challenge.from_pickle(doc["challenge_pickled"])
             challenges[doc["id"]] = challenge
@@ -105,7 +113,8 @@ class BeezKeeper:
         reward = challenge.reward
 
         if (
-            challenge_id in self.challanges().keys()    # pylint: disable=consider-iterating-dictionary
+            challenge_id
+            in self.challanges().keys()  # pylint: disable=consider-iterating-dictionary
         ):
             logger.info("Challenge already created")
         else:
@@ -122,7 +131,8 @@ class BeezKeeper:
     def get(self, challenge_id: ChallengeID) -> Optional[Challenge]:
         """Get a challenge by id."""
         if (
-            challenge_id in self.challanges().keys()    # pylint: disable=consider-iterating-dictionary
+            challenge_id
+            in self.challanges().keys()  # pylint: disable=consider-iterating-dictionary
         ):
             return self.challanges()[challenge_id]
         return None
@@ -130,7 +140,8 @@ class BeezKeeper:
     def challege_exists(self, challenge_id: ChallengeID) -> bool:
         """Check if challenge exists."""
         if (
-            challenge_id in self.challanges().keys()    # pylint: disable=consider-iterating-dictionary
+            challenge_id
+            in self.challanges().keys()  # pylint: disable=consider-iterating-dictionary
         ):
             return True
         return False

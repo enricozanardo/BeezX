@@ -10,7 +10,7 @@ from beez.transaction.transaction import Transaction
 from beez.transaction.transaction_type import TransactionType
 from beez.wallet.wallet import Wallet
 from beez.beez_utils import BeezUtils
-from beez.Types import WalletAddress
+from beez.types import WalletAddress
 from beez.challenge.challenge import Challenge
 from beez.transaction.challenge_tx import ChallengeTX
 

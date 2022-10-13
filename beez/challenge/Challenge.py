@@ -6,7 +6,7 @@ import jsonpickle
 from beez.challenge.challenge_state import ChallengeState
 
 if TYPE_CHECKING:
-    from beez.Types import Prize
+    from beez.types import Prize
 
 
 

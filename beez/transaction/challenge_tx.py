@@ -8,7 +8,7 @@ from beez.challenge.challenge import Challenge
 
 if TYPE_CHECKING:
     from .transaction_type import TransactionType
-    from beez.Types import PublicKeyString
+    from beez.types import PublicKeyString
 
 
 class ChallengeTX(Transaction):

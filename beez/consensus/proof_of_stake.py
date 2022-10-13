@@ -11,7 +11,7 @@ from beez.keys.genesis_public_key import GenesisPublicKey
 from beez.index.index_engine import PosModelEngine
 
 if TYPE_CHECKING:
-    from beez.Types import Stake, PublicKeyString
+    from beez.types import Stake, PublicKeyString
 
 
 class ProofOfStake:
@@ -33,7 +33,7 @@ class ProofOfStake:
     def serialize(self):
         """Serialize the PoS object to json format."""
         stakers: dict[str, int] = {}
-        for stakers_doc in self.stakers_index.query(q="STAKE", fields=["type"], highlight=True):
+        for stakers_doc in self.stakers_index.query(query="STAKE", fields=["type"], highlight=True):
             stakers[stakers_doc["public_key_string"]] = stakers_doc["stake"]
         return stakers
 
@@ -65,7 +65,7 @@ class ProofOfStake:
     def stakers(self):
         """Returns the stakers public keys."""
         stakers_public_keys = []
-        docs = self.stakers_index.query(q="STAKE", fields=["type"], highlight=True)
+        docs = self.stakers_index.query(query="STAKE", fields=["type"], highlight=True)
         for doc in docs:
             stakers_public_keys.append(doc["public_key_string"])
         return stakers_public_keys
@@ -77,7 +77,7 @@ class ProofOfStake:
             public_key_string.replace("'", "").replace("\n", "")
         ).hexdigest()
 
-        if len(self.stakers_index.query(q=identifier, fields=["id"], highlight=True)) != 0:
+        if len(self.stakers_index.query(query=identifier, fields=["id"], highlight=True)) != 0:
             old_stake = self.get(identifier)
             self.stakers_index.delete_document("id", identifier)
             self.stakers_index.index_documents(
@@ -104,9 +104,9 @@ class ProofOfStake:
 
     def get(self, identifier) -> Option[Stake]:
         """Returns the stake of the given public key."""
-        if len(self.stakers_index.query(q=identifier, fields=["id"], highlight=True)) == 0:
+        if len(self.stakers_index.query(query=identifier, fields=["id"], highlight=True)) == 0:
             return None
-        return self.stakers_index.query(q=identifier, fields=["id"], highlight=True)[0]["stake"]
+        return self.stakers_index.query(query=identifier, fields=["id"], highlight=True)[0]["stake"]
 
     def validator_lots(self, seed: str) -> List[Lot]:
         "Returns the lots of all validators."

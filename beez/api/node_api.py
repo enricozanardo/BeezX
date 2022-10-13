@@ -22,7 +22,7 @@ NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
 
 if TYPE_CHECKING:
     from beez.node.beez_node import BeezNode
-    from beez.Types import Address
+    from beez.types import Address
     from beez.transaction.transaction import Transaction
     from beez.transaction.challenge_tx import ChallengeTX
 

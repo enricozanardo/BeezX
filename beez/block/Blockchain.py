@@ -82,7 +82,7 @@ class Blockchain:
     def blocks(self):
         """Returning all the blocks from the current state."""
         blocks = []
-        block_docs = self.blocks_index.query(q="BL", fields=["type"], highlight=True)
+        block_docs = self.blocks_index.query(query="BL", fields=["type"], highlight=True)
         for doc in block_docs:
             blocks.append(Block.deserialize(doc["block_serialized"], index=False))
         blocks = sorted(blocks, key=lambda block: block.blockCount)

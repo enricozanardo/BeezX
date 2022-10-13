@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, TypeVar
 SelfSocketConnector = TypeVar("SelfSocketConnector", bound="SocketConnector")
 
 if TYPE_CHECKING:
-    from beez.Types import Address
+    from beez.types import Address
 
 
 class SocketConnector:      # pylint: disable=too-few-public-methods
