@@ -20,7 +20,7 @@ from beez.index.index_engine import BlockIndexEngine
 
 if TYPE_CHECKING:
     from beez.transaction.transaction import Transaction
-    from beez.wallet.Wallet import Wallet
+    from beez.wallet.wallet import Wallet
     from beez.challenge.challenge import Challenge
 
 
@@ -207,7 +207,7 @@ class Blockchain:
         logger.info(f"Header: {len(header.beez_keeper.challanges().items())}")
 
         # create the Block
-        new_block = forger_wallet.createBlock(
+        new_block = forger_wallet.create_block(
             header,
             covered_transactions,
             BeezUtils.hash(self.blocks()[-1].payload()).hexdigest(),

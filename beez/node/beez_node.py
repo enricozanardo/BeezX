@@ -9,7 +9,7 @@ from loguru import logger
 import GPUtil
 
 from beez.beez_utils import BeezUtils
-from beez.wallet.Wallet import Wallet
+from beez.wallet.wallet import Wallet
 from beez.socket.socket_communication import SocketCommunication
 from beez.api.node_api import NodeAPI
 from beez.transaction.transaction_pool import TransactionPool
@@ -47,7 +47,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         self.blockchain = Blockchain()
 
         if key is not None:
-            self.wallet.fromKey(key)
+            self.wallet.from_key(key)
 
     def get_ip(self) -> Address:
         """Return IP of node."""
@@ -80,7 +80,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         signature_public_key = transaction.sender_public_key
 
         # # # is valid?
-        signature_valid = Wallet.signatureValid(data, signature, signature_public_key)
+        signature_valid = Wallet.signature_valid(data, signature, signature_public_key)
 
         # already exist in the transaction pool
         transaction_exist = self.transaction_pool.transaction_exists(transaction)
@@ -118,7 +118,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         forger_valid = self.blockchain.forger_valid(block)
         transaction_valid = self.blockchain.transaction_valid(block.transactions)
 
-        signature_valid = Wallet.signatureValid(block_hash, signature, forger)
+        signature_valid = Wallet.signature_valid(block_hash, signature, forger)
 
         logger.info(f"What is wrong? blockCountValid: {block_count_valid}")
 
@@ -166,7 +166,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         signature_public_key = challenge_tx.sender_public_key
 
         # # # is valid?
-        signature_valid = Wallet.signatureValid(data, signature, signature_public_key)
+        signature_valid = Wallet.signature_valid(data, signature, signature_public_key)
 
         # already exist in the beezKeeper
         challenge_transaction_exist = self.transaction_pool.challenge_exists(challenge_tx)
@@ -197,7 +197,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         forger = self.blockchain.next_forger()
 
         forger_string = str(forger).strip()
-        this_wallet_string = str(self.wallet.publicKeyString()).strip()
+        this_wallet_string = str(self.wallet.public_key_string()).strip()
 
         if forger_string == this_wallet_string:
             logger.info("I'm the next forger")

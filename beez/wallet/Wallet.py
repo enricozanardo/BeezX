@@ -1,3 +1,5 @@
+"""Beez blockchain - wallet."""
+
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional
 from Crypto.PublicKey import RSA
@@ -7,16 +9,16 @@ from loguru import logger
 
 from beez.block.header import Header
 
-
-if TYPE_CHECKING:
-    from beez.Types import WalletAddress, PublicKeyString
-    from beez.transaction.transaction_type import TransactionType
-
 from beez.beez_utils import BeezUtils
 from beez.challenge.challenge import Challenge
 from beez.transaction.transaction import Transaction
 from beez.transaction.challenge_tx import ChallengeTX
 from beez.block.block import Block
+
+
+if TYPE_CHECKING:
+    from beez.Types import WalletAddress, PublicKeyString
+    from beez.transaction.transaction_type import TransactionType
 
 
 class Wallet:
@@ -27,96 +29,97 @@ class Wallet:
 
     def __init__(self):
         # 1024 is the modulo that we are going to use.
-        self.keyPair = RSA.generate(1024)
-        self.generateAddress()
+        self.key_pair = RSA.generate(1024)
+        self.generate_address()
         logger.info("A Wallet is generated")
 
-    def generateAddress(self):
-        h = SHA256.new(
-            self.keyPair.public_key().exportKey().hex().encode("utf-8")
-        )
-        self.address: WalletAddress = "bz" + h.hexdigest()[0:42]
+    def generate_address(self) -> None:
+        """Generate a new address."""
+        hash_value = SHA256.new(self.key_pair.public_key().exportKey().hex().encode("utf-8"))
+        self.address: WalletAddress = "bz" + hash_value.hexdigest()[0:42]
         logger.info(f"Address: {self.address}")
 
-    def fromKey(self, file):
+    def from_key(self, file):
+        """Creates a new wallet from a given key."""
         key = ""
-        with open(file, "r") as keyfile:
+        with open(file, "r", encoding="utf-8") as keyfile:
             key = RSA.import_key(keyfile.read())
-        self.keyPair = key
+        self.key_pair = key
 
     def sign(self, data):
-        dataHash = BeezUtils.hash(data)
-        signatureSchemeObject = PKCS1_v1_5.new(self.keyPair)
-        signature = signatureSchemeObject.sign(dataHash)
+        "Creates a signature based on the given data."
+        data_hash = BeezUtils.hash(data)
+        signature_scheme_object = PKCS1_v1_5.new(self.key_pair)
+        signature = signature_scheme_object.sign(data_hash)
 
         return signature.hex()
 
     @staticmethod
-    def signatureValid(
-        data, signature, publicKeyString: PublicKeyString
-    ) -> bool:
+    def signature_valid(data, signature, public_key_string: PublicKeyString) -> bool:
+        """Checks if a given signature is valid based on data and public key."""
         signature = bytes.fromhex(signature)
-        dataHash = BeezUtils.hash(data)
-        publicKey = RSA.importKey(publicKeyString)
+        data_hash = BeezUtils.hash(data)
+        public_key = RSA.importKey(public_key_string)
         # providing the pubKey is able to validate the signature
-        signatureSchemeObject = PKCS1_v1_5.new(publicKey)
-        signatureValid = signatureSchemeObject.verify(dataHash, signature)
+        signature_scheme_object = PKCS1_v1_5.new(public_key)
+        signature_valid = signature_scheme_object.verify(data_hash, signature)  # pylint: disable=not-callable
 
-        return signatureValid
+        return signature_valid
 
-    def publicKeyString(self) -> PublicKeyString:
-        publicKeyString: PublicKeyString = (
-            self.keyPair.publickey().exportKey("PEM").decode("utf-8")
+    def public_key_string(self) -> PublicKeyString:
+        """Returns the public key in string format."""
+        public_key_string: PublicKeyString = (
+            self.key_pair.publickey().exportKey("PEM").decode("utf-8")
         )
 
-        return publicKeyString
+        return public_key_string
 
     # Manage Transaction
-    def createTransaction(
-        self, receiver: PublicKeyString, amount, type: TransactionType
+    def create_transaction(
+        self, receiver: PublicKeyString, amount, transaction_type: TransactionType
     ) -> Transaction:
-        transaction = Transaction(
-            self.publicKeyString(), receiver, amount, type
-        )
+        """Creates a new, signed transaction."""
+        transaction = Transaction(self.public_key_string(), receiver, amount, transaction_type)
         signature = self.sign(transaction.payload())
         transaction.sign(signature)
 
         return transaction
 
     # Manage ChallengeTransation
-    def createChallengeTransaction(
-        self, amount, type: TransactionType, challenge: Challenge
+    def create_challenge_transaction(
+        self, amount, transaction_type: TransactionType, challenge: Challenge
     ) -> ChallengeTX:
-
-        challengeTransaction = ChallengeTX(
-            self.publicKeyString(),
-            self.publicKeyString(),
+        """Creates a new, signed challenge transaction."""
+        challenge_transaction = ChallengeTX(
+            self.public_key_string(),
+            self.public_key_string(),
             amount,
-            type,
+            transaction_type,
             challenge,
         )
 
-        signature = self.sign(challengeTransaction.payload())
+        signature = self.sign(challenge_transaction.payload())
 
-        challengeTransaction.sign(signature)
+        challenge_transaction.sign(signature)
 
-        return challengeTransaction
+        return challenge_transaction
 
     # Manage Block creation
-    def createBlock(
+    def create_block(
         self,
         header: Optional[Header],
         transactions: List[Transaction],
-        lastHash: str,
-        blockCounter: int,
+        last_hash: str,
+        block_counter: int,
     ) -> Block:
+        """Creates a new, signed block."""
         logger.info(f"CREATING A NEW BLOCK {header}")
         block = Block(
             header,
             transactions,
-            lastHash,
-            self.publicKeyString(),
-            blockCounter,
+            last_hash,
+            self.public_key_string(),
+            block_counter,
         )
 
         signature = self.sign(block.payload())
