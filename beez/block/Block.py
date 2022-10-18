@@ -7,12 +7,12 @@ import copy
 import json
 
 from beez.transaction.transaction_type import TransactionType
-from beez.transaction.transaction import Transaction
-from beez.block.header import Header
+from beez.transaction.Transaction import Transaction
+from beez.block.Header import Header
+from beez.Types import PublicKeyString
 
 if TYPE_CHECKING:
     from beez.transaction.challenge_tx import ChallengeTX
-    from beez.types import PublicKeyString
 
 
 
@@ -111,18 +111,6 @@ class Block:
         json_block["transactions"] = transactions
 
         return json_block
-
-    # @staticmethod
-    # def fromPickle(pickle) -> Block:
-    #     block = jsonpickle.decode(pickle["object"])
-    #     beezKeeper = BeezKeeper()
-    #     header = Header()
-
-    #     return jsonpickle.decode(pickle)
-
-    # @staticmethod
-    # def toPickle(block):
-    #     return {"object": jsonpickle.encode(block), "header": block.header.deserialized()}
 
     def payload(self):
         """Returning the payload of the block only without the signature."""
