@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 import json
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional
 import os
 from dotenv import load_dotenv
 from loguru import logger
-from p2pnetwork.node import Node
+from p2pnetwork.node import Node    # type: ignore
 
 from beez.socket.socket_connector import SocketConnector
 from beez.socket.peer_discovery_handler import PeerDiscoveryHandler
@@ -42,7 +42,7 @@ class SocketCommunication(Node):
         self.own_connections: List[SocketConnector] = []
         self.peer_discovery_handler = PeerDiscoveryHandler(self)
         self.socket_connector = SocketConnector(ip, port)
-        self.beez_node = None
+        self.beez_node: Optional[BeezNode] = None
 
         logger.info(f"Socket Communication created.. {FIRST_SERVER_IP}: {P_2_P_PORT}")
 
@@ -84,45 +84,60 @@ class SocketCommunication(Node):
 
     # Once connected send a message
     # this is automatically provided by the library
-    def node_message(self, node: Node, data: Message):
+    def node_message(self, node: Node, data: Message):  # pylint: disable=too-many-branches
         """Handles incomming messages."""
         message = BeezUtils.decode(json.dumps(data))
 
         logger.info(f"messagetype? {message.message_type}")
 
-        if message.message_type == MessageType.DISCOVERY.name:
+        if message.message_type == MessageType.DISCOVERY:
             # handle the DISCOVERY
             logger.info(f"manage the message {message.message_type}")
             self.peer_discovery_handler.handle_message(message)
 
-        elif message.message_type == MessageType.TRANSACTION.name:
+        elif message.message_type == MessageType.TRANSACTION:
             # handle the TRANSACTION
             logger.info(f"A Transaction Message will be broadcasted!! {message.message_type}")
             transaction: Transaction = message.transaction
-            self.beez_node.handle_transaction(transaction)
+            if self.beez_node:
+                self.beez_node.handle_transaction(transaction)
+            else:
+                logger.info("Socket communication module has to node reference.")
 
-        elif message.message_type == MessageType.CHALLENGE.name:
+        elif message.message_type == MessageType.CHALLENGE:
             # handle the CHALLENGE
             logger.info(f"A CHALLENGE Message will be broadcasted!! {message.message_type}")
             challenge_transaction: ChallengeTX = message.challengeTx
-            self.beez_node.handle_challenge_tx(challenge_transaction)
+            if self.beez_node:
+                self.beez_node.handle_challenge_tx(challenge_transaction)
+            else:
+                logger.info("Socket communication module has to node reference.")
 
-        elif message.message_type == MessageType.BLOCK.name:
+        elif message.message_type == MessageType.BLOCK:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.message_type}")
             block: Block = Block.deserialize(message.block)
-            self.beez_node.handle_block(block)
+            if self.beez_node:
+                self.beez_node.handle_block(block)
+            else:
+                logger.info("Socket communication module has to node reference.")
 
-        elif message.message_type == MessageType.BLOCKCHAINREQUEST.name:
+        elif message.message_type == MessageType.BLOCKCHAINREQUEST:
             # handle the BLOCKCHAINREQUEST
             logger.info(f"A BLOCKCHAINREQUEST Message will be broadcasted!! {message.message_type}")
             # this message do not contain any object
-            self.beez_node.handle_blockchain_request(node)
+            if self.beez_node:
+                self.beez_node.handle_blockchain_request(node)
+            else:
+                logger.info("Socket communication module has to node reference.")
 
-        elif message.message_type == MessageType.BLOCKCHAIN.name:
+        elif message.message_type == MessageType.BLOCKCHAIN:
             # handle the BLOCKCHAIN
             logger.info(
                 f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.message_type}"
             )
             blockchain: Blockchain = Blockchain.deserialize(message.serialized_blockchain)
-            self.beez_node.handle_blockchain(blockchain)
+            if self.beez_node:
+                self.beez_node.handle_blockchain(blockchain)
+            else:
+                logger.info("Socket communication module has to node reference.")

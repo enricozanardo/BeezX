@@ -1,7 +1,7 @@
 """Utility functions used across the project."""
 
 import json
-import jsonpickle
+import jsonpickle   # type: ignore
 from Crypto.Hash import SHA256
 
 

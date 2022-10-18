@@ -1,7 +1,7 @@
 """Beez blockchain - wallet."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, cast
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
@@ -36,7 +36,7 @@ class Wallet:
     def generate_address(self) -> None:
         """Generate a new address."""
         hash_value = SHA256.new(self.key_pair.public_key().exportKey().hex().encode("utf-8"))
-        self.address: WalletAddress = "bz" + hash_value.hexdigest()[0:42]
+        self.address: WalletAddress = cast(WalletAddress, "bz" + hash_value.hexdigest()[0:42])
         logger.info(f"Address: {self.address}")
 
     def from_key(self, file):
@@ -62,7 +62,7 @@ class Wallet:
         public_key = RSA.importKey(public_key_string)
         # providing the pubKey is able to validate the signature
         signature_scheme_object = PKCS1_v1_5.new(public_key)
-        signature_valid = signature_scheme_object.verify(data_hash, signature)  # pylint: disable=not-callable
+        signature_valid = signature_scheme_object.verify(data_hash, signature)  # type: ignore # pylint: disable=not-callable
 
         return signature_valid
 

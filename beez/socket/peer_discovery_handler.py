@@ -15,7 +15,7 @@ from beez.beez_utils import BeezUtils
 
 if TYPE_CHECKING:
     from beez.socket.socket_communication import SocketCommunication
-    from p2pnetwork.node import Node
+    from p2pnetwork.node import Node    # type: ignore
 
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
@@ -59,7 +59,7 @@ class PeerDiscoveryHandler:
             time.sleep(INTERVALS)
 
     # send a message to a specific node
-    def handshake(self, connected_node: Node):
+    def handshake(self, connected_node:Node):
         """
         exchange of information between nodes.
         """
@@ -73,7 +73,7 @@ class PeerDiscoveryHandler:
         """
         own_connector = self.socket_communication.socket_connector
         own_connections = self.socket_communication.own_connections
-        message_type = MessageType.DISCOVERY.name
+        message_type = MessageType.DISCOVERY
 
         message = MessageOwnConnections(own_connector, message_type, own_connections)
 

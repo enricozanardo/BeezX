@@ -1,11 +1,11 @@
 """Beez Blockchain - blockchain."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, cast
 
 from loguru import logger
 
-from whoosh.fields import Schema, TEXT, KEYWORD, ID
+from whoosh.fields import Schema, TEXT, KEYWORD, ID     # type: ignore
 from beez.block.block import Block
 from beez.beez_utils import BeezUtils
 from beez.state.account_state_model import AccountStateModel
@@ -138,7 +138,7 @@ class Blockchain:
             sender = transaction.sender_public_key
             receiver = transaction.receiver_public_key
             if sender == receiver:
-                amount = transaction.amount
+                amount:int = transaction.amount
                 self.pos.update(sender, amount)
                 self.account_state_model.update_balance(sender, -amount)
 
@@ -146,7 +146,7 @@ class Blockchain:
         elif transaction.transaction_type == TransactionType.CHALLENGE.name:
             logger.info("CHALLENGE")
             # cast the kind of transaction
-            challenge_transaction: ChallengeTX = transaction
+            challenge_transaction: ChallengeTX = cast(ChallengeTX, transaction)
             sender = challenge_transaction.sender_public_key
             receiver = transaction.receiver_public_key
             if sender == receiver:
@@ -171,11 +171,11 @@ class Blockchain:
             logger.info("OTHER")
             sender = transaction.sender_public_key
             receiver = transaction.receiver_public_key
-            amount: int = transaction.amount
+            tx_amount: int = transaction.amount
             # first update the sender balance
-            self.account_state_model.update_balance(sender, -amount)
+            self.account_state_model.update_balance(sender, -tx_amount)
             # second update the receiver balance
-            self.account_state_model.update_balance(receiver, amount)
+            self.account_state_model.update_balance(receiver, tx_amount)
 
     def transaction_exist(self, transaction: Transaction):
         """Check if a given transaction exists in the current blockchain state."""

@@ -1,10 +1,9 @@
 """Beez blockchain - proof of stake."""
 
 from __future__ import annotations
-from optparse import Option  # pylint: disable=deprecated-module
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, Optional, cast
 
-from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD
+from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD    # type: ignore
 from beez.consensus.lot import Lot
 from beez.beez_utils import BeezUtils
 from beez.keys.genesis_public_key import GenesisPublicKey
@@ -102,10 +101,10 @@ class ProofOfStake:
                 ]
             )
 
-    def get(self, identifier) -> Option[Stake]:
+    def get(self, identifier) -> Stake:
         """Returns the stake of the given public key."""
         if len(self.stakers_index.query(query=identifier, fields=["id"], highlight=True)) == 0:
-            return None
+            return cast(Stake, 0)
         return self.stakers_index.query(query=identifier, fields=["id"], highlight=True)[0]["stake"]
 
     def validator_lots(self, seed: str) -> List[Lot]:
@@ -115,18 +114,18 @@ class ProofOfStake:
             for stake in range(
                 self.get(BeezUtils.hash(validator.replace("'", "").replace("\n", "")).hexdigest())
             ):
-                lots.append(Lot(validator, stake + 1, seed))
+                lots.append(Lot(validator, cast(Stake, stake + 1), seed))
         return lots
 
-    def winner_lot(self, lots: List[Lot], seed: str) -> Lot:
+    def winner_lot(self, lots: List[Lot], seed: str) -> Optional[Lot]:
         """Returns the winner lot for the next block mint."""
-        winner_lot: Lot = None
+        winner_lot: Optional[Lot] = None
         least_offset = None
         # get the integer representation of a give hash
         reference_hash_int_value = int(BeezUtils.hash(seed).hexdigest(), 16)
         # fin the nearest lot
         for lot in lots:
-            lot_int_value = int(lot.lottery_Hash(), 16)
+            lot_int_value = int(lot.lottery_hash(), 16)
             offset = abs(lot_int_value - reference_hash_int_value)
             if least_offset is None or offset < least_offset:
                 least_offset = offset
@@ -137,6 +136,6 @@ class ProofOfStake:
     def forger(self, last_block_hash: str):
         """Returns the public key of the next forger."""
         lots = self.validator_lots(last_block_hash)
-        winner_lot: Lot = self.winner_lot(lots, last_block_hash)
+        winner_lot: Optional[Lot] = self.winner_lot(lots, last_block_hash)
 
-        return winner_lot.public_key_string
+        return winner_lot.public_key_string if winner_lot else None

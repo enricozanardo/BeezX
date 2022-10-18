@@ -6,7 +6,7 @@ import os
 import socket
 from dotenv import load_dotenv
 from loguru import logger
-import GPUtil
+import GPUtil   # type: ignore
 
 from beez.beez_utils import BeezUtils
 from beez.wallet.wallet import Wallet
@@ -16,6 +16,7 @@ from beez.transaction.transaction_pool import TransactionPool
 from beez.socket.message_transaction import MessageTransation
 from beez.socket.message_type import MessageType
 from beez.socket.message_challenge_transaction import MessageChallengeTransation
+from beez.socket.message_challenge import MessageChallenge
 from beez.block.blockchain import Blockchain
 from beez.socket.message_block import MessageBlock
 from beez.socket.message_blockchain import MessageBlockchain
@@ -35,8 +36,7 @@ P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))     # pylint: disable=invalid-en
 class BeezNode:     # pylint: disable=too-many-instance-attributes
     """Beez Node - represents the core blockchain node."""
 
-    def __init__(self, key=None) -> None:
-        self.p2p = None
+    def __init__(self, key=None, port=None) -> None:
         self.api = None
         self.ip_address = self.get_ip()
         self.port = int(P_2_P_PORT)
@@ -45,6 +45,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
+        self.p2p = SocketCommunication(self.ip_address, port if port else self.port)
 
         if key is not None:
             self.wallet.from_key(key)
@@ -58,9 +59,8 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
             return node_address
 
-    def start_p2p(self, port=None):
+    def start_p2p(self):
         """Starts the p2p communication thread."""
-        self.p2p = SocketCommunication(self.ip_address, port if port else self.port)
         self.p2p.start_socket_communication(self)
 
     def start_api(self, port=None):
@@ -90,9 +90,10 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
         if not transaction_exist and not transaction_in_block and signature_valid:
             self.transaction_pool.add_transaction(transaction)
+
             # Propagate the transaction to other peers
             message = MessageTransation(
-                self.p2p.socket_connector, MessageType.TRANSACTION.name, transaction
+                self.p2p.socket_connector, MessageType.TRANSACTION, transaction
             )
 
             encoded_message = BeezUtils.encode(message)
@@ -135,23 +136,24 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
             # broadcast the block message
             message = MessageBlock(
-                self.p2p.socket_connector, MessageType.BLOCK.name, block.serialize()
+                self.p2p.socket_connector, MessageType.BLOCK, block.serialize()
             )
             encoded_message = BeezUtils.encode(message)
             self.p2p.broadcast(encoded_message)
 
+
     def request_chain(self):
         """Requests the peer nodes to get their version of the blockchain."""
         # The node will send a message to request the updated Blockchain
-        message = Message(self.p2p.socket_connector, MessageType.BLOCKCHAINREQUEST.name)
+        message = Message(self.p2p.socket_connector, MessageType.BLOCKCHAINREQUEST)
         encoded_message = BeezUtils.encode(message)
 
         self.p2p.broadcast(encoded_message)
 
     def handle_challenge_update(self, challenge: Challenge):
         """Handles an challenge update message."""
-        message = MessageChallengeTransation(
-            self.p2p.socket_connector, MessageType.CHALLENGEUPDATE.name, challenge
+        message = MessageChallenge(
+            self.p2p.socket_connector, MessageType.CHALLENGEUPDATE, challenge
         )
         encoded_message = BeezUtils.encode(message)
         self.p2p.broadcast(encoded_message)
@@ -179,7 +181,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
             self.transaction_pool.add_transaction(challenge_tx)
             # Propagate the transaction to other peers
             message = MessageChallengeTransation(
-                self.p2p.socket_connector, MessageType.CHALLENGE.name, challenge_tx
+                self.p2p.socket_connector, MessageType.CHALLENGE, challenge_tx
             )
             encoded_message = BeezUtils.encode(message)
             self.p2p.broadcast(encoded_message)
@@ -215,7 +217,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
             message = MessageBlock(
-                self.p2p.socket_connector, MessageType.BLOCK.name, block.serialize()
+                self.p2p.socket_connector, MessageType.BLOCK, block.serialize()
             )
             encoded_message = BeezUtils.encode(message)
             self.p2p.broadcast(encoded_message)
@@ -227,7 +229,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         """Handles request from other node to get this version of the blockchain."""
         # send the updated version of the blockchain to the node that made the request
         message = MessageBlockchain(
-            self.p2p.socket_connector, MessageType.BLOCKCHAIN.name, self.blockchain.serialize()
+            self.p2p.socket_connector, MessageType.BLOCKCHAIN, self.blockchain.serialize()
         )
         encoded_message = BeezUtils.encode(message)
         self.p2p.send(requesting_node, encoded_message)

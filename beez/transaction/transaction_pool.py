@@ -3,8 +3,8 @@
 from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, List
-from whoosh.fields import Schema, TEXT, ID, KEYWORD
-from beez.index.index_engine import TxpIndexEngine
+from whoosh.fields import Schema, TEXT, ID, KEYWORD    # type: ignore
+from beez.index.index_engine import TxpIndexEngine      # type:ignore
 from beez.transaction.transaction import Transaction
 
 

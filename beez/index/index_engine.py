@@ -2,10 +2,10 @@
 
 import os
 import json
-from typing import Dict, List, Sequence
-from whoosh.fields import TEXT
-from whoosh.qparser import MultifieldParser
-from whoosh.filedb.filestore import FileStorage
+from typing import Sequence, Optional
+from whoosh.fields import TEXT  # type: ignore
+from whoosh.qparser import MultifieldParser     # type: ignore
+from whoosh.filedb.filestore import FileStorage     # type: ignore
 
 
 
@@ -16,7 +16,7 @@ class Engine:
         self.index = None
         self.schema = None
 
-    def index_documents(self, docs: Sequence):
+    def index_documents(self, docs: Sequence) -> None:
         """Adds docs to index."""
         writer = self.index.writer()
         for doc in docs:
@@ -29,13 +29,13 @@ class Engine:
         """Returns number of docs in index."""
         return self.index.doc_count_all()
 
-    def delete_document(self, field: str, term: str):
+    def delete_document(self, field: str, term: str) -> None:
         """Deletes a document from index."""
         writer = self.index.writer()
         writer.delete_by_term(field, term)
         writer.commit()
 
-    def query(self, query: str, fields: Sequence, highlight: bool = True) -> List[Dict]:
+    def query(self, query: str, fields: Sequence, highlight: bool = True) -> list[dict]:
         """Query index and returns docs matching query."""
         search_results = []
         with self.index.searcher() as searcher:
@@ -53,7 +53,7 @@ class Engine:
 
     def query_at(
         self, query: str, fields: Sequence, highlight: bool = True, index: int = 0
-    ) -> List[Dict]:
+    ) -> dict:
         """Returns the document at index from all docs matching the query."""
         return self.query(query, fields, highlight)[index]
 
@@ -194,7 +194,7 @@ class BalancesModelEngine(Engine):
 
 class PosModelEngine(Engine):
     """Index engine for PoS model."""
-    engine = None
+    engine: Optional[Engine] = None
 
     def __init__(self, schema):
         super().__init__()

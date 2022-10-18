@@ -1,7 +1,7 @@
 """Beez blockchain - challenge handler"""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, Any
+from typing import TYPE_CHECKING, Any
 import threading
 import time
 import os
@@ -16,7 +16,7 @@ from beez.beez_utils import BeezUtils
 
 if TYPE_CHECKING:
     from beez.socket.socket_communication import SocketCommunication
-    from p2pnetwork.node import Node
+    from p2pnetwork.node import Node    # type: ignore
     from beez.challenge.challenge import Challenge
     from beez.types import ChallengeID
 
@@ -86,7 +86,7 @@ class ChallengeHandler:
         # TODO: get the challenges from the blockchian
         logger.info(f"#### get the challenges from the blockchian {owned_challenges} #####")
 
-        message_type = MessageType.CHALLENGE.name
+        message_type = MessageType.CHALLENGE
 
         message = MessageChallenge(own_connector, message_type, owned_challenges)
 
@@ -95,18 +95,19 @@ class ChallengeHandler:
 
         return encoded_message
 
-    def handle_challenges_message(self, message: MessageChallenge):
-        """Handles an incomming challenge message."""
-        challenges: Dict[ChallengeID:Challenge] = message.challenges
-        new_challenge = True
+    # def handle_challenges_message(self, message: MessageChallenge):
+    #     """Handles an incomming challenge message."""
+    #     challenges: Challenge = message.challenge
+    #     new_challenge = True
 
-        for idx, challenge in challenges.items():
-            challege_exist = self.challenge_exists(idx)
-            if challege_exist:
-                # challenge already exist!
-                # TODO: check if must be updated!!!
-                new_challenge = False
+        # TODO: implement this
+        # for idx, challenge in challenges.items():
+        #     challege_exist = self.challenge_exists(idx)
+        #     if challege_exist:
+        #         # challenge already exist!
+        #         # TODO: check if must be updated!!!
+        #         new_challenge = False
 
-            if new_challenge is True:
-                # Add the challenge to the Dictionary
-                self.socket_communication.challenges[idx] = challenge
+        #     if new_challenge is True:
+        #         # Add the challenge to the Dictionary
+        #         self.socket_communication.challenges[idx] = challenge

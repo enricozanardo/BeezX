@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Any
 import threading
 import time
 from loguru import logger
-from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD
+from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD    # type: ignore
 from beez.beez_utils import BeezUtils
 
 from beez.index.index_engine import AccountModelEngine, BalancesModelEngine
@@ -39,7 +39,7 @@ class AccountStateModel:
         status_thread = threading.Thread(target=self.status, args={})
         status_thread.start()
 
-    def serialize(self) -> dict[str:Any]:
+    def serialize(self) -> dict[str,Any]:
         """Serializes account state model to json."""
         return {"accounts": self.accounts(), "balances": self.balances()}
 

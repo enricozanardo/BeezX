@@ -19,7 +19,7 @@ class ChallengeTX(Transaction):
         sender_public_key: PublicKeyString,
         receiver_public_key: PublicKeyString,
         amount: int,
-        transaction_type: TransactionType.name,
+        transaction_type: TransactionType,
         challenge: Challenge,
     ):
         super().__init__(sender_public_key, receiver_public_key, amount, transaction_type)

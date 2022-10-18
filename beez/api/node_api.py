@@ -2,11 +2,11 @@
 from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
-from flask_classful import FlaskView, route
+from flask_classful import FlaskView, route # type:ignore
 from flask import Flask, jsonify, request
 from waitress import serve
 from loguru import logger
-from whoosh.fields import Schema, TEXT, KEYWORD, ID
+from whoosh.fields import Schema, TEXT, KEYWORD, ID # type: ignore
 from dotenv import load_dotenv
 from beez.beez_utils import BeezUtils
 
@@ -31,11 +31,11 @@ BEEZ_NODE = None
 
 class NodeAPI(FlaskView):
     """NodeAPI class which represents the HTTP communication interface."""
-    def __init__(self):
+    def __init__(self) -> None:
         self.app = Flask(__name__)  # create the Flask application
         # for testing index
 
-    def start(self, node_ip: Address, port=None):
+    def start(self, node_ip: Address, port=None) -> None:
         """Starting the nodes api."""
         logger.info(f"Node API started at {node_ip}:{NODE_API_PORT}")
         # register the application to routes
@@ -44,14 +44,14 @@ class NodeAPI(FlaskView):
         # self.app.run(host=nodeIP, port=NODE_API_PORT)
 
     # find a way to use the properties of the node in the nodeAPI
-    def inject_node(self, incjected_node: BeezNode):
+    def inject_node(self, incjected_node: BeezNode) -> None:
         """Inject the node object of this Blockchain instance and make it
         available for the endpoints."""
         global BEEZ_NODE    # pylint: disable=global-statement
         BEEZ_NODE = incjected_node
 
     @route("/txpindex", methods=["GET"])
-    def txpindex(self):
+    def txpindex(self) -> tuple[str, int]:
         """Returns the current state of the transaction pool"""
         logger.info("Fetching indexed transactionpool transactions")
         fields_to_search = ["id", "type", "txp_encoded"]

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Optional
 from loguru import logger
 from dotenv import load_dotenv
 
-from whoosh.fields import Schema, TEXT, KEYWORD, ID
+from whoosh.fields import Schema, TEXT, KEYWORD, ID     # type: ignore
 from beez.index.index_engine import ChallengeModelEngine
 
 if TYPE_CHECKING:
@@ -156,18 +156,18 @@ class BeezKeeper:
         # update the challenge state!
         # create a new Challenge TX!
 
-        logger.info(f"challenge function: {challenge.sharedFunction.__doc__}")
+        logger.info(f"challenge function: {challenge.shared_function.__doc__}")
 
-        shared_function = challenge.sharedFunction
+        shared_function = challenge.shared_function
         # logger.info(f"challenge function: {type(sharedfunction)}")
         input_a = random.randint(0, 100)
         input_b = random.randint(0, 100)
 
-        result = shared_function(input_a, input_b)
+        result = shared_function(input_a, input_b)  # type: ignore
 
         logger.info(f"result: {result}")
 
-    def update(self, received_challenge: Challenge) -> bool:
+    def update(self, received_challenge: Challenge) -> None:
         """Updating the local version of a challenge."""
         # do a copy of the local challenge!
         challenge_exists = self.challege_exists(received_challenge.identifier)

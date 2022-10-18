@@ -37,3 +37,6 @@ lint-wallet-module:
 format-python:
 	./scripts/format-python.sh
 
+typecheck-python:
+	./scripts/typecheck-python.sh
+

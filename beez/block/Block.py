@@ -1,7 +1,7 @@
 """Beez Blockchain - Block."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, List, Optional, cast
 import time
 import copy
 import json
@@ -44,7 +44,7 @@ class Block:
             None,
             [],
             "Hello Beezkeepers! 🐝",
-            "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐",
+            cast(PublicKeyString, "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"),
             0,
         )
         genesis_block.timestamp = (

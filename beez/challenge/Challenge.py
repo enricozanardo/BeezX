@@ -1,12 +1,13 @@
 """Beez blockchain - challenge."""
 from __future__ import annotations
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Any, Callable, cast
 import uuid
-import jsonpickle
+import jsonpickle   # type: ignore
 from beez.challenge.challenge_state import ChallengeState
 
 if TYPE_CHECKING:
     from beez.types import Prize
+    from beez.types import ChallengeID
 
 
 
@@ -16,7 +17,7 @@ class Challenge:
     """
 
     def __init__(self, shared_function: Callable[[], Any], reward: Prize):
-        self.identifier = uuid.uuid1().hex
+        self.identifier: ChallengeID = cast(ChallengeID, uuid.uuid1().hex)
         self.shared_function = shared_function
         self.state = ChallengeState.CREATED.name
         self.reward = reward
