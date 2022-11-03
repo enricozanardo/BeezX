@@ -17,7 +17,7 @@ class Challenge:
     """
 
     def __init__(self, shared_function: Callable[[], Any], reward: Prize):
-        self.identifier: ChallengeID = cast(ChallengeID, uuid.uuid1().hex)
+        self.identifier: "ChallengeID" = cast("ChallengeID", uuid.uuid1().hex)
         self.shared_function = shared_function
         self.state = ChallengeState.CREATED.name
         self.reward = reward

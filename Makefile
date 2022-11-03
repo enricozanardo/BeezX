@@ -41,7 +41,10 @@ typecheck-python:
 	./scripts/typecheck-python.sh
 
 test-python:
-	./scripts/test-block-module.sh
+	./scripts/test-python.sh
+
+test-wallet-module:
+	./scripts/test-wallet-module.sh
 
 test-block-module:
 	./scripts/test-block-module.sh
