@@ -6,9 +6,11 @@ from beez.challenge.beez_keeper import BeezKeeper
 from beez.state.account_state_model import AccountStateModel
 
 def clear_indices():
-    shutil.rmtree("account_indices")
-    shutil.rmtree("balance_indices")
-    shutil.rmtree("challenge_indices")
+    shutil.rmtree("account_indices", ignore_errors=True)
+    shutil.rmtree("balance_indices", ignore_errors=True)
+    shutil.rmtree("blocks_indices", ignore_errors=True)
+    shutil.rmtree("challenge_indices", ignore_errors=True)
+    shutil.rmtree("pos_indices", ignore_errors=True)
 
 @pytest.fixture
 def header():
@@ -49,3 +51,4 @@ def test_get_account_state_model():
     account_state_model = AccountStateModel()
     local_header = Header(beez_keeper, account_state_model)
     assert local_header.get_account_state_model() == account_state_model
+    clear_indices()
