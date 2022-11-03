@@ -54,9 +54,11 @@ class BeezKeeper:
     @staticmethod
     def deserialize(serialized_challenges, index=True):  # pylint: disable=unused-argument
         """Returning a beez keeper from serialized challenges."""
-        return BeezKeeper()._deserialize(   # pylint: disable=protected-access
+        beez_keeper = BeezKeeper()
+        beez_keeper._deserialize(   # pylint: disable=protected-access
             serialized_challenges
         )
+        return beez_keeper
 
     def _deserialize(self, serialized_challenges):
         """Deserialize beez keeper."""

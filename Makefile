@@ -40,5 +40,8 @@ format-python:
 typecheck-python:
 	./scripts/typecheck-python.sh
 
+test-python:
+	./scripts/test-block-module.sh
+
 test-block-module:
 	./scripts/test-block-module.sh

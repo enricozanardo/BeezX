@@ -2,7 +2,9 @@
 
 import os
 import json
+from loguru import logger
 from typing import Sequence, Optional
+from whoosh import index  # type: ignore
 from whoosh.fields import TEXT  # type: ignore
 from whoosh.qparser import MultifieldParser     # type: ignore
 from whoosh.filedb.filestore import FileStorage     # type: ignore
@@ -78,9 +80,9 @@ class TxIndexEngine(Engine):
 
     # Singleton
     @staticmethod
-    def get_engine(schema):
+    def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not TxIndexEngine.engine:
+        if not TxIndexEngine.engine or force_new or not index.exists_in("indices"):
             new_engine = TxIndexEngine(schema)
             TxIndexEngine.engine = new_engine
         return TxIndexEngine.engine
@@ -105,9 +107,9 @@ class BlockIndexEngine(Engine):
 
     # Singleton
     @staticmethod
-    def get_engine(schema):
+    def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not BlockIndexEngine.engine:
+        if not BlockIndexEngine.engine or force_new or not index.exists_in("blocks_indices"):
             new_engine = BlockIndexEngine(schema)
             BlockIndexEngine.engine = new_engine
         return BlockIndexEngine.engine
@@ -130,9 +132,9 @@ class TxpIndexEngine(Engine):
 
     # Singleton
     @staticmethod
-    def get_engine(schema):
+    def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not TxpIndexEngine.engine:
+        if not TxpIndexEngine.engine or force_new or not index.exists_in("txp_indices"):
             new_engine = TxpIndexEngine(schema)
             TxpIndexEngine.engine = new_engine
         return TxpIndexEngine.engine
@@ -157,9 +159,9 @@ class AccountModelEngine(Engine):
 
     # Singleton
     @staticmethod
-    def get_engine(schema):
+    def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not AccountModelEngine.engine:
+        if not AccountModelEngine.engine or force_new or not index.exists_in("account_indices"):
             new_engine = AccountModelEngine(schema)
             AccountModelEngine.engine = new_engine
         return AccountModelEngine.engine
@@ -184,9 +186,9 @@ class BalancesModelEngine(Engine):
 
     # Singleton
     @staticmethod
-    def get_engine(schema):
+    def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not BalancesModelEngine.engine:
+        if not BalancesModelEngine.engine or force_new or not index.exists_in("balance_indices"):
             new_engine = BalancesModelEngine(schema)
             BalancesModelEngine.engine = new_engine
         return BalancesModelEngine.engine
@@ -200,6 +202,7 @@ class PosModelEngine(Engine):
         super().__init__()
         self.schema = schema
         schema.add("raw", TEXT(stored=True))
+        logger.info('hier drinnen')
         if not os.path.isdir("pos_indices"):
             os.makedirs("pos_indices", exist_ok=True)
             self.index = FileStorage("pos_indices").create_index(self.schema, indexname="pos_index")
@@ -209,9 +212,10 @@ class PosModelEngine(Engine):
 
     # Singleton
     @staticmethod
-    def get_engine(schema):
+    def get_engine(schema, force_new=False):
         """Returns an engine for the given schema."""
-        if not PosModelEngine.engine:
+        logger.info('aber hier')
+        if not PosModelEngine.engine or force_new or not index.exists_in("pos_indices"):
             new_engine = PosModelEngine(schema)
             PosModelEngine.engine = new_engine
         return PosModelEngine.engine
@@ -236,9 +240,9 @@ class ChallengeModelEngine(Engine):
 
     # Singleton
     @staticmethod
-    def get_engine(schema):
+    def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not ChallengeModelEngine.engine:
+        if not ChallengeModelEngine.engine or force_new or not index.exists_in("challenge_indices"):
             new_engine = ChallengeModelEngine(schema)
             ChallengeModelEngine.engine = new_engine
         return ChallengeModelEngine.engine

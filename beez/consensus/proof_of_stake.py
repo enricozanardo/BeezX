@@ -1,16 +1,16 @@
 """Beez blockchain - proof of stake."""
-
 from __future__ import annotations
+from loguru import logger
 from typing import TYPE_CHECKING, List, Optional, cast
 
 from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD    # type: ignore
-from beez.consensus.lot import Lot
+from beez.consensus.Lot import Lot
 from beez.beez_utils import BeezUtils
 from beez.keys.genesis_public_key import GenesisPublicKey
 from beez.index.index_engine import PosModelEngine
 
 if TYPE_CHECKING:
-    from beez.types import Stake, PublicKeyString
+    from beez.Types import Stake, PublicKeyString
 
 
 class ProofOfStake:
@@ -46,7 +46,9 @@ class ProofOfStake:
     @staticmethod
     def deserialize(serialized_stakers):
         """Returns a new PoS object from a json serialization."""
-        return ProofOfStake()._deserialize(serialized_stakers)  # pylint: disable=protected-access
+        pos = ProofOfStake()
+        pos._deserialize(serialized_stakers)  # pylint: disable=protected-access
+        return pos
 
     def set_genesis_node_stake(self):
         """Sets the state of the genesis node."""
@@ -75,7 +77,6 @@ class ProofOfStake:
         identifier = BeezUtils.hash(
             public_key_string.replace("'", "").replace("\n", "")
         ).hexdigest()
-
         if len(self.stakers_index.query(query=identifier, fields=["id"], highlight=True)) != 0:
             old_stake = self.get(identifier)
             self.stakers_index.delete_document("id", identifier)
@@ -101,10 +102,10 @@ class ProofOfStake:
                 ]
             )
 
-    def get(self, identifier) -> Stake:
+    def get(self, identifier) -> "Stake":
         """Returns the stake of the given public key."""
         if len(self.stakers_index.query(query=identifier, fields=["id"], highlight=True)) == 0:
-            return cast(Stake, 0)
+            return cast("Stake", 0)
         return self.stakers_index.query(query=identifier, fields=["id"], highlight=True)[0]["stake"]
 
     def validator_lots(self, seed: str) -> List[Lot]:
@@ -114,7 +115,7 @@ class ProofOfStake:
             for stake in range(
                 self.get(BeezUtils.hash(validator.replace("'", "").replace("\n", "")).hexdigest())
             ):
-                lots.append(Lot(validator, cast(Stake, stake + 1), seed))
+                lots.append(Lot(validator, cast("Stake", stake + 1), seed))
         return lots
 
     def winner_lot(self, lots: List[Lot], seed: str) -> Optional[Lot]:
@@ -133,7 +134,7 @@ class ProofOfStake:
 
         return winner_lot
 
-    def forger(self, last_block_hash: str):
+    def forger(self, last_block_hash: str) -> Optional[str]:
         """Returns the public key of the next forger."""
         lots = self.validator_lots(last_block_hash)
         winner_lot: Optional[Lot] = self.winner_lot(lots, last_block_hash)

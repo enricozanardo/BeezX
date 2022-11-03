@@ -3,12 +3,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from beez.transaction.transaction import Transaction
-from beez.challenge.challenge import Challenge
+from beez.transaction.Transaction import Transaction
+from beez.challenge.Challenge import Challenge
 
 if TYPE_CHECKING:
     from .transaction_type import TransactionType
-    from beez.types import PublicKeyString
+    from beez.Types import PublicKeyString
 
 
 class ChallengeTX(Transaction):
@@ -27,14 +27,6 @@ class ChallengeTX(Transaction):
 
     def to_json(self):
         """Converts the challenge transaction to json."""
-        # json_block = {}
-        # json_block["id"] = self.identifier
-        # json_block["senderPublicKey"] = self.sender_public_key
-        # json_block["receiverPublicKey"] = self.receiver_public_key
-        # json_block["amount"] = self.amount
-        # json_block["type"] = self.transaction_type
-        # json_block["timestamp"] = self.timestamp
-        # json_block["signature"] = self.signature
         json_block = super().to_json()
         json_block["challenge"] = {
             "state": self.challenge.state,

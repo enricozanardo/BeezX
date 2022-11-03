@@ -68,8 +68,6 @@ class Block:
     @staticmethod
     def deserialize(serialized_block, index=True):
         """Recreating a block object from a serialized blockchain json."""
-        print("DESERIALIZE BLOCK")
-        print(str(serialized_block))
         serialized_block = json.loads(str(serialized_block).replace("'", '"'))
         block = Block(
             header=Header.deserialize(
