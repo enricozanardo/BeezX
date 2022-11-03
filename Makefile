@@ -48,3 +48,6 @@ test-wallet-module:
 
 test-block-module:
 	./scripts/test-block-module.sh
+
+test-challenge-module:
+	./scripts/test-challenge-module.sh

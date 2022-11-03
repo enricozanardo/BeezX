@@ -12,10 +12,10 @@ from dotenv import load_dotenv
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID     # type: ignore
 from beez.index.index_engine import ChallengeModelEngine
+from beez.challenge.challenge import Challenge
 
 if TYPE_CHECKING:
     from beez.types import Prize, ChallengeID, PublicKeyString
-    from beez.challenge.challenge import Challenge
 
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
@@ -52,7 +52,7 @@ class BeezKeeper:
         return self.challanges()
 
     @staticmethod
-    def deserialize(serialized_challenges, index=True):  # pylint: disable=unused-argument
+    def deserialize(serialized_challenges: dict[str, Challenge], index=True):  # pylint: disable=unused-argument
         """Returning a beez keeper from serialized challenges."""
         beez_keeper = BeezKeeper()
         beez_keeper._deserialize(   # pylint: disable=protected-access
