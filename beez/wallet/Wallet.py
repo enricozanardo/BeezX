@@ -7,17 +7,17 @@ from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from loguru import logger
 
-from beez.block.Header import Header
+from beez.block.header import Header
 
 from beez.beez_utils import BeezUtils
-from beez.challenge.Challenge import Challenge
-from beez.transaction.Transaction import Transaction
+from beez.challenge.challenge import Challenge
+from beez.transaction.transaction import Transaction
 from beez.transaction.challenge_tx import ChallengeTX
-from beez.block.Block import Block
+from beez.block.block import Block
 
 
 if TYPE_CHECKING:
-    from beez.Types import WalletAddress, PublicKeyString
+    from beez.types import WalletAddress, PublicKeyString
     from beez.transaction.transaction_type import TransactionType
 
 

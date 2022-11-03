@@ -1,7 +1,8 @@
+# pylint: skip-file
 import pytest
-from beez.block.Block import Block
+from beez.block.block import Block
 from typing import cast
-from beez.Types import PublicKeyString
+from beez.types import PublicKeyString
 
 
 @pytest.fixture

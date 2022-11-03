@@ -249,7 +249,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
             for block_number, block in enumerate(blockchain.blocks()):
                 # we are interested only on blocks that are not in our blockchain
                 if block_number >= local_block_count:
-                    self.blockchain.append_block(block)
+                    self.blockchain._append_block(block)    # pylint: disable=protected-access
                     logger.warning("Here is the problem?")
                     # Update the current version of the in-memory AccountStateModel and BeezKeeper
                     self.blockchain.account_state_model = block.header.accountStateModel

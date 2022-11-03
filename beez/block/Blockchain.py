@@ -5,23 +5,23 @@ from typing import TYPE_CHECKING, List, cast, Optional
 
 from loguru import logger
 
-from whoosh.fields import Schema, TEXT, KEYWORD, ID     # type: ignore
-from beez.block.Block import Block
+from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
+from beez.block.block import Block
 from beez.beez_utils import BeezUtils
 from beez.state.account_state_model import AccountStateModel
 from beez.consensus.proof_of_stake import ProofOfStake
 from beez.transaction.transaction_type import TransactionType
 from beez.transaction.challenge_tx import ChallengeTX
 from beez.keys.genesis_public_key import GenesisPublicKey
-from beez.block.Header import Header
+from beez.block.header import Header
 from beez.challenge.beez_keeper import BeezKeeper
 from beez.index.index_engine import BlockIndexEngine
 
 
 if TYPE_CHECKING:
-    from beez.transaction.Transaction import Transaction
-    from beez.wallet.Wallet import Wallet
-    from beez.challenge.Challenge import Challenge
+    from beez.transaction.transaction import Transaction
+    from beez.wallet.wallet import Wallet
+    from beez.challenge.challenge import Challenge
 
 
 class Blockchain:
@@ -77,7 +77,9 @@ class Blockchain:
     @staticmethod
     def deserialize(serialized_blockchain):
         """Public deserialize class method."""
-        return Blockchain()._deserialize(serialized_blockchain)  # pylint: disable=protected-access
+        return Blockchain()._deserialize(   # pylint: disable=protected-access
+            serialized_blockchain
+        )
 
     def blocks(self):
         """Returning all the blocks from the current state."""
@@ -121,7 +123,10 @@ class Blockchain:
         """Prepare the appending of a new block by executing its corresponding transactions."""
         self.execute_transactions(block.transactions)
         latest_block = self.blocks()[-1]
-        if latest_block.block_count < block.block_count and BeezUtils.hash(latest_block.payload()).hexdigest() == block.last_hash:
+        if (
+            latest_block.block_count < block.block_count
+            and BeezUtils.hash(latest_block.payload()).hexdigest() == block.last_hash
+        ):
             self._append_block(block)
 
     def execute_transactions(self, transactions: List[Transaction]):
@@ -139,7 +144,7 @@ class Blockchain:
             sender = transaction.sender_public_key
             receiver = transaction.receiver_public_key
             if sender == receiver:
-                amount:int = transaction.amount
+                amount: int = transaction.amount
                 self.pos.update(sender, amount)
                 self.account_state_model.update_balance(sender, -amount)
 
@@ -161,7 +166,9 @@ class Blockchain:
                     # tokens to the keeper!
                     self.beez_keeper.set(challenge)
 
-                logger.info(f"beezKeeper challenges {len(self.beez_keeper.challanges().items())}")
+                logger.info(
+                    f"beezKeeper challenges {len(self.beez_keeper.challanges().items())}"
+                )
 
                 # Update the balance of the sender!
                 amount = challenge_transaction.amount
@@ -194,7 +201,9 @@ class Blockchain:
 
         return next_forger
 
-    def mint_block(self, transction_from_pool: List[Transaction], forger_wallet: Wallet) -> Block:
+    def mint_block(
+        self, transction_from_pool: List[Transaction], forger_wallet: Wallet
+    ) -> Block:
         """Mints a new block, appends it to the blockchain and returns it."""
         # Check that the transaction are covered
         covered_transactions = self.get_covered_transactionset(transction_from_pool)
@@ -255,7 +264,9 @@ class Blockchain:
             # return False
             return True
 
-        sender_balance = self.account_state_model.get_balance(transaction.sender_public_key)
+        sender_balance = self.account_state_model.get_balance(
+            transaction.sender_public_key
+        )
 
         if sender_balance >= transaction.amount:
             return True

@@ -1,16 +1,15 @@
 """Beez blockchain - proof of stake."""
 from __future__ import annotations
-from loguru import logger
 from typing import TYPE_CHECKING, List, Optional, cast
 
 from whoosh.fields import Schema, TEXT, NUMERIC, ID, KEYWORD    # type: ignore
-from beez.consensus.Lot import Lot
+from beez.consensus.lot import Lot
 from beez.beez_utils import BeezUtils
 from beez.keys.genesis_public_key import GenesisPublicKey
 from beez.index.index_engine import PosModelEngine
 
 if TYPE_CHECKING:
-    from beez.Types import Stake, PublicKeyString
+    from beez.types import Stake, PublicKeyString
 
 
 class ProofOfStake:

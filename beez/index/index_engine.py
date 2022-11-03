@@ -2,8 +2,8 @@
 
 import os
 import json
-from loguru import logger
 from typing import Sequence, Optional
+from loguru import logger
 from whoosh import index  # type: ignore
 from whoosh.fields import TEXT  # type: ignore
 from whoosh.qparser import MultifieldParser     # type: ignore
@@ -54,10 +54,10 @@ class Engine:
         return search_results
 
     def query_at(
-        self, query: str, fields: Sequence, highlight: bool = True, index: int = 0
+        self, query: str, fields: Sequence, highlight: bool = True, idx: int = 0
     ) -> dict:
         """Returns the document at index from all docs matching the query."""
-        return self.query(query, fields, highlight)[index]
+        return self.query(query, fields, highlight)[idx]
 
 
 class TxIndexEngine(Engine):

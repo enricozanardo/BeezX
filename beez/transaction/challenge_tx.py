@@ -3,12 +3,12 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from beez.transaction.Transaction import Transaction
-from beez.challenge.Challenge import Challenge
+from beez.transaction.transaction import Transaction
+from beez.challenge.challenge import Challenge
 
 if TYPE_CHECKING:
     from .transaction_type import TransactionType
-    from beez.Types import PublicKeyString
+    from beez.types import PublicKeyString
 
 
 class ChallengeTX(Transaction):

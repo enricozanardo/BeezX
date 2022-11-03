@@ -7,9 +7,9 @@ import copy
 import json
 
 from beez.transaction.transaction_type import TransactionType
-from beez.transaction.Transaction import Transaction
-from beez.block.Header import Header
-from beez.Types import PublicKeyString
+from beez.transaction.transaction import Transaction
+from beez.block.header import Header
+from beez.types import PublicKeyString
 
 if TYPE_CHECKING:
     from beez.transaction.challenge_tx import ChallengeTX
