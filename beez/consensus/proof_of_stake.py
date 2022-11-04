@@ -51,18 +51,11 @@ class ProofOfStake:
 
     def set_genesis_node_stake(self):
         """Sets the state of the genesis node."""
-        # currentPath = pathlib.Path().resolve()
-        # logger.info(f"currentPath: {currentPath}")
-
-        # genisisPublicKey = open(f"{currentPath}/beez/keys/genesisPublicKey.pem", 'r').read()
-
         genesis_public_key = GenesisPublicKey()
-
-        # logger.info(f"GenesisublicKey: {genisisPublicKey}")
         # give to the genesis staker 1 stake to allow him to forge the initial Block
         self.update(genesis_public_key.pub_key, 1)
 
-    def stakers(self):
+    def stakers(self) -> list[str]:
         """Returns the stakers public keys."""
         stakers_public_keys = []
         docs = self.stakers_index.query(query="STAKE", fields=["type"], highlight=True)
@@ -103,6 +96,9 @@ class ProofOfStake:
 
     def get(self, identifier) -> "Stake":
         """Returns the stake of the given public key."""
+        identifier = BeezUtils.hash(
+            identifier.replace("'", "").replace("\n", "")
+        ).hexdigest()
         if len(self.stakers_index.query(query=identifier, fields=["id"], highlight=True)) == 0:
             return cast("Stake", 0)
         return self.stakers_index.query(query=identifier, fields=["id"], highlight=True)[0]["stake"]
@@ -112,7 +108,7 @@ class ProofOfStake:
         lots: List[Lot] = []
         for validator in self.stakers():
             for stake in range(
-                self.get(BeezUtils.hash(validator.replace("'", "").replace("\n", "")).hexdigest())
+                self.get(validator)
             ):
                 lots.append(Lot(validator, cast("Stake", stake + 1), seed))
         return lots

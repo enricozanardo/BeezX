@@ -51,3 +51,6 @@ test-block-module:
 
 test-challenge-module:
 	./scripts/test-challenge-module.sh
+
+test-consensus-module:
+	./scripts/test-consensus-module.sh
