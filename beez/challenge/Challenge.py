@@ -10,7 +10,6 @@ if TYPE_CHECKING:
     from beez.types import ChallengeID
 
 
-
 class Challenge:
     """
     Manage the challenge that must be broacasted to a cluster of peers.
