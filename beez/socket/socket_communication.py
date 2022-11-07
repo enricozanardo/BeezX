@@ -38,7 +38,6 @@ class SocketCommunication(Node):
 
     def __init__(self, ip: Address, port: int):
         super(SocketCommunication, self).__init__(ip, port, None)   # pylint: disable=super-with-arguments
-        # TODO: move the peers to a storage!
         self.own_connections: List[SocketConnector] = []
         self.peer_discovery_handler = PeerDiscoveryHandler(self)
         self.socket_connector = SocketConnector(ip, port)

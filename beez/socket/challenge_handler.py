@@ -33,7 +33,7 @@ class ChallengeHandler:
 
     def __init__(self, socket_communication: SocketCommunication) -> None:
         self.socket_communication = socket_communication
-        self.challenges: dict[str, Any]
+        self.challenges: dict[str, Any] = {}
 
     def start(self):
         """Starts the status thread and the discovery thread."""

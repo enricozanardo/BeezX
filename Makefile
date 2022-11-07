@@ -54,3 +54,6 @@ test-challenge-module:
 
 test-consensus-module:
 	./scripts/test-consensus-module.sh
+
+test-socket-module:
+	./scripts/test-socket-module.sh
