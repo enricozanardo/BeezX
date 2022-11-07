@@ -57,3 +57,6 @@ test-consensus-module:
 
 test-socket-module:
 	./scripts/test-socket-module.sh
+
+test-state-module:
+	./scripts/test-state-module.sh
