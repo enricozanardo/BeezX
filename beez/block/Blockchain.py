@@ -176,7 +176,6 @@ class Blockchain:
 
         else:
             # case of [TRANSACTION]
-            logger.info("OTHER")
             sender = transaction.sender_public_key
             receiver = transaction.receiver_public_key
             tx_amount: int = transaction.amount

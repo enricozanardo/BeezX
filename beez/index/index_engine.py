@@ -202,7 +202,6 @@ class PosModelEngine(Engine):
         super().__init__()
         self.schema = schema
         schema.add("raw", TEXT(stored=True))
-        logger.info('hier drinnen')
         if not os.path.isdir("pos_indices"):
             os.makedirs("pos_indices", exist_ok=True)
             self.index = FileStorage("pos_indices").create_index(self.schema, indexname="pos_index")
@@ -214,7 +213,6 @@ class PosModelEngine(Engine):
     @staticmethod
     def get_engine(schema, force_new=False):
         """Returns an engine for the given schema."""
-        logger.info('aber hier')
         if not PosModelEngine.engine or force_new or not index.exists_in("pos_indices"):
             new_engine = PosModelEngine(schema)
             PosModelEngine.engine = new_engine

@@ -60,3 +60,6 @@ test-socket-module:
 
 test-state-module:
 	./scripts/test-state-module.sh
+
+test-node-module:
+	./scripts/test-node-module.sh

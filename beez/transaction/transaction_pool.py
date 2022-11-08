@@ -3,9 +3,11 @@
 from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, List
+from beez.transaction.transaction_type import TransactionType
 from whoosh.fields import Schema, TEXT, ID, KEYWORD    # type: ignore
 from beez.index.index_engine import TxpIndexEngine      # type:ignore
 from beez.transaction.transaction import Transaction
+from beez.transaction.challenge_tx import ChallengeTX
 
 
 if TYPE_CHECKING:
@@ -29,7 +31,10 @@ class TransactionPool:
         txs: List[Transaction] = []
         for transaction in transactions:
             tx_encoded = transaction["txp_encoded"].replace("'", '"')
-            txs.append(Transaction.from_json(json.loads(tx_encoded)))
+            if json.loads(tx_encoded)["type"] == TransactionType.CHALLENGE.name:
+                txs.append(ChallengeTX.from_json(json.loads(tx_encoded)))
+            else:
+                txs.append(Transaction.from_json(json.loads(tx_encoded)))
         return txs
 
     def add_transaction(self, transaction: Transaction):
