@@ -46,7 +46,7 @@ class ChallengeHandler:
 
     def challenge_exists(self, challenge_id: ChallengeID) -> bool:
         """Returns whether a challenge with the given id exists."""
-        if challenge_id in self.challenges.keys():
+        if challenge_id in self.challenges.keys():  # pylint: disable=consider-iterating-dictionary
             return True
         return False
 

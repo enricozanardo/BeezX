@@ -2,17 +2,12 @@
 
 from __future__ import annotations
 import json
-from typing import TYPE_CHECKING, List
-from beez.transaction.transaction_type import TransactionType
+from typing import List
 from whoosh.fields import Schema, TEXT, ID, KEYWORD    # type: ignore
+from beez.transaction.transaction_type import TransactionType
 from beez.index.index_engine import TxpIndexEngine      # type:ignore
 from beez.transaction.transaction import Transaction
 from beez.transaction.challenge_tx import ChallengeTX
-
-
-if TYPE_CHECKING:
-    from beez.transaction.challenge_tx import ChallengeTX
-
 
 class TransactionPool:
     """

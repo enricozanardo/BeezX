@@ -2,11 +2,11 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
+import json
+import jsonpickle
 
 from beez.transaction.transaction import Transaction
 from beez.challenge.challenge import Challenge
-import jsonpickle
-import json
 
 if TYPE_CHECKING:
     from .transaction_type import TransactionType

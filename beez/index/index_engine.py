@@ -3,7 +3,6 @@
 import os
 import json
 from typing import Sequence, Optional
-from loguru import logger
 from whoosh import index  # type: ignore
 from whoosh.fields import TEXT  # type: ignore
 from whoosh.qparser import MultifieldParser     # type: ignore
