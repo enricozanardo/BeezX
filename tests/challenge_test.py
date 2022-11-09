@@ -6,13 +6,13 @@ from dotenv import load_dotenv
 import requests
 import pathlib
 
-from beez.transaction.Transaction import Transaction
-from beez.transaction.TransactionType import TransactionType
-from beez.wallet.Wallet import Wallet
-from beez.BeezUtils import BeezUtils
-from beez.Types import WalletAddress
-from beez.challenge.Challenge import Challenge
-from beez.transaction.ChallengeTX import ChallengeTX
+from beez.transaction.transaction import Transaction
+from beez.transaction.transaction_type import TransactionType
+from beez.wallet.wallet import Wallet
+from beez.beez_utils import BeezUtils
+from beez.types import WalletAddress
+from beez.challenge.challenge import Challenge
+from beez.transaction.challenge_tx import ChallengeTX
 
 # for function
 import random
@@ -25,7 +25,7 @@ URI = os.environ.get("FIRST_SERVER_IP", default="192.168.1.61")
 
 def postChallengeTransaction(senderWallet: Wallet, amount, txType: TransactionType, challenge: Challenge):
 
-    tx = senderWallet.createChallengeTransaction(amount, txType, challenge) 
+    tx = senderWallet.create_challenge_transaction(amount, txType, challenge) 
     url = f"http://{URI}:{NODE_API_PORT}/challenge"
 
     package = {'challenge': BeezUtils.encode(tx)}
@@ -58,7 +58,7 @@ def test_send_challenge_transaction():
 
     # Generate a standard transaction
     AliceWallet = Wallet()
-    AliceWallet.fromKey(alicePrivateKeyPath)
+    AliceWallet.from_key(alicePrivateKeyPath)
 
     reward = 8
     type = TransactionType.CHALLENGE.name

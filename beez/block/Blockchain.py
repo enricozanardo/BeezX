@@ -1,210 +1,257 @@
+"""Beez Blockchain - blockchain."""
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, cast, Optional
 
 from loguru import logger
-import jsonpickle
 
+from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
+from beez.block.block import Block
+from beez.beez_utils import BeezUtils
+from beez.state.account_state_model import AccountStateModel
+from beez.consensus.proof_of_stake import ProofOfStake
+from beez.transaction.transaction_type import TransactionType
+from beez.transaction.challenge_tx import ChallengeTX
+from beez.keys.genesis_public_key import GenesisPublicKey
+from beez.block.header import Header
+from beez.challenge.beez_keeper import BeezKeeper
+from beez.index.index_engine import BlockIndexEngine
 
 
 if TYPE_CHECKING:
-    from beez.transaction.Transaction import Transaction
-    from beez.wallet.Wallet import Wallet
-    from beez.challenge.Challenge import Challenge
-
-from beez.block.Block import Block
-from beez.BeezUtils import BeezUtils
-from beez.state.AccountStateModel import AccountStateModel
-from beez.consensus.ProofOfStake import ProofOfStake
-from beez.transaction.TransactionType import TransactionType
-from beez.transaction.ChallengeTX import ChallengeTX
-from beez.keys.GenesisPublicKey import GenesisPublicKey
-from beez.block.Header import Header
-from beez.challenge.BeezKeeper import BeezKeeper
-from beez.index.IndexEngine import BlockIndexEngine
-from whoosh.fields import Schema, TEXT, KEYWORD,ID
+    from beez.transaction.transaction import Transaction
+    from beez.wallet.wallet import Wallet
+    from beez.challenge.challenge import Challenge
 
 
-
-class Blockchain():
+class Blockchain:
     """
     A Blockchain is a linked list of blocks
     """
+
     def __init__(self):
-        self.blocks_index = BlockIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), block_serialized=TEXT(stored=True)))
+        self.blocks_index = BlockIndexEngine.get_engine(
+            Schema(
+                id=ID(stored=True),
+                type=KEYWORD(stored=True),
+                block_serialized=TEXT(stored=True),
+            )
+        )
 
-        self.accountStateModel = AccountStateModel()
-        self.pos = ProofOfStake()   
-        self.beezKeeper = BeezKeeper()
-        self.genesisPubKey = GenesisPublicKey()
+        self.account_state_model = AccountStateModel()
+        self.pos = ProofOfStake()
+        self.beez_keeper = BeezKeeper()
+        self.genesis_public_key = GenesisPublicKey().pub_key
 
-        self.appendGenesis(Block.genesis())
+        self.append_genesis(Block.genesis())
 
         # for testing...
         # self.accountStateModel.start()
 
     def serialize(self):
+        """Serialize the blockchain to json."""
         serialized_chain = {
             "blocks": [block.serialize() for block in self.blocks()],
-            "accountStateModel": self.accountStateModel.serialize(),
+            "accountStateModel": self.account_state_model.serialize(),
             "pos": self.pos.serialize(),
-            "beezKeeper": self.beezKeeper.serialize(),
-            "genesisPublicKey": self.genesisPubKey
+            "beezKeeper": self.beez_keeper.serialize(),
+            "genesisPublicKey": self.genesis_public_key,
         }
         return serialized_chain
-        
+
     def _deserialize(self, serialized_blockchain):
-        #delete all blocks
+        """Deserialize the blockchain and return a blockchain object."""
+        # delete all blocks
         self.blocks_index.delete_document("type", "BL")
         # add the blocks
         for block in serialized_blockchain["blocks"]:
-            self.appendBlock(Block.deserialize(block))
-        self.accountStateModel = AccountStateModel.deserialize(serialized_blockchain["accountStateModel"]["balances"])
+            self._append_block(Block.deserialize(block))
+        self.account_state_model = AccountStateModel.deserialize(
+            serialized_blockchain["accountStateModel"]["balances"]
+        )
         self.pos = ProofOfStake.deserialize(serialized_blockchain["pos"])
-        self.beezKeeper = BeezKeeper.deserialize(serialized_blockchain["beezKeeper"])
-        self.genesisPubKey = serialized_blockchain["genesisPublicKey"]
+        self.beez_keeper = BeezKeeper.deserialize(serialized_blockchain["beezKeeper"])
+        self.genesis_public_key = serialized_blockchain["genesisPublicKey"]
         return self
-
 
     @staticmethod
     def deserialize(serialized_blockchain):
-        return Blockchain()._deserialize(serialized_blockchain)
+        """Public deserialize class method."""
+        return Blockchain()._deserialize(   # pylint: disable=protected-access
+            serialized_blockchain
+        )
 
     def blocks(self):
+        """Returning all the blocks from the current state."""
         blocks = []
-        block_docs = self.blocks_index.query(q="BL", fields=["type"], highlight=True)
+        block_docs = self.blocks_index.query(query="BL", fields=["type"], highlight=True)
         for doc in block_docs:
             blocks.append(Block.deserialize(doc["block_serialized"], index=False))
-        blocks = sorted(blocks, key=lambda block: block.blockCount)
+        blocks = sorted(blocks, key=lambda block: block.block_count)
         return blocks
 
-    def toJson(self):
-        jsonBlockchain = {}
-        jsonBloks = []
+    def to_json(self):
+        """Returning the blockchain in json format."""
+        json_blockchain = {}
+        json_blocks = []
         for block in self.blocks():
-            jsonBloks.append(block.toJson())
-        jsonBlockchain['blocks'] = jsonBloks
+            json_blocks.append(block.to_json())
+        json_blockchain["blocks"] = json_blocks
 
-        return jsonBlockchain
+        return json_blockchain
 
-    def appendGenesis(self, block:Block):
+    def append_genesis(self, block: Block):
+        """Append the first block, genesis, to the blockchain."""
         if len(self.blocks_index.query("BL", ["type"])) == 0:
-            header = Header(self.beezKeeper, self.accountStateModel)
+            header = Header(self.beez_keeper, self.account_state_model)
             block.header = header
-            self.appendBlock(block)
+            self._append_block(block)
 
-    def appendBlock(self, block:Block):
-        self.blocks_index.index_documents([{"id": str(block.blockCount), "type": "BL", "block_serialized": str(block.serialize())}])
+    def _append_block(self, block: Block):
+        """Append a block to the blockchain state. Should only be used internally."""
+        self.blocks_index.index_documents(
+            [
+                {
+                    "id": str(block.block_count),
+                    "type": "BL",
+                    "block_serialized": str(block.serialize()),
+                }
+            ]
+        )
 
-    def addBlock(self, block: Block):
-        self.executeTransactions(block.transactions)
-        if self.blocks()[-1].blockCount < block.blockCount:
-            self.appendBlock(block)
+    def add_block(self, block: Block):
+        """Prepare the appending of a new block by executing its corresponding transactions."""
+        self.execute_transactions(block.transactions)
+        latest_block = self.blocks()[-1]
+        if (
+            latest_block.block_count < block.block_count
+            and BeezUtils.hash(latest_block.payload()).hexdigest() == block.last_hash
+        ):
+            self._append_block(block)
 
-    def executeTransactions(self, transactions: List[Transaction]):
+    def execute_transactions(self, transactions: List[Transaction]):
+        """Executes a list of transactions."""
         for transaction in transactions:
-            self.executeTransaction(transaction)
-    
-    def executeTransaction(self, transaction: Transaction):
-        logger.info(f"Execute transaction of type: {transaction.type}")
+            self.execute_transaction(transaction)
+
+    def execute_transaction(self, transaction: Transaction):
+        """Executes a single transaction."""
+        logger.info(f"Execute transaction of type: {transaction.transaction_type}")
 
         # case of Stake transaction [involve POS]
-        if transaction.type == TransactionType.STAKE.name:
-            logger.info(f"STAKE")
-            sender = transaction.senderPublicKey
-            receiver = transaction.receiverPublicKey
+        if transaction.transaction_type == TransactionType.STAKE.name:
+            logger.info("STAKE")
+            sender = transaction.sender_public_key
+            receiver = transaction.receiver_public_key
             if sender == receiver:
-                amount = transaction.amount
+                amount: int = transaction.amount
                 self.pos.update(sender, amount)
-                self.accountStateModel.updateBalance(sender, -amount)
+                self.account_state_model.update_balance(sender, -amount)
 
         # case of Challenge transaction [involve beezKeeper]
-        elif transaction.type == TransactionType.CHALLENGE.name:
-            logger.info(f"CHALLENGE")
+        elif transaction.transaction_type == TransactionType.CHALLENGE.name:
+            logger.info("CHALLENGE")
             # cast the kind of transaction
-            challengeTX: ChallengeTX = transaction
-            sender = challengeTX.senderPublicKey
-            receiver = transaction.receiverPublicKey
+            challenge_transaction: ChallengeTX = cast(ChallengeTX, transaction)
+            sender = challenge_transaction.sender_public_key
+            receiver = transaction.receiver_public_key
             if sender == receiver:
                 # Check with the challenge Keeeper
-                challenge : Challenge = challengeTX.challenge
-                challengeExists = self.beezKeeper.challegeExists(challenge.id)
-                logger.info(f"challengeExists: {challengeExists}")
+                challenge: Challenge = challenge_transaction.challenge
+                challenge_exists = self.beez_keeper.challege_exists(challenge.identifier)
+                logger.info(f"challengeExists: {challenge_exists}")
 
-                if not challengeExists:
-                    # Update the challenge to the beezKeeper and keep store the tokens to the keeper!
-                    self.beezKeeper.set(challenge)
-                   
-                logger.info(f"beezKeeper challenges {len(self.beezKeeper.challenges.items())}") 
+                if not challenge_exists:
+                    # Update the challenge to the beezKeeper and keep store the
+                    # tokens to the keeper!
+                    self.beez_keeper.set(challenge)
 
+                logger.info(
+                    f"beezKeeper challenges {len(self.beez_keeper.challanges().items())}"
+                )
 
                 # Update the balance of the sender!
-                amount = challengeTX.amount
-                self.accountStateModel.updateBalance(sender, -amount)
+                amount = challenge_transaction.amount
+                self.account_state_model.update_balance(sender, -amount)
 
         else:
             # case of [TRANSACTION]
-            logger.info(f"OTHER")
-            sender = transaction.senderPublicKey
-            receiver = transaction.receiverPublicKey
-            amount: int = transaction.amount
+            sender = transaction.sender_public_key
+            receiver = transaction.receiver_public_key
+            tx_amount: int = transaction.amount
             # first update the sender balance
-            self.accountStateModel.updateBalance(sender, -amount)
+            self.account_state_model.update_balance(sender, -tx_amount)
             # second update the receiver balance
-            self.accountStateModel.updateBalance(receiver, amount)
+            self.account_state_model.update_balance(receiver, tx_amount)
 
-
-    def transactionExist(self, transaction: Transaction):
+    def transaction_exist(self, transaction: Transaction):
+        """Check if a given transaction exists in the current blockchain state."""
         # TODO: Find a better solution to check if a transaction already exist into the blockchain!
         for block in self.blocks():
-            for blockTransaction in block.transactions:
-                if transaction.equals(blockTransaction):
+            for block_transaction in block.transactions:
+                if transaction.equals(block_transaction):
                     return True
         return False
 
-    def nextForger(self):
-        lastBlockHash = BeezUtils.hash(self.blocks()[-1].payload()).hexdigest()
-        nextForger = self.pos.forger(lastBlockHash)
+    def next_forger(self) -> Optional[str]:
+        """Returns the forger for of the next block."""
+        latest_blockhash = BeezUtils.hash(self.blocks()[-1].payload()).hexdigest()
+        next_forger = self.pos.forger(latest_blockhash)
 
-        return nextForger
-    
-    def mintBlock(self, transactionsFromPool: List[Transaction], forgerWallet: Wallet) -> Block:
-        # Check that the transaction are covered 
-        coveredTransactions = self.getCoveredTransactionSet(transactionsFromPool)
+        return next_forger
+
+    def mint_block(
+        self, transction_from_pool: List[Transaction], forger_wallet: Wallet
+    ) -> Block:
+        """Mints a new block, appends it to the blockchain and returns it."""
+        # Check that the transaction are covered
+        covered_transactions = self.get_covered_transactionset(transction_from_pool)
 
         # check the type of transactions and do the right action
-        self.executeTransactions(coveredTransactions)
+        self.execute_transactions(covered_transactions)
 
         # Get the updated version of the in-memory objects and create the Block Header
-        header = Header(self.beezKeeper, self.accountStateModel)
+        header = Header(self.beez_keeper, self.account_state_model)
 
-        logger.info(f"Header: {len(header.beezKeeper.challanges().items())}")
+        logger.info(f"Header: {len(header.beez_keeper.challanges().items())}")
 
         # create the Block
-        newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
-            self.blocks()[-1].payload()).hexdigest(), len(self.blocks()))
+        new_block = forger_wallet.create_block(
+            header,
+            covered_transactions,
+            BeezUtils.hash(self.blocks()[-1].payload()).hexdigest(),
+            len(self.blocks()),
+        )
 
-        self.appendBlock(newBlock)
+        self._append_block(new_block)
 
-        return newBlock
-    
-    def getCoveredTransactionSet(self, transactionsFromPool: List[Transaction]) -> List[Transaction]:
-        coveredTransactions: List[Transaction] = []
-        for tx in transactionsFromPool:
-            if self.transactionCovered(tx):
-                coveredTransactions.append(tx)
+        return new_block
+
+    def get_covered_transactionset(
+        self, transactions_from_pool: List[Transaction]
+    ) -> List[Transaction]:
+        """Returns the subset of covered transactions from all transactions in
+        the current transaction pool state."""
+        covered_transactions: List[Transaction] = []
+        for transaction in transactions_from_pool:
+            if self.transaction_covered(transaction):
+                covered_transactions.append(transaction)
             else:
                 logger.info(
-                    f"This transaction {tx.id} is not covered [no enogh tokes ({tx.amount})]")
+                    f"""This transaction {transaction.identifier} is not covered
+                    [no enogh tokes ({transaction.amount})]"""
+                )
 
-        return coveredTransactions
-        
-    def transactionCovered(self, transaction: Transaction):
+        return covered_transactions
+
+    def transaction_covered(self, transaction: Transaction):
         """
-        check if a transaction is covered (there are enough money into the account) by the AccountStateModel
-        if the transaction is coming from the Exchange we do not check if it covered
+        check if a transaction is covered (there are enough money into the account)
+        by the AccountStateModelif the transaction is coming from the Exchange we do
+        not check if it covered
         """
 
-        if transaction.type == TransactionType.EXCHANGE.name:
+        if transaction.transaction_type == TransactionType.EXCHANGE.name:
             # Only genesis wallet can perform an EXCHANGE transaction
             # genesisPubKeyString = str(self.genesisPubKey.pubKey).strip()
             # genesisPubKeyString = str(transaction.senderPublicKey).strip()
@@ -212,48 +259,45 @@ class Blockchain():
             # if genesisPubKeyString == genesisPubKeyString:
             #     logger.info(f"Do an EXCHANGE transfer")
             #     return True
-            
+
             # return False
             return True
 
-        senderBalance = self.accountStateModel.getBalance(
-            transaction.senderPublicKey)
+        sender_balance = self.account_state_model.get_balance(
+            transaction.sender_public_key
+        )
 
-        if senderBalance >= transaction.amount:
+        if sender_balance >= transaction.amount:
             return True
-        else:
-            return False
+        return False
 
-    def blockCountValid(self, block: Block):
-        if self.blocks()[-1].blockCount == block.blockCount - 1:
+    def blockcount_valid(self, block: Block):
+        """Returns wheter a given block could be the next block based on its block count."""
+        if self.blocks()[-1].block_count == block.block_count - 1:
             return True
-        else:
-            return False
+        return False
 
-    def lastBlockHashValid(self, block: Block):
-        latestBlockainBlockHash = BeezUtils.hash(
-            self.blocks()[-1].payload()).hexdigest()
-        if latestBlockainBlockHash == block.lastHash:
+    def last_blockhash_valid(self, block: Block):
+        """Returns whether the last block hash of a given block is valid in respect to
+        its current blockchain state."""
+        latest_blockchain_hash = BeezUtils.hash(self.blocks()[-1].payload()).hexdigest()
+        if latest_blockchain_hash == block.last_hash:
             return True
-        else:
-            return False
+        return False
 
-    def forgerValid(self, block: Block):
-        forgerPublicKey = str(self.pos.forger(block.lastHash)).strip()
-        proposedBlockForger = str(block.forger).strip()
+    def forger_valid(self, block: Block):
+        """Checks if the forger of a given block is valid."""
+        forger_public_key = str(self.pos.forger(block.last_hash)).strip()
+        proposed_block_forger = str(block.forger).strip()
 
-        if forgerPublicKey == proposedBlockForger:
+        if forger_public_key == proposed_block_forger:
             return True
-        else:
-            return False
+        return False
 
-    def transactionValid(self, transactions: List[Transaction]):
-        coveredTransactions = self.getCoveredTransactionSet(transactions)
+    def transaction_valid(self, transactions: List[Transaction]):
+        """Checks if a the covered transactions of a list of transactions are valid."""
+        covered_transactions = self.get_covered_transactionset(transactions)
         # if the lenght are equal than nodes are not cheating
-        if len(coveredTransactions) == len(transactions):
+        if len(covered_transactions) == len(transactions):
             return True
-        else:
-            return False
-
-
-    
+        return False

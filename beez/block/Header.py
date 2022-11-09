@@ -1,11 +1,12 @@
+"""Beez blockchain - block header."""
+
 from __future__ import annotations
-from typing import TYPE_CHECKING, Dict, Optional
-from loguru import logger
 
-from beez.challenge.BeezKeeper import BeezKeeper
-from beez.state.AccountStateModel import AccountStateModel
+from beez.challenge.beez_keeper import BeezKeeper
+from beez.state.account_state_model import AccountStateModel
 
-class Header():
+
+class Header:
     """
     The Header of the block contains the updated data of the in memory objects:
 
@@ -14,23 +15,37 @@ class Header():
 
     that must be shared between peers
     """
-    def __init__(self, beezKeeper: BeezKeeper, accountStateModel: AccountStateModel) -> None:
-        self.beezKeeper = beezKeeper
-        self.accountStateModel = accountStateModel
+
+    def __init__(self, beez_keeper: BeezKeeper, account_state_model: AccountStateModel) -> None:
+        self.beez_keeper = beez_keeper
+        self.account_state_model = account_state_model
 
     def serialize(self):
-        return {"beezKeeper": self.beezKeeper.serialize() if self.beezKeeper else {}, "accountStateModel": self.accountStateModel.serialize() if self.accountStateModel else {}}
+        """Returns the header in serialized form."""
+        return {
+            "beezKeeper": self.beez_keeper.serialize() if self.beez_keeper else {},
+            "accountStateModel": self.account_state_model.serialize()
+            if self.account_state_model
+            else {},
+        }
 
     @staticmethod
-    def deserialize(serialized_beezKeeper, serialized_accountStateModel, index=True) -> Header:
-        return Header(BeezKeeper.deserialize(serialized_beezKeeper, index), AccountStateModel.deserialize(serialized_accountStateModel["balances"], index))
+    def deserialize(serialized_beez_keeper, serialized_account_state_model, index=True) -> Header:
+        """Returns a header object based on serialized header."""
+        return Header(
+            BeezKeeper.deserialize(serialized_beez_keeper, index),
+            AccountStateModel.deserialize(serialized_account_state_model["balances"], index),
+        )
 
-    def _deserialize(self, serialized_beezKeeper, serialized_accountStateModel):
-        self.beezKeeper.deserialize(serialized_beezKeeper) # need Real Challenge objects here
-        self.accountStateModel.deserialize(serialized_accountStateModel) 
+    def _deserialize(self, serialized_beez_keeper, serialized_account_state_model):
+        """Deserializes the header."""
+        self.beez_keeper.deserialize(serialized_beez_keeper)  # need Real Challenge objects here
+        self.account_state_model.deserialize(serialized_account_state_model)
 
-    def getBeezKeeper(self) -> BeezKeeper:
-        return self.beezKeeper
+    def get_beez_keeper(self) -> BeezKeeper:
+        """Returns the beez keeper."""
+        return self.beez_keeper
 
-    def getAccountStateModel(self) -> AccountStateModel:
-        return self.accountStateModel
+    def get_account_state_model(self) -> AccountStateModel:
+        """Returns the account state model."""
+        return self.account_state_model

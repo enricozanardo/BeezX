@@ -1,7 +1,7 @@
 from loguru import logger
 
 
-from beez.node.BeezNode import BeezNode
+from beez.node.beez_node import BeezNode
 
 def test_node():
     logger.info(f"start testing node")
@@ -9,7 +9,7 @@ def test_node():
 
     logger.info(f"Node info: CPU:{beezNode.cpus}, GPU: {beezNode.gpus}")
 
-    beezNode.startP2P()
-    beezNode.startAPI()
+    beezNode.start_p2p()
+    beezNode.start_api()
 
     assert beezNode.wallet != None
