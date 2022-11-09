@@ -2,9 +2,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Dict, Optional
 from loguru import logger
 
-if TYPE_CHECKING:
-    from beez.challenge.BeezKeeper import BeezKeeper
-    from beez.state.AccountStateModel import AccountStateModel
+from beez.challenge.BeezKeeper import BeezKeeper
+from beez.state.AccountStateModel import AccountStateModel
 
 class Header():
     """
@@ -19,11 +18,19 @@ class Header():
         self.beezKeeper = beezKeeper
         self.accountStateModel = accountStateModel
 
+    def serialize(self):
+        return {"beezKeeper": self.beezKeeper.serialize() if self.beezKeeper else {}, "accountStateModel": self.accountStateModel.serialize() if self.accountStateModel else {}}
+
+    @staticmethod
+    def deserialize(serialized_beezKeeper, serialized_accountStateModel, index=True) -> Header:
+        return Header(BeezKeeper.deserialize(serialized_beezKeeper, index), AccountStateModel.deserialize(serialized_accountStateModel["balances"], index))
+
+    def _deserialize(self, serialized_beezKeeper, serialized_accountStateModel):
+        self.beezKeeper.deserialize(serialized_beezKeeper) # need Real Challenge objects here
+        self.accountStateModel.deserialize(serialized_accountStateModel) 
 
     def getBeezKeeper(self) -> BeezKeeper:
-        logger.info(f"get BeezKeeper")
         return self.beezKeeper
 
     def getAccountStateModel(self) -> AccountStateModel:
-        logger.info(f"get AccountStateModel")
         return self.accountStateModel

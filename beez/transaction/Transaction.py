@@ -1,4 +1,5 @@
 from __future__ import annotations
+import re
 from typing import TYPE_CHECKING, Optional
 import uuid
 import time
@@ -25,7 +26,6 @@ class Transaction():
         self.timestamp = time.time()
         self.signature = '' # guarantee that only the owner can perform this tx
         
-        logger.info(f"Transaction of type: {self.type} generated..")
 
     def sign(self, signature):
         self.signature = signature
@@ -41,6 +41,14 @@ class Transaction():
         jsonBlock['signature'] = self.signature
 
         return jsonBlock
+
+    @staticmethod
+    def fromJson(jsonBlock):
+        tx = Transaction(senderPublicKey=jsonBlock["senderPublicKey"], receiverPublicKey=jsonBlock["receiverPublicKey"], amount=jsonBlock['amount'], type=jsonBlock["type"])
+        tx.id = jsonBlock['id']
+        tx.timestamp = jsonBlock['timestamp']
+        tx.signature = jsonBlock['signature']
+        return tx
 
     def equals(self, transaction: Transaction):
         if self.id == transaction.id:

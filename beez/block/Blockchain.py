@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, List
 
 from loguru import logger
+import jsonpickle
 
 
 
@@ -19,6 +20,8 @@ from beez.transaction.ChallengeTX import ChallengeTX
 from beez.keys.GenesisPublicKey import GenesisPublicKey
 from beez.block.Header import Header
 from beez.challenge.BeezKeeper import BeezKeeper
+from beez.index.IndexEngine import BlockIndexEngine
+from whoosh.fields import Schema, TEXT, KEYWORD,ID
 
 
 
@@ -27,28 +30,75 @@ class Blockchain():
     A Blockchain is a linked list of blocks
     """
     def __init__(self):
-        self.blocks: List[Block] = [Block.genesis()]
+        self.blocks_index = BlockIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), block_serialized=TEXT(stored=True)))
+
         self.accountStateModel = AccountStateModel()
         self.pos = ProofOfStake()   
         self.beezKeeper = BeezKeeper()
         self.genesisPubKey = GenesisPublicKey()
 
+        self.appendGenesis(Block.genesis())
+
         # for testing...
         # self.accountStateModel.start()
+
+    def serialize(self):
+        serialized_chain = {
+            "blocks": [block.serialize() for block in self.blocks()],
+            "accountStateModel": self.accountStateModel.serialize(),
+            "pos": self.pos.serialize(),
+            "beezKeeper": self.beezKeeper.serialize(),
+            "genesisPublicKey": self.genesisPubKey
+        }
+        return serialized_chain
+        
+    def _deserialize(self, serialized_blockchain):
+        #delete all blocks
+        self.blocks_index.delete_document("type", "BL")
+        # add the blocks
+        for block in serialized_blockchain["blocks"]:
+            self.appendBlock(Block.deserialize(block))
+        self.accountStateModel = AccountStateModel.deserialize(serialized_blockchain["accountStateModel"]["balances"])
+        self.pos = ProofOfStake.deserialize(serialized_blockchain["pos"])
+        self.beezKeeper = BeezKeeper.deserialize(serialized_blockchain["beezKeeper"])
+        self.genesisPubKey = serialized_blockchain["genesisPublicKey"]
+        return self
+
+
+    @staticmethod
+    def deserialize(serialized_blockchain):
+        return Blockchain()._deserialize(serialized_blockchain)
+
+    def blocks(self):
+        blocks = []
+        block_docs = self.blocks_index.query(q="BL", fields=["type"], highlight=True)
+        for doc in block_docs:
+            blocks.append(Block.deserialize(doc["block_serialized"], index=False))
+        blocks = sorted(blocks, key=lambda block: block.blockCount)
+        return blocks
 
     def toJson(self):
         jsonBlockchain = {}
         jsonBloks = []
-        for block in self.blocks:
+        for block in self.blocks():
             jsonBloks.append(block.toJson())
         jsonBlockchain['blocks'] = jsonBloks
 
         return jsonBlockchain
 
+    def appendGenesis(self, block:Block):
+        if len(self.blocks_index.query("BL", ["type"])) == 0:
+            header = Header(self.beezKeeper, self.accountStateModel)
+            block.header = header
+            self.appendBlock(block)
+
+    def appendBlock(self, block:Block):
+        self.blocks_index.index_documents([{"id": str(block.blockCount), "type": "BL", "block_serialized": str(block.serialize())}])
+
     def addBlock(self, block: Block):
-        self.executeTransactions(block)
-        if self.blocks[-1].blockCount < block.blockCount:
-            self.blocks.append(block)
+        self.executeTransactions(block.transactions)
+        if self.blocks()[-1].blockCount < block.blockCount:
+            self.appendBlock(block)
 
     def executeTransactions(self, transactions: List[Transaction]):
         for transaction in transactions:
@@ -105,14 +155,14 @@ class Blockchain():
 
     def transactionExist(self, transaction: Transaction):
         # TODO: Find a better solution to check if a transaction already exist into the blockchain!
-        for block in self.blocks:
+        for block in self.blocks():
             for blockTransaction in block.transactions:
                 if transaction.equals(blockTransaction):
                     return True
         return False
 
     def nextForger(self):
-        lastBlockHash = BeezUtils.hash(self.blocks[-1].payload()).hexdigest()
+        lastBlockHash = BeezUtils.hash(self.blocks()[-1].payload()).hexdigest()
         nextForger = self.pos.forger(lastBlockHash)
 
         return nextForger
@@ -127,13 +177,13 @@ class Blockchain():
         # Get the updated version of the in-memory objects and create the Block Header
         header = Header(self.beezKeeper, self.accountStateModel)
 
-        logger.info(f"Header: {len(header.beezKeeper.challenges.items())}")
+        logger.info(f"Header: {len(header.beezKeeper.challanges().items())}")
 
         # create the Block
         newBlock = forgerWallet.createBlock(header, coveredTransactions, BeezUtils.hash(
-            self.blocks[-1].payload()).hexdigest(), len(self.blocks))
+            self.blocks()[-1].payload()).hexdigest(), len(self.blocks()))
 
-        self.blocks.append(newBlock)
+        self.appendBlock(newBlock)
 
         return newBlock
     
@@ -175,14 +225,14 @@ class Blockchain():
             return False
 
     def blockCountValid(self, block: Block):
-        if self.blocks[-1].blockCount == block.blockCount - 1:
+        if self.blocks()[-1].blockCount == block.blockCount - 1:
             return True
         else:
             return False
 
     def lastBlockHashValid(self, block: Block):
         latestBlockainBlockHash = BeezUtils.hash(
-            self.blocks[-1].payload()).hexdigest()
+            self.blocks()[-1].payload()).hexdigest()
         if latestBlockainBlockHash == block.lastHash:
             return True
         else:

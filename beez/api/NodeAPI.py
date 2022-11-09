@@ -5,9 +5,12 @@ from waitress import serve
 from loguru import logger
 from typing import TYPE_CHECKING
 import os
+from whoosh.fields import Schema, TEXT, KEYWORD,ID
+from whoosh.query import Term
 from dotenv import load_dotenv
 import json
 
+from beez.index.IndexEngine import TxIndexEngine, TxpIndexEngine, BlockIndexEngine
 load_dotenv()  # load .env
 
 NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
@@ -19,7 +22,6 @@ if TYPE_CHECKING:
     from beez.transaction.ChallengeTX import ChallengeTX
 
 from beez.BeezUtils import BeezUtils
-
 beezNode = None
 
 
@@ -27,12 +29,13 @@ class NodeAPI(FlaskView):
 
     def __init__(self):
         self.app = Flask(__name__) # create the Flask application
+        # for testing index
     
-    def start(self, nodeIP: Address):
+    def start(self, nodeIP: Address, port=None):
         logger.info(f"Node API started at {nodeIP}:{NODE_API_PORT}")
         # register the application to routes
         NodeAPI.register(self.app, route_base="/")
-        serve(self.app, host=nodeIP, port=NODE_API_PORT)
+        serve(self.app, host=nodeIP, port=port if port else NODE_API_PORT)
         # self.app.run(host=nodeIP, port=NODE_API_PORT)
 
     # find a way to use the properties of the node in the nodeAPI
@@ -40,6 +43,47 @@ class NodeAPI(FlaskView):
         global beezNode
         beezNode = incjectedNode
 
+    @route("/txpindex", methods=['GET'])
+    def txpindex(self):
+        logger.info(f"Fetching indexed transactionpool transactions")
+        fields_to_search = ["id", "type", "txp_encoded"]
+
+        for q in ["TXP"]:
+            print(f"Query:: {q}")
+            print("\t", TxpIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), txp_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+            print("-"*70)
+
+        txp_index_str = str(TxpIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), txp_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+
+        return txp_index_str, 200
+
+    @route("/txindex", methods=['GET'])
+    def txindex(self):
+        logger.info(f"Fetching indexed transaction")
+        fields_to_search = ["id", "type", "tx_encoded"]
+
+        for q in ["TX"]:
+            print(f"Query:: {q}")
+            print("\t", TxIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), tx_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+            print("-"*70)
+
+        tx_index_str = str(TxIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), tx_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+
+        return tx_index_str, 200
+
+    @route("/blockindex", methods=['GET'])
+    def blockindex(self):
+        logger.info(f"Checking indexed blocks")
+        fields_to_search = ["id", "type", "block_serialized"]
+
+        for q in ["BL"]:
+            print(f"Query:: {q}")
+            print("\t", BlockIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), block_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+            print("-"*70)
+        
+        block_index_str = str(BlockIndexEngine.get_engine(Schema(id=ID(stored=True), type=KEYWORD(stored=True), block_encoded=TEXT(stored=True))).query(q, fields_to_search, highlight=True))
+
+        return block_index_str, 200
     
     @route("/info", methods=['GET'])
     def info(self):

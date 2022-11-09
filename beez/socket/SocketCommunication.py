@@ -12,7 +12,6 @@ if TYPE_CHECKING:
     from beez.Types import Address
     from beez.node.BeezNode import BeezNode
     from beez.socket.Message import Message
-    from beez.block.Block import Block
     
 from beez.socket.SocketConnector import SocketConnector
 from beez.socket.PeerDiscoveryHandler import PeerDiscoveryHandler
@@ -21,6 +20,7 @@ from beez.socket.MessageType import MessageType
 from beez.transaction.Transaction import Transaction
 from beez.transaction.ChallengeTX import ChallengeTX
 from beez.block.Blockchain import Blockchain
+from beez.block.Block import Block
 
 
 load_dotenv()  # load .env
@@ -105,7 +105,7 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.BLOCK.name:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.messageType}")
-            block : Block = message.block
+            block:Block = Block.deserialize(message.block)
             self.beezNode.handleBlock(block)
 
         elif message.messageType == MessageType.BLOCKCHAINREQUEST.name:
@@ -117,5 +117,5 @@ class SocketCommunication(Node):
         elif message.messageType == MessageType.BLOCKCHAIN.name:
             # handle the BLOCKCHAIN
             logger.info(f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.messageType}")
-            blockchain : Blockchain = message.blockchain
+            blockchain:Blockchain = Blockchain.deserialize(message.serialized_blockchain)
             self.beezNode.handleBlockchain(blockchain)

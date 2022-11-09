@@ -23,9 +23,12 @@ def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType
 
     tx = senderWallet.createTransaction(receiverWallet.publicKeyString(), amount, txType) 
     url = f"http://{URI}:{NODE_API_PORT}/transaction"
+    logger.info(url)
 
     package = {'transaction': BeezUtils.encode(tx)}
     request = requests.post(url, json=package)
+
+    logger.info(package)
 
     logger.info(f"ok?: {request}")
 
@@ -51,3 +54,7 @@ def test_exchange_transaction():
    
     # assert beezNode.ip == localIP
     assert 5 == 5
+
+if __name__ == "__main__":
+    logger.info('SENDING EXCHANGE TX')
+    test_exchange_transaction()

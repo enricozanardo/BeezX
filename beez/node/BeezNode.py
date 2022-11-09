@@ -57,15 +57,15 @@ class BeezNode():
 
             return nodeAddress
 
-    def startP2P(self):
-        self.p2p = SocketCommunication(self.ip, self.port)
+    def startP2P(self, port=None):
+        self.p2p = SocketCommunication(self.ip, port if port else self.port)
         self.p2p.startSocketCommunication(self)
     
-    def startAPI(self):
+    def startAPI(self, port=None):
         self.api = NodeAPI()
         # Inject Node to NodeAPI
         self.api.injectNode(self)
-        self.api.start(self.ip)
+        self.api.start(self.ip, port)
 
 
     # Manage requests that come from the NodeAPI
@@ -88,7 +88,6 @@ class BeezNode():
         transactionInBlock = self.blockchain.transactionExist(transaction)
 
         if not transactionExist and not transactionInBlock and signatureValid:
-            # logger.info(f"add to the pool!!!")
             self.transactionPool.addTransaction(transaction)
             # Propagate the transaction to other peers
             message = MessageTransation(self.p2p.socketConnector, MessageType.TRANSACTION.name, transaction)
@@ -104,7 +103,6 @@ class BeezNode():
                 self.forge()
 
     def handleBlock(self, block: Block):
-        logger.info(f"Manage the Block: {block.blockCount}")
         forger = block.forger
         blockHash = block.payload()
         signature = block.signature
@@ -122,7 +120,6 @@ class BeezNode():
 
         if not blockCountValid:
             # ask to peers their state of the blockchain
-            logger.info("Request the updated version of the Blockchain")
             self.requestChain()
 
         if lastBlockHashValid and forgerValid and transactionValid and signatureValid:
@@ -133,7 +130,7 @@ class BeezNode():
             self.transactionPool.removeFromPool(block.transactions)
           
             # broadcast the block message
-            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
+            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block.serialize())
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
 
@@ -195,7 +192,7 @@ class BeezNode():
             logger.info(f"I'm the next forger")
 
             # mint the new Block
-            block = self.blockchain.mintBlock(self.transactionPool.transactions, self.wallet)
+            block = self.blockchain.mintBlock(self.transactionPool.transactions(), self.wallet)
 
             # clean the transaction pool
             self.transactionPool.removeFromPool(block.transactions)
@@ -206,7 +203,7 @@ class BeezNode():
             self.blockchain.beezKeeper = block.header.beezKeeper
 
             # broadcast the block to the network and the current state of the ChallengeKeeper!!!!
-            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block)
+            message = MessageBlock(self.p2p.socketConnector, MessageType.BLOCK.name, block.serialize())
             encodedMessage = BeezUtils.encode(message)
             self.p2p.broadcast(encodedMessage)
             
@@ -216,29 +213,29 @@ class BeezNode():
     
     def handleBlockchainRequest(self, requestingNode: BeezNode):
         # send the updated version of the blockchain to the node that made the request
-        message = MessageBlockchain(self.p2p.socketConnector, MessageType.BLOCKCHAIN.name, self.blockchain)
+        message = MessageBlockchain(self.p2p.socketConnector, MessageType.BLOCKCHAIN.name, self.blockchain.serialize())
         encodedMessage = BeezUtils.encode(message)
         self.p2p.send(requestingNode, encodedMessage)
         
     def handleBlockchain(self, blockchain: Blockchain):
         # sync blockchain between peers in the network
         logger.info(f"Iterate on the blockchain until to sync the local blockchain with the received one")
-        localBlockchainCopy = copy.deepcopy(self.blockchain)
-        localBlockCount = len(localBlockchainCopy.blocks)
-        receivedChainBlockCount = len(blockchain.blocks)
+        # localBlockchainCopy = copy.deepcopy(self.blockchain)
+        # localBlockCount = len(localBlockchainCopy.blocks())
+        localBlockCount = len(self.blockchain.blocks())
+        receivedChainBlockCount = len(blockchain.blocks())
 
         if localBlockCount <= receivedChainBlockCount:
-            for blockNumber, block in enumerate(blockchain.blocks):
+            for blockNumber, block in enumerate(blockchain.blocks()):
                 # we are interested only on blocks that are not in our blockchain
                 if blockNumber >= localBlockCount:
-                    localBlockchainCopy.addBlock(block)
+                    self.blockchain.appendBlock(block)
                     logger.warning(f"Here is the problem?")
                     # Update the current version of the in-memory AccountStateModel and BeezKeeper
                     self.blockchain.accountStateModel = block.header.accountStateModel
                     self.blockchain.beezKeeper = block.header.beezKeeper
 
                     self.transactionPool.removeFromPool(block.transactions)
-            self.blockchain = localBlockchainCopy
 
         
 
