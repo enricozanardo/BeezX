@@ -130,3 +130,4 @@ werkzeug==2.1.2
     # via flask
 zipp==3.8.0
     # via importlib-metadata
+pylint==2.15.3
