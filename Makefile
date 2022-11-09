@@ -63,3 +63,6 @@ test-state-module:
 
 test-node-module:
 	./scripts/test-node-module.sh
+
+test-transaction-module:
+	./scripts/test-transaction-module.sh
