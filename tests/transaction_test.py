@@ -6,12 +6,12 @@ from dotenv import load_dotenv
 import requests
 import pathlib
 
-from beez.transaction.Transaction import Transaction
-from beez.transaction.TransactionType import TransactionType
-from beez.wallet.Wallet import Wallet
-from beez.node.BeezNode import BeezNode
-from beez.BeezUtils import BeezUtils
-from beez.Types import PublicKeyString, WalletAddress
+from beez.transaction.transaction import Transaction
+from beez.transaction.transaction_type import TransactionType
+from beez.wallet.wallet import Wallet
+from beez.node.beez_node import BeezNode
+from beez.beez_utils import BeezUtils
+from beez.types import PublicKeyString, WalletAddress
 
 load_dotenv()  # load .env
 
@@ -21,7 +21,7 @@ URI = os.environ.get("FIRST_SERVER_IP", default="192.168.1.61")
 
 def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType: TransactionType):
 
-    tx = senderWallet.createTransaction(receiverWallet.publicKeyString(), amount, txType) 
+    tx = senderWallet.create_transaction(receiverWallet.public_key_string(), amount, txType) 
     url = f"http://{URI}:{NODE_API_PORT}/transaction"
 
     package = {'transaction': BeezUtils.encode(tx)}
@@ -38,7 +38,7 @@ def test_send_transaction():
 
     # Generate a standard transaction
     AliceWallet = Wallet()
-    AliceWallet.fromKey(alicePrivateKeyPath)
+    AliceWallet.from_key(alicePrivateKeyPath)
 
     # Generate a standard transaction
     BobWallet = Wallet()
