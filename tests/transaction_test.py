@@ -1,22 +1,18 @@
 from time import sleep
-from loguru import logger
 
 import os
 from dotenv import load_dotenv
 import requests
 import pathlib
 
-from beez.transaction.transaction import Transaction
 from beez.transaction.transaction_type import TransactionType
 from beez.wallet.wallet import Wallet
-from beez.node.beez_node import BeezNode
 from beez.beez_utils import BeezUtils
-from beez.types import PublicKeyString, WalletAddress
 
 load_dotenv()  # load .env
 
-NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
-URI = os.environ.get("FIRST_SERVER_IP", default="192.168.1.61")
+NODE_API_PORT = os.environ.get("NODE_API_PORT", default=5445)
+URI = os.environ.get("FIRST_SERVER_IP", default="127.0.0.1")
 
 
 def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType: TransactionType):
@@ -27,7 +23,6 @@ def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType
     package = {'transaction': BeezUtils.encode(tx)}
     request = requests.post(url, json=package)
 
-    logger.info(f"ok?: {request}")
 
 
 def test_send_transaction():
@@ -50,3 +45,16 @@ def test_send_transaction():
   
     # assert beezNode.ip == localIP
     assert 5 == 5
+
+if __name__ == "__main__":
+    currentPath = pathlib.Path().resolve()
+
+    genesis_private_key_path = f"{currentPath}/beez/keys/genesisPrivateKey.pem"
+    bob_private_key_path = f"{currentPath}/beez/keys/bobPrivateKey.pem"
+
+    genesis_wallet = Wallet()
+    genesis_wallet.from_key(genesis_private_key_path)
+    bob_wallet = Wallet()
+    bob_wallet.from_key(bob_private_key_path)
+
+    postTransaction(genesis_wallet, bob_wallet, 100, TransactionType.EXCHANGE.name)

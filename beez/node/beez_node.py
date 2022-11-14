@@ -6,7 +6,7 @@ import os
 import socket
 from dotenv import load_dotenv
 from loguru import logger
-import GPUtil   # type: ignore
+import GPUtil  # type: ignore
 
 from beez.beez_utils import BeezUtils
 from beez.wallet.wallet import Wallet
@@ -30,10 +30,10 @@ if TYPE_CHECKING:
     from beez.block.block import Block
 
 load_dotenv()  # load .env
-P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))     # pylint: disable=invalid-envvar-default
+P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envvar-default
 
 
-class BeezNode:     # pylint: disable=too-many-instance-attributes
+class BeezNode:  # pylint: disable=too-many-instance-attributes
     """Beez Node - represents the core blockchain node."""
 
     def __init__(self, key=None, port=None) -> None:
@@ -46,6 +46,8 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
         self.p2p = SocketCommunication(self.ip_address, port if port else self.port)
+        self.pending_blockchain_request = False
+        self.pending_block_handling = False
 
         if key is not None:
             self.wallet.from_key(key)
@@ -61,6 +63,16 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
     def start_p2p(self):
         """Starts the p2p communication thread."""
+        self.blockchain.in_memory_blocks = self.blockchain.blocks_from_index()
+        if (
+            len(self.blockchain.blocks()) > 0
+            and self.blockchain.blocks()[-1].header is not None
+        ):
+            self.blockchain.account_state_model = self.blockchain.blocks()[
+                -1
+            ].header.account_state_model
+            self.blockchain.block_count = self.blockchain.blocks()[-1].block_count
+            self.blockchain.beez_keeper = self.blockchain.blocks()[-1].header.beez_keeper
         self.p2p.start_socket_communication(self)
 
     def start_api(self, port=None):
@@ -86,6 +98,7 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         transaction_exist = self.transaction_pool.transaction_exists(transaction)
 
         # already exist in the Blockchain
+        # TODO: fix problem that deserialization of all blocks to check if tx exists
         transaction_in_block = self.blockchain.transaction_exist(transaction)
 
         if not transaction_exist and not transaction_in_block and signature_valid:
@@ -108,47 +121,62 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
     def handle_block(self, block: Block):
         """Handles incomming block."""
-        forger = block.forger
-        block_hash = block.payload()
-        signature = block.signature
+        if not self.pending_block_handling and not self.pending_blockchain_request:
+            self.pending_block_handling = True
 
-        # checks all the possible validations!
-        block_count_valid = self.blockchain.blockcount_valid(block)
+            forger = block.forger
+            block_hash = block.payload()
+            signature = block.signature
 
-        last_block_hash_valid = self.blockchain.last_blockhash_valid(block)
-        forger_valid = self.blockchain.forger_valid(block)
-        transaction_valid = self.blockchain.transaction_valid(block.transactions)
+            # checks all the possible validations!
+            block_count_valid = self.blockchain.blockcount_valid(block)
 
-        signature_valid = Wallet.signature_valid(block_hash, signature, forger)
+            last_block_hash_valid = self.blockchain.last_blockhash_valid(block)
+            forger_valid = self.blockchain.forger_valid(block)
+            transaction_valid = self.blockchain.transaction_valid(block.transactions)
 
-        logger.info(f"What is wrong? blockCountValid: {block_count_valid}")
+            signature_valid = Wallet.signature_valid(block_hash, signature, forger)
 
-        if not block_count_valid:
-            # ask to peers their state of the blockchain
-            self.request_chain()
+            logger.info(f"What is wrong? blockCountValid: {block_count_valid}")
 
-        if last_block_hash_valid and forger_valid and transaction_valid and signature_valid:
+            if (
+                not block_count_valid
+                and self.blockchain.blocks()[-1].block_count < block.block_count - 1
+            ):
+                # ask to peers their state of the blockchain
+                self.request_chain()
 
-            # Add the block to the Blockchain
-            self.blockchain.add_block(block)
+            if (
+                last_block_hash_valid
+                and forger_valid
+                and transaction_valid
+                and signature_valid
+            ):
+                logger.info("About to add new block")
 
-            self.transaction_pool.remove_from_pool(block.transactions)
+                # Add the block to the Blockchain
+                self.blockchain.add_block(block)
 
-            # broadcast the block message
-            message = MessageBlock(
-                self.p2p.socket_connector, MessageType.BLOCK, block.serialize()
-            )
-            encoded_message = BeezUtils.encode(message)
-            self.p2p.broadcast(encoded_message)
+                self.transaction_pool.remove_from_pool(block.transactions)
 
+                # broadcast the block message
+                message = MessageBlock(
+                    self.p2p.socket_connector, MessageType.BLOCK, block.serialize()
+                )
+                encoded_message = BeezUtils.encode(message)
+                self.p2p.broadcast(encoded_message)
+
+            self.pending_block_handling = False
 
     def request_chain(self):
         """Requests the peer nodes to get their version of the blockchain."""
-        # The node will send a message to request the updated Blockchain
-        message = Message(self.p2p.socket_connector, MessageType.BLOCKCHAINREQUEST)
-        encoded_message = BeezUtils.encode(message)
+        if not self.pending_blockchain_request:
+            # The node will send a message to request the updated Blockchain
+            message = Message(self.p2p.socket_connector, MessageType.BLOCKCHAINREQUEST)
+            encoded_message = BeezUtils.encode(message)
 
-        self.p2p.broadcast(encoded_message)
+            self.pending_blockchain_request = True
+            self.p2p.broadcast(encoded_message)
 
     def handle_challenge_update(self, challenge: Challenge):
         """Handles an challenge update message."""
@@ -176,7 +204,11 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
         # already exist in the Blockchain
         transaction_in_block = self.blockchain.transaction_exist(challenge_tx)
 
-        if not challenge_transaction_exist and not transaction_in_block and signature_valid:
+        if (
+            not challenge_transaction_exist
+            and not transaction_in_block
+            and signature_valid
+        ):
             # logger.info(f"add to the Transaction Pool!!!")
             self.transaction_pool.add_transaction(challenge_tx)
             # Propagate the transaction to other peers
@@ -205,7 +237,9 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
             logger.info("I'm the next forger")
 
             # mint the new Block
-            block = self.blockchain.mint_block(self.transaction_pool.transactions(), self.wallet)
+            block = self.blockchain.mint_block(
+                self.transaction_pool.transactions(), self.wallet
+            )
 
             # clean the transaction pool
             self.transaction_pool.remove_from_pool(block.transactions)
@@ -236,23 +270,33 @@ class BeezNode:     # pylint: disable=too-many-instance-attributes
 
     def handle_blockchain(self, blockchain: Blockchain):
         """Handles an incomming blockchain message."""
-        # sync blockchain between peers in the network
-        logger.info(
-            "Iterate on the blockchain until to sync the local blockchain with the received one"
-        )
-        # localBlockchainCopy = copy.deepcopy(self.blockchain)
-        # localBlockCount = len(localBlockchainCopy.blocks())
-        local_block_count = len(self.blockchain.blocks())
-        received_chain_block_count = len(blockchain.blocks())
+        if self.pending_blockchain_request:
+            # sync blockchain between peers in the network
+            logger.info(
+                "Iterate on the blockchain until to sync the local blockchain with the received one"
+            )
 
-        if local_block_count <= received_chain_block_count:
-            for block_number, block in enumerate(blockchain.blocks()):
-                # we are interested only on blocks that are not in our blockchain
-                if block_number >= local_block_count:
-                    self.blockchain._append_block(block)    # pylint: disable=protected-access
-                    logger.warning("Here is the problem?")
-                    # Update the current version of the in-memory AccountStateModel and BeezKeeper
-                    self.blockchain.account_state_model = block.header.accountStateModel
-                    self.blockchain.beez_keeper = block.header.beezKeeper
+            local_block_count = self.blockchain.blocks()[-1].block_count
+            received_chain_block_count = blockchain.blocks()[-1].block_count
 
-                    self.transaction_pool.remove_from_pool(block.transactions)
+            if local_block_count < received_chain_block_count:
+                for _, block in enumerate(blockchain.blocks()):
+                    # we are interested only on blocks that are not in our blockchain
+                    if block.block_count > local_block_count:
+                        self.blockchain._append_block(  # pylint: disable=protected-access
+                            block
+                        )
+                        logger.warning("Here is the problem?")
+                        # Update the current version of the in-memory AccountStateModel
+                        # and BeezKeeper
+                        if block.header:
+                            self.blockchain.account_state_model = (
+                                block.header.account_state_model
+                            )
+                            self.blockchain.beez_keeper = block.header.beez_keeper
+
+                        self.transaction_pool.remove_from_pool(block.transactions)
+                    else:
+                        # we have to clean up txpool
+                        self.transaction_pool.remove_from_pool(block.transactions)
+            self.pending_blockchain_request = False

@@ -226,6 +226,7 @@ def test_handle_blockchain():
     node.handle_transaction(exchange_tx)
 
     local_blockchain = Blockchain()
+    local_blockchain.in_memory_blocks = local_blockchain.blocks_from_index()
     block = Block(
         None,
         [exchange_tx],
@@ -235,9 +236,12 @@ def test_handle_blockchain():
     )
     local_blockchain.add_block(block)
     
+
     # should be added to the node's blockchain
+    node.pending_blockchain_request = True
     node.handle_blockchain(local_blockchain)
     # should not be added, already exists
+    node.pending_blockchain_request = True
     node.handle_blockchain(local_blockchain)
 
     assert len(node.blockchain.blocks()) == 2

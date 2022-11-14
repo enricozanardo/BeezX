@@ -23,8 +23,7 @@ def test_account_state_model_creation(account_state_model):
 
 def test_serialize(account_state_model):
     account_state_model.update_balance("test_public_key", 120)
-    account_identifier = BeezUtils.hash("test_public_key").hexdigest()
-    assert account_state_model.serialize() == {"accounts": [account_identifier], "balances": {"test_public_key": 120}}
+    assert account_state_model.serialize() == {"accounts": ["test_public_key"], "balances": {"test_public_key": 120}}
 
 def test_deserialize():
     serialized_account_state_model = {"test_public_key": 110}
@@ -40,8 +39,7 @@ def test_balances(account_state_model):
 
 def test_accounts(account_state_model):
     account_state_model.update_balance("another_test", 20)
-    account_identifier = BeezUtils.hash("another_test").hexdigest()
-    assert account_state_model.accounts() == [account_identifier]
+    assert account_state_model.accounts() == ["another_test"]
 
 def test_add_account(account_state_model):
     account_state_model.add_account("public_key")

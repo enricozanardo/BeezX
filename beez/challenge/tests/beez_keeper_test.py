@@ -24,7 +24,7 @@ def test_serialize(beez_keeper):
 
 def test_deserialize():
     challenge = Challenge(sum, 10)
-    local_beez_keeper = BeezKeeper.deserialize({"test_public_key": challenge})
+    local_beez_keeper = BeezKeeper.deserialize({"test_public_key": Challenge.to_pickle(challenge)})
     assert len(local_beez_keeper.challanges()) == 1
     assert local_beez_keeper.challanges()["test_public_key"].reward == 10
     assert local_beez_keeper.challanges()["test_public_key"].shared_function == sum
