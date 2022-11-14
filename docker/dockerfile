@@ -1,6 +1,4 @@
-FROM ubuntu:20.04
-ARG DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y python3.9 python3.9-dev python3-pip
+FROM python:3.9-buster
 COPY ../requirements /requirements
 COPY ../beez /beez
 COPY ../main.py /main.py

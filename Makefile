@@ -66,3 +66,16 @@ test-node-module:
 
 test-transaction-module:
 	./scripts/test-transaction-module.sh
+
+# DOCKER AUTOMATION
+build-image:
+	docker build -t beez-node -f docker/dockerfile .
+
+build-image-force:
+	docker build -t --no-cache beez-node -f docker/dockerfile .
+
+tag-image:
+	docker tag beez-node beezblockchain/beez-node:$(tag)
+
+push-image:
+	docker push beezblockchain/beez-node:$(tag)
