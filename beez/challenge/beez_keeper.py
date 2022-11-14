@@ -44,8 +44,8 @@ class BeezKeeper:
         # Load all challenges from index
         serialized_challenges = {}
         challenges = self.challanges()
-        for id, challenge in challenges.items():
-            serialized_challenges[id] = json.loads(str(Challenge.to_pickle(challenge)))
+        for identifier, challenge in challenges.items():
+            serialized_challenges[identifier] = json.loads(str(Challenge.to_pickle(challenge)))
         return serialized_challenges
 
 
