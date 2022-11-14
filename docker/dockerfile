@@ -1,0 +1,6 @@
+FROM python:3.9-buster
+COPY ../requirements /requirements
+COPY ../beez /beez
+COPY ../main.py /main.py
+RUN pip install -r /requirements/requirements.in
+RUN pip install -r /requirements/requirements.txt
