@@ -5,9 +5,8 @@ import json
 from typing import Sequence, Optional
 from whoosh import index  # type: ignore
 from whoosh.fields import TEXT  # type: ignore
-from whoosh.qparser import MultifieldParser     # type: ignore
-from whoosh.filedb.filestore import FileStorage     # type: ignore
-
+from whoosh.qparser import MultifieldParser  # type: ignore
+from whoosh.filedb.filestore import FileStorage  # type: ignore
 
 
 class Engine:
@@ -21,10 +20,14 @@ class Engine:
         """Adds docs to index."""
         writer = self.index.writer()
         for doc in docs:
-            data = {key: value for key, value in doc.items() if key in self.schema.stored_names()}
+            data = {
+                key: value
+                for key, value in doc.items()
+                if key in self.schema.stored_names()
+            }
             data["raw"] = json.dumps(doc)  # raw version of all of doc
             writer.add_document(**data)
-        writer.commit(optimize=True)
+        writer.commit()
 
     def get_index_size(self) -> int:
         """Returns number of docs in index."""
@@ -40,7 +43,9 @@ class Engine:
         """Query index and returns docs matching query."""
         search_results = []
         with self.index.searcher() as searcher:
-            results = searcher.search(MultifieldParser(fields, schema=self.schema).parse(query))
+            results = searcher.search(
+                MultifieldParser(fields, schema=self.schema).parse(query), limit=10000000
+            )
             for result in results:
                 raw_data = json.loads(result["raw"])
                 if highlight:
@@ -89,6 +94,7 @@ class TxIndexEngine(Engine):
 
 class BlockIndexEngine(Engine):
     """Index engine for block index."""
+
     engine = None
 
     def __init__(self, schema):
@@ -108,7 +114,11 @@ class BlockIndexEngine(Engine):
     @staticmethod
     def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not BlockIndexEngine.engine or force_new or not index.exists_in("blocks_indices"):
+        if (
+            not BlockIndexEngine.engine
+            or force_new
+            or not index.exists_in("blocks_indices")
+        ):
             new_engine = BlockIndexEngine(schema)
             BlockIndexEngine.engine = new_engine
         return BlockIndexEngine.engine
@@ -116,6 +126,7 @@ class BlockIndexEngine(Engine):
 
 class TxpIndexEngine(Engine):
     """Index engine for transaction pool model."""
+
     engine = None
 
     def __init__(self, schema):
@@ -124,7 +135,9 @@ class TxpIndexEngine(Engine):
         schema.add("raw", TEXT(stored=True))
         if not os.path.isdir("txp_indices"):
             os.makedirs("txp_indices", exist_ok=True)
-            self.index = FileStorage("txp_indices").create_index(self.schema, indexname="txp_index")
+            self.index = FileStorage("txp_indices").create_index(
+                self.schema, indexname="txp_index"
+            )
         else:
             self.index = FileStorage("txp_indices").open_index("txp_index")
         TxpIndexEngine.engine = self
@@ -141,6 +154,7 @@ class TxpIndexEngine(Engine):
 
 class AccountModelEngine(Engine):
     """Index engine for account model."""
+
     engine = None
 
     def __init__(self, schema):
@@ -160,7 +174,11 @@ class AccountModelEngine(Engine):
     @staticmethod
     def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not AccountModelEngine.engine or force_new or not index.exists_in("account_indices"):
+        if (
+            not AccountModelEngine.engine
+            or force_new
+            or not index.exists_in("account_indices")
+        ):
             new_engine = AccountModelEngine(schema)
             AccountModelEngine.engine = new_engine
         return AccountModelEngine.engine
@@ -168,6 +186,7 @@ class AccountModelEngine(Engine):
 
 class BalancesModelEngine(Engine):
     """Index engine for balance model."""
+
     engine = None
 
     def __init__(self, schema):
@@ -187,7 +206,11 @@ class BalancesModelEngine(Engine):
     @staticmethod
     def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not BalancesModelEngine.engine or force_new or not index.exists_in("balance_indices"):
+        if (
+            not BalancesModelEngine.engine
+            or force_new
+            or not index.exists_in("balance_indices")
+        ):
             new_engine = BalancesModelEngine(schema)
             BalancesModelEngine.engine = new_engine
         return BalancesModelEngine.engine
@@ -195,6 +218,7 @@ class BalancesModelEngine(Engine):
 
 class PosModelEngine(Engine):
     """Index engine for PoS model."""
+
     engine: Optional[Engine] = None
 
     def __init__(self, schema):
@@ -203,7 +227,9 @@ class PosModelEngine(Engine):
         schema.add("raw", TEXT(stored=True))
         if not os.path.isdir("pos_indices"):
             os.makedirs("pos_indices", exist_ok=True)
-            self.index = FileStorage("pos_indices").create_index(self.schema, indexname="pos_index")
+            self.index = FileStorage("pos_indices").create_index(
+                self.schema, indexname="pos_index"
+            )
         else:
             self.index = FileStorage("pos_indices").open_index("pos_index")
         PosModelEngine.engine = self
@@ -220,6 +246,7 @@ class PosModelEngine(Engine):
 
 class ChallengeModelEngine(Engine):
     """Index engine for challenge model."""
+
     engine = None
 
     def __init__(self, schema):
@@ -239,7 +266,11 @@ class ChallengeModelEngine(Engine):
     @staticmethod
     def get_engine(schema, force_new: bool = False):
         """Returns an engine for the given schema."""
-        if not ChallengeModelEngine.engine or force_new or not index.exists_in("challenge_indices"):
+        if (
+            not ChallengeModelEngine.engine
+            or force_new
+            or not index.exists_in("challenge_indices")
+        ):
             new_engine = ChallengeModelEngine(schema)
             ChallengeModelEngine.engine = new_engine
         return ChallengeModelEngine.engine

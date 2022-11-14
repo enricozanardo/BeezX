@@ -29,7 +29,7 @@ class Blockchain:
     A Blockchain is a linked list of blocks
     """
 
-    def __init__(self):
+    def __init__(self, index=True):
         self.blocks_index = BlockIndexEngine.get_engine(
             Schema(
                 id=ID(stored=True),
@@ -42,8 +42,10 @@ class Blockchain:
         self.pos = ProofOfStake()
         self.beez_keeper = BeezKeeper()
         self.genesis_public_key = GenesisPublicKey().pub_key
-
-        self.append_genesis(Block.genesis())
+        self.block_count = -1
+        self.in_memory_blocks: List[Block] = []
+        
+        self.append_genesis(Block.genesis(), index)
 
         # for testing...
         # self.accountStateModel.start()
@@ -59,34 +61,48 @@ class Blockchain:
         }
         return serialized_chain
 
-    def _deserialize(self, serialized_blockchain):
+    def _deserialize(self, serialized_blockchain, index=True):
         """Deserialize the blockchain and return a blockchain object."""
         # delete all blocks
-        self.blocks_index.delete_document("type", "BL")
+        if index:
+            self.blocks_index.delete_document("type", "BL")
         # add the blocks
         for block in serialized_blockchain["blocks"]:
-            self._append_block(Block.deserialize(block))
+            if block["blockCount"] == 0:
+                self._append_block(
+                    Block.deserialize(block, index), index=index, genesis=True
+                )
+            else:
+                self._append_block(
+                    Block.deserialize(block, index), index=index, genesis=False
+                )
         self.account_state_model = AccountStateModel.deserialize(
-            serialized_blockchain["accountStateModel"]["balances"]
+            serialized_blockchain["accountStateModel"]["balances"], index
         )
-        self.pos = ProofOfStake.deserialize(serialized_blockchain["pos"])
+        self.pos = ProofOfStake.deserialize(serialized_blockchain["pos"], index)
         self.beez_keeper = BeezKeeper.deserialize(serialized_blockchain["beezKeeper"])
         self.genesis_public_key = serialized_blockchain["genesisPublicKey"]
         return self
 
     @staticmethod
-    def deserialize(serialized_blockchain):
+    def deserialize(serialized_blockchain, index=True):
         """Public deserialize class method."""
-        return Blockchain()._deserialize(   # pylint: disable=protected-access
-            serialized_blockchain
+        return Blockchain(index=index)._deserialize(  # pylint: disable=protected-access
+            serialized_blockchain, index=index
         )
 
-    def blocks(self):
+    def blocks_from_index(self):
         """Returning all the blocks from the current state."""
         blocks = []
         block_docs = self.blocks_index.query(query="BL", fields=["type"], highlight=True)
         for doc in block_docs:
             blocks.append(Block.deserialize(doc["block_serialized"], index=False))
+        blocks = sorted(blocks, key=lambda block: block.block_count)
+        return blocks
+
+    def blocks(self):
+        """Returning all the blocks from the current state."""
+        blocks = self.in_memory_blocks
         blocks = sorted(blocks, key=lambda block: block.block_count)
         return blocks
 
@@ -100,33 +116,41 @@ class Blockchain:
 
         return json_blockchain
 
-    def append_genesis(self, block: Block):
+    def append_genesis(self, block: Block, index=True):
         """Append the first block, genesis, to the blockchain."""
         if len(self.blocks_index.query("BL", ["type"])) == 0:
             header = Header(self.beez_keeper, self.account_state_model)
             block.header = header
-            self._append_block(block)
+            self._append_block(block, genesis=True, index=index)
 
-    def _append_block(self, block: Block):
+    def _append_block(self, block: Block, genesis=False, index=True):
         """Append a block to the blockchain state. Should only be used internally."""
-        self.blocks_index.index_documents(
-            [
-                {
-                    "id": str(block.block_count),
-                    "type": "BL",
-                    "block_serialized": str(block.serialize()),
-                }
-            ]
-        )
+        if genesis or (
+            len(self.blocks()) > 0 and block.block_count > self.blocks()[-1].block_count
+        ):
+            self.block_count += 1
+            if index:
+                before_index_block_count = len(self.blocks_from_index())
+                while len(self.blocks_from_index()) == before_index_block_count:
+                    self.blocks_index.index_documents(
+                        [
+                            {
+                                "id": str(block.block_count),
+                                "type": "BL",
+                                "block_serialized": str(block.serialize()),
+                            }
+                        ]
+                    )
+            self.in_memory_blocks.append(block)
 
     def add_block(self, block: Block):
         """Prepare the appending of a new block by executing its corresponding transactions."""
-        self.execute_transactions(block.transactions)
         latest_block = self.blocks()[-1]
         if (
             latest_block.block_count < block.block_count
             and BeezUtils.hash(latest_block.payload()).hexdigest() == block.last_hash
         ):
+            self.execute_transactions(block.transactions)
             self._append_block(block)
 
     def execute_transactions(self, transactions: List[Transaction]):
@@ -220,7 +244,7 @@ class Blockchain:
             header,
             covered_transactions,
             BeezUtils.hash(self.blocks()[-1].payload()).hexdigest(),
-            len(self.blocks()),
+            self.block_count + 1,
         )
 
         self._append_block(new_block)
@@ -232,14 +256,21 @@ class Blockchain:
     ) -> List[Transaction]:
         """Returns the subset of covered transactions from all transactions in
         the current transaction pool state."""
-        covered_transactions: List[Transaction] = []
+        covered_transactions: list[Transaction] = []
+        added_transaction_ids: list[str] = []
         for transaction in transactions_from_pool:
-            if self.transaction_covered(transaction):
+            if (
+                self.transaction_covered(transaction)
+                and transaction.identifier not in added_transaction_ids
+            ):
                 covered_transactions.append(transaction)
+                # to make sure duplicates will be not added to the block twice
+                added_transaction_ids.append(transaction.identifier)
             else:
                 logger.info(
                     f"""This transaction {transaction.identifier} is not covered
-                    [no enogh tokes ({transaction.amount})]"""
+                    [no enogh tokes ({transaction.amount})] or already added to covered
+                    transactions."""
                 )
 
         return covered_transactions

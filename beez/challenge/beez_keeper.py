@@ -1,5 +1,6 @@
 """Beez blockchain - beez keeper."""
 from __future__ import annotations
+import json
 
 # for function
 import random
@@ -10,12 +11,10 @@ from typing import TYPE_CHECKING, Optional
 from loguru import logger
 from dotenv import load_dotenv
 
-from whoosh.fields import Schema, TEXT, KEYWORD, ID     # type: ignore
-from beez.index.index_engine import ChallengeModelEngine
 from beez.challenge.challenge import Challenge
 
 if TYPE_CHECKING:
-    from beez.types import Prize, ChallengeID, PublicKeyString
+    from beez.types import ChallengeID
 
 load_dotenv()  # load .env
 LOCAL_INTERVALS = 10
@@ -32,13 +31,7 @@ class BeezKeeper:
     """
 
     def __init__(self):
-        self.challenges_index = ChallengeModelEngine.get_engine(
-            Schema(
-                id=ID(stored=True),
-                type=KEYWORD(stored=True),
-                challenge_pickled=TEXT(stored=True),
-            )
-        )
+        self.challenges: dict[str, Challenge] = {}
 
     def start(self):
         """Starting the beez keeper thread."""
@@ -46,13 +39,18 @@ class BeezKeeper:
         status_thread = threading.Thread(target=self.status, args={})
         status_thread.start()
 
-    def serialize(self) -> dict[str, Challenge]:
+    def serialize(self) -> dict[str, dict]:
         """Returns all challenges"""
         # Load all challenges from index
-        return self.challanges()
+        serialized_challenges = {}
+        challenges = self.challanges()
+        for id, challenge in challenges.items():
+            serialized_challenges[id] = json.loads(str(Challenge.to_pickle(challenge)))
+        return serialized_challenges
+
 
     @staticmethod
-    def deserialize(serialized_challenges: dict[str, Challenge], index=True):  # pylint: disable=unused-argument
+    def deserialize(serialized_challenges: dict[str, dict], index=True):  # pylint: disable=unused-argument
         """Returning a beez keeper from serialized challenges."""
         beez_keeper = BeezKeeper()
         beez_keeper._deserialize(   # pylint: disable=protected-access
@@ -62,33 +60,16 @@ class BeezKeeper:
 
     def _deserialize(self, serialized_challenges):
         """Deserialize beez keeper."""
-        # Reset challenges from serialized challenges
-        self.challenges_index.delete_document("type", "CHALLENGE")
         for challenge_id, challenge in serialized_challenges.items():
-            self.append(challenge_id, challenge)
+            self.append(challenge_id, Challenge.from_pickle(str(challenge).replace("'", '"')))
 
     def challanges(self) -> dict[str, Challenge]:
         """Returns all challenges."""
-        challenges: dict[str, Challenge] = {}
-        challenge_docs = self.challenges_index.query(
-            query="CHALLENGE", fields=["type"], highlight=True
-        )
-        for doc in challenge_docs:
-            challenge = Challenge.from_pickle(doc["challenge_pickled"])
-            challenges[doc["id"]] = challenge
-        return challenges
+        return self.challenges
 
     def append(self, identifier: str, challenge: Challenge):
         """Adds a new challenge."""
-        self.challenges_index.index_documents(
-            [
-                {
-                    "id": identifier,
-                    "type": "CHALLENGE",
-                    "challenge_pickled": Challenge.to_pickle(challenge),
-                }
-            ]
-        )
+        self.challenges[identifier] = challenge
 
     def status(self):
         """Logs status of beezkepper."""
@@ -98,15 +79,9 @@ class BeezKeeper:
             for key, value in self.challanges().items():
                 challenge: Challenge = value
                 challenge_id: ChallengeID = key
-
                 logger.info(
                     f"Do something with challenge ID: {challenge_id} on status: {challenge.state}"
                 )
-
-            # challengeStatusMessage = self.challengeStatusMessage()
-            # # Broadcast the message
-            # self.socketCommunication.broadcast(challengeStatusMessage)
-
             time.sleep(INTERVALS)
 
     def set(self, challenge: Challenge):
@@ -174,8 +149,6 @@ class BeezKeeper:
         # do a copy of the local challenge!
         challenge_exists = self.challege_exists(received_challenge.identifier)
         if challenge_exists:
-            logger.info("Update the local version of the Challenge")
-            self.challenges_index.delete_document("id", received_challenge.identifier)
             self.append(received_challenge.identifier, received_challenge)
 
     # TODO: Generate the rewarding function!!!

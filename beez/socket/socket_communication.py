@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 load_dotenv()  # load .env
 LOCAL_TEST_IP = "192.168.1.209"
-LOCAL_P2P_PORT = 8181  # 8122
+LOCAL_P2P_PORT = 5444
 
 FIRST_SERVER_IP = os.getenv("FIRST_SERVER_IP", LOCAL_TEST_IP)   # pylint: disable=invalid-envvar-default
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", LOCAL_P2P_PORT))   # pylint: disable=invalid-envvar-default
@@ -115,7 +115,7 @@ class SocketCommunication(Node):
         elif message.message_type == MessageType.BLOCK:
             # handle the BLOCK
             logger.info(f"A BLOCK Message will be broadcasted!! {message.message_type}")
-            block: Block = Block.deserialize(message.block)
+            block: Block = Block.deserialize(message.block, index=False)
             if self.beez_node:
                 self.beez_node.handle_block(block)
             else:
@@ -133,9 +133,12 @@ class SocketCommunication(Node):
         elif message.message_type == MessageType.BLOCKCHAIN:
             # handle the BLOCKCHAIN
             logger.info(
-                f"A BLOCKCHAIN Message will be sent to the requester peer!! {message.message_type}"
+                f"A BLOCKCHAIN Message came in!! {message.message_type}"
             )
-            blockchain: Blockchain = Blockchain.deserialize(message.serialized_blockchain)
+            blockchain: Blockchain = Blockchain.deserialize(
+                message.serialized_blockchain,
+                index=False
+            )
             if self.beez_node:
                 self.beez_node.handle_blockchain(blockchain)
             else:

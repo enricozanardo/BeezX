@@ -12,11 +12,7 @@ from beez.beez_utils import BeezUtils
 
 
 def remove_blockchain():
-    shutil.rmtree("account_indices")
-    shutil.rmtree("balance_indices")
     shutil.rmtree("blocks_indices")
-    shutil.rmtree("challenge_indices")
-    shutil.rmtree("pos_indices")
 
 
 @pytest.fixture(scope="function")
@@ -114,6 +110,7 @@ def test_to_json(blockchain):
 def test_append_genesis():
     blockchain = Blockchain()
     assert len(blockchain.blocks()) == 1
+    remove_blockchain()
 
 
 def test_add_block(blockchain):
