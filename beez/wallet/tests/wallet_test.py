@@ -10,11 +10,7 @@ from beez.transaction.transaction_type import TransactionType
 from beez.challenge.challenge import Challenge
 
 def remove_blockchain():
-    shutil.rmtree("account_indices")
-    shutil.rmtree("balance_indices")
     shutil.rmtree("blocks_indices")
-    shutil.rmtree("challenge_indices")
-    shutil.rmtree("pos_indices")
 
 @pytest.fixture
 def wallet():

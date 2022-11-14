@@ -134,17 +134,13 @@ class NodeAPI(FlaskView):
             )
             print("-" * 70)
 
-        block_index_str = str(
-            BlockIndexEngine.get_engine(
-                Schema(
-                    id=ID(stored=True),
-                    type=KEYWORD(stored=True),
-                    block_encoded=TEXT(stored=True),
-                )
-            ).query(query, fields_to_search, highlight=True)
-        )
+            resultsset = []
+            blocks = BEEZ_NODE.blockchain.blocks_from_index()
+            for block in blocks:
+                resultsset.append(block.serialize())
 
-        return block_index_str, 200
+
+        return str(resultsset), 200
 
     @route("/info", methods=["GET"])
     def info(self):
@@ -206,6 +202,18 @@ class NodeAPI(FlaskView):
         # logger.info(f"Transactions to Json: {transactions}")
 
         return jsonify(transactions), 200
+
+    @route("/accountstatemodel", methods=["GET"])
+    def account_state_model(self):
+        """Returns the current state of the account_state_model"""
+        # Implement this
+        logger.info(
+            "Send the current account_state_model state"
+        )
+
+        # logger.info(f"Transactions to Json: {transactions}")
+
+        return jsonify(BEEZ_NODE.blockchain.account_state_model.serialize()), 200
 
     # @route("/challenges", methods=['GET'])
     # def challenges(self):
