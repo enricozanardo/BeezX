@@ -44,7 +44,7 @@ class Blockchain:
         self.genesis_public_key = GenesisPublicKey().pub_key
         self.block_count = -1
         self.in_memory_blocks: List[Block] = []
-        
+
         self.append_genesis(Block.genesis(), index)
 
         # for testing...
