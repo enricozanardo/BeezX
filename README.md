@@ -59,6 +59,75 @@ The following installation guide is for Linux Ubuntu machines.
 3. Check if Node is running via `curl yourip:5445/info` you should see an output similar to `This is Beez Blockchain!. 🦾 🐝 🐝 🐝 🦾
 
 
+## Beez Node API Endpoints
+Every Beez Blockchain node exposes a dedicated API on port 5445. The endpoints enable information requests as well as transaction requests. The following listing explains how to use the endpoints.
 
+### Information endpoints (GET)
+`/blockchain`
+Returns all blocks of the blockchain in the following form:
+```
+{
+	"blocks":[
+		"blockCount": Int,           // Starting with 0
+		"forger": String,            // PublicKey      
+		"lastHash": String,          // Hash of last block
+		"signature": String,         // Signature of forger
+		"timestamp": Timestamp,
+		"transactions": List[Transction]
+	]
+}
+```
 
+`/accountstatemodel`
+Returns information about the blockchain’s users public keys and their corresponding balances:
+```
+{
+	"accounts": List[PublicKey],
+	"balances": Dict[PublicKey, Int]
+}
+```
 
+`/blockindex`
+Returns a combination of blocks and account information:
+```
+[
+	{
+		"header": 
+			{
+				"beezKeeper": Dict,
+				"accountStateModel": {
+					"accounts": List[PublicKey],
+					"balances": Dict[PublicKey, Int]
+				}
+			}
+		"transactions": List[Transaction],
+		"blockCount": Int,           
+		"forger": String,            
+		"lastHash": String,          
+		"signature": String,         
+		"timestamp": Timestamp,
+	}
+]
+```
+
+### Transaction endpoint (POST)
+`/transaction`
+This endpoint is used to pass transactions to the blockchain:
+```
+{
+	"id": UUID,                                                 // Transaction's id
+	"senderPublicKey": PublicKey,
+	"receiverPublicKey": PublicKey,
+	"amount": Int,
+	"type": Literal["EXCHANGE", "TRANSFER", "STAKE"],
+	"timestamp": Timestamp,
+	"signature": String,
+	"py/object": "beez.transaction.transaction.Transaction"    // internal 
+}
+```
+The endpoint returns:
+```
+{
+	"message": "Received transaction"
+}
+```
