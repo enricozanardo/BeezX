@@ -2,6 +2,7 @@
 
 ### [Unreleased] - yyyy-mm-dd
 
+- Implemented transaction covered check when transaction is handled.
 - Added changelog ([#7]([https://github.com/onezerobinary/BeezX/issues/7])).
 
 ### v1.0 - 2022-11-29
