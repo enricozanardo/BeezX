@@ -2,9 +2,11 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, cast
 
+from whoosh.fields import Schema, TEXT, KEYWORD, ID, NUMERIC  # type: ignore
 from beez.consensus.lot import Lot
 from beez.beez_utils import BeezUtils
 from beez.keys.genesis_public_key import GenesisPublicKey
+from beez.index.index_engine import PosModelEngine
 
 if TYPE_CHECKING:
     from beez.types import Stake, PublicKeyString
@@ -15,23 +17,39 @@ class ProofOfStake:
     keeps track of the stakes of each account
     """
 
-    def __init__(self):
-        self.stakers_state: dict[str, int] = {}
-        self.set_genesis_node_stake()
+    def __init__(self, add_genesis=True):
+        self.stake_index = PosModelEngine.get_engine(
+            Schema(
+                id=ID(stored=True),
+                type=KEYWORD(stored=True),
+                account_id=TEXT(stored=True),
+                stake=NUMERIC(stored=True),
+            )
+        )
+        if add_genesis:
+            self.set_genesis_node_stake()
 
     def serialize(self):
         """Serialize the PoS object to json format."""
-        return self.stakers_state
+        stake_state = {}
+        stake_docs = self.stake_index.query(
+            query="STAKE", fields=["type"], highlight=True
+        )
+        for doc in stake_docs:
+            stake_state[doc["account_id"]] = doc["stake"]
+        return stake_state
 
-    def _deserialize(self, serialized_stakers, index=True):  # pylint: disable=unused-argument
+    def _deserialize(
+        self, serialized_stakers, index=True
+    ):  # pylint: disable=unused-argument
         """Load PoS object from json serialization."""
         for staker, stake in serialized_stakers.items():
-            self.update(staker, stake, rewrite=True)
+            self.update(staker, stake)
 
     @staticmethod
     def deserialize(serialized_stakers, index=True):
         """Returns a new PoS object from a json serialization."""
-        pos = ProofOfStake()
+        pos = ProofOfStake(add_genesis=False)
         pos._deserialize(serialized_stakers, index)  # pylint: disable=protected-access
         return pos
 
@@ -43,28 +61,70 @@ class ProofOfStake:
 
     def stakers(self) -> list[str]:
         """Returns the stakers public keys."""
-        return list(self.stakers_state.keys())
+        staker_public_keys = []
+        stake_docs = self.stake_index.query(
+            query="STAKE", fields=["type"], highlight=True
+        )
+        for doc in stake_docs:
+            staker_public_keys.append(doc["account_id"])
+        return staker_public_keys
 
-    def update(self, public_key_string: PublicKeyString, stake: Stake, rewrite: bool=False):
+    def update(
+        self, public_key_string: PublicKeyString, stake: Stake
+    ):
         """Updates the stake of the given public key by stake."""
-        if not rewrite and public_key_string in self.stakers_state.keys():  # pylint: disable=consider-iterating-dictionary
-            self.stakers_state[public_key_string] += stake
+        key_id = BeezUtils.hash(
+            public_key_string.replace("'", "").replace("\n", "")
+        ).hexdigest()
+        if (
+            len(self.stake_index.query(query=key_id, fields=["id"], highlight=True))
+            == 0
+        ):
+            self.stake_index.index_documents(
+                [
+                    {
+                        "id": key_id,
+                        "type": "STAKE",
+                        "account_id": public_key_string,
+                        "stake": stake,
+                    }
+                ]
+            )
         else:
-            self.stakers_state[public_key_string] = stake
+            old_stake = self.get(public_key_string)
+            self.stake_index.delete_document("id", key_id)
+            self.stake_index.index_documents(
+                [
+                    {
+                        "id": key_id,
+                        "type": "STAKE",
+                        "account_id": public_key_string,
+                        "stake": old_stake + stake,
+                    }
+                ]
+            )
 
     def get(self, identifier) -> "Stake":
         """Returns the stake of the given public key."""
-        if identifier in self.stakers_state.keys():  # pylint: disable=consider-iterating-dictionary
-            return self.stakers_state[identifier]
-        return cast("Stake", 0)
+        key_id = BeezUtils.hash(
+            identifier.replace("'", "").replace("\n", "")
+        ).hexdigest()
+        if len(self.stake_index.query(query=key_id, fields=["id"], highlight=True)) == 0:
+            self.update(id, 0)
+        return cast(
+            "Stake",
+            int(
+                self.stake_index.query(query=key_id, fields=["id"], highlight=True)[
+                    0
+                ]["stake"]
+            ),
+        )
 
     def validator_lots(self, seed: str) -> List[Lot]:
         "Returns the lots of all validators."
         lots: List[Lot] = []
         for validator in self.stakers():
-            for stake in range(
-                self.get(validator)
-            ):
+            for stake in range(self.get(validator)):
                 lots.append(Lot(validator, cast("Stake", stake + 1), seed))
         return lots
 
