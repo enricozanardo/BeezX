@@ -320,7 +320,7 @@ class Blockchain:
         for pool_transaction in pool_transactions:
             if pool_transaction.sender_public_key == transaction.sender_public_key:
                 sender_outgoing_from_pool += transaction.amount
-        return sender_balance >= sender_outgoing_from_pool
+        return sender_balance >= sender_outgoing_from_pool + transaction.amount
 
 
     def blockcount_valid(self, block: Block):
