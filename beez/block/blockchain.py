@@ -301,6 +301,23 @@ class Blockchain:
         if sender_balance >= transaction.amount:
             return True
         return False
+    
+    def transaction_covered_inclusive_pool_transactions(self, transaction: Transaction, pool_transactions: List[Transaction]):
+        """
+        Check if a transaction is covered also keeping the transactions within the 
+        transaction pool in mind.
+        """
+        if transaction.transaction_type == TransactionType.EXCHANGE.name:
+            return True
+        sender_balance = self.account_state_model.get_balance(
+            transaction.sender_public_key
+        )
+        sender_outgoing_from_pool = 0
+        for pool_transaction in pool_transactions:
+            if pool_transaction.sender_public_key == transaction.sender_public_key:
+                sender_outgoing_from_pool += transaction.amount
+        return sender_balance >= sender_outgoing_from_pool
+
 
     def blockcount_valid(self, block: Block):
         """Returns wheter a given block could be the next block based on its block count."""

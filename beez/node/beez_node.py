@@ -98,7 +98,10 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
         transaction_exist = self.transaction_pool.transaction_exists(transaction)
 
         # transaction covered
-        transaction_covered = self.blockchain.transaction_covered(transaction)
+        transaction_covered = self.blockchain.transaction_covered_inclusive_pool_transactions(
+            transaction,
+            self.transaction_pool.transactions()
+        )
 
         # already exist in the Blockchain
         # TODO: fix problem that deserialization of all blocks to check if tx exists
