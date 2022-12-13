@@ -268,7 +268,7 @@ class Blockchain:
                 added_transaction_ids.append(transaction.identifier)
             else:
                 logger.info(
-                    f"""This transaction {transaction.identifier} is not covered
+                    f"""This transaction {transaction.identifier}: {transaction.sender_public_key} is not covered
                     [no enogh tokes ({transaction.amount})] or already added to covered
                     transactions."""
                 )

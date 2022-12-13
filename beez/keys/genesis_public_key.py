@@ -1,6 +1,7 @@
 """Test public key."""
 
 import pathlib
+from beez.wallet.wallet import Wallet
 
 
 class GenesisPublicKey:     # pylint: disable=too-few-public-methods
@@ -17,3 +18,4 @@ class GenesisPublicKey:     # pylint: disable=too-few-public-methods
         self.priv_key = open(   # pylint: disable=consider-using-with
             f"{current_path}/beez/keys/genesisPrivateKey.pem", "r", encoding="utf-8"
         ).read()
+        self.private_key_path = f"{current_path}/beez/keys/genesisPrivateKey.pem"

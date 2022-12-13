@@ -39,6 +39,10 @@ class Wallet:
         self.address: "WalletAddress" = cast("WalletAddress", "bz" + hash_value.hexdigest()[0:42])
         logger.info(f"Address: {self.address}")
 
+    def from_pem(self, pem):
+        """Creates an new wallet from a given Private Key PEM."""
+        self.key_pair = RSA.import_key(pem)
+
     def from_key(self, file):
         """Creates a new wallet from a given key."""
         key = ""
@@ -59,7 +63,7 @@ class Wallet:
         """Checks if a given signature is valid based on data and public key."""
         signature = bytes.fromhex(signature)
         data_hash = BeezUtils.hash(data)
-        public_key = RSA.importKey(public_key_string)
+        public_key = RSA.importKey(bytes.fromhex(public_key_string))
         # providing the pubKey is able to validate the signature
         signature_scheme_object = PKCS1_v1_5.new(public_key)
         signature_valid = signature_scheme_object.verify(data_hash, signature)  # type: ignore # pylint: disable=not-callable
@@ -69,7 +73,7 @@ class Wallet:
     def public_key_string(self) -> PublicKeyString:
         """Returns the public key in string format."""
         public_key_string: PublicKeyString = (
-            self.key_pair.publickey().exportKey("PEM").decode("utf-8")
+            self.key_pair.publickey().exportKey().hex()
         )
 
         return public_key_string
