@@ -1,8 +1,6 @@
 """Test public key."""
 
 import pathlib
-from beez.wallet.wallet import Wallet
-
 
 class GenesisPublicKey:     # pylint: disable=too-few-public-methods
     """
