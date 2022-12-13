@@ -104,7 +104,12 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
         # TODO: fix problem that deserialization of all blocks to check if tx exists
         transaction_in_block = self.blockchain.transaction_exist(transaction)
 
-        if not transaction_exist and not transaction_in_block and signature_valid and transaction_covered:
+        if (
+            not transaction_exist
+            and not transaction_in_block
+            and signature_valid
+            and transaction_covered
+        ):
             self.transaction_pool.add_transaction(transaction)
 
             # Propagate the transaction to other peers
