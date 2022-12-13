@@ -2,6 +2,7 @@
 
 ### [Unreleased] - yyyy-mm-dd
 
+- Substituted public keys in PEM format with corresponding hexadecimal address.
 - Added changelog ([#7]([https://github.com/onezerobinary/BeezX/issues/7])).
 
 ### v1.0 - 2022-11-29
