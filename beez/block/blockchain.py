@@ -301,10 +301,14 @@ class Blockchain:
         if sender_balance >= transaction.amount:
             return True
         return False
-    
-    def transaction_covered_inclusive_pool_transactions(self, transaction: Transaction, pool_transactions: List[Transaction]):
+
+    def transaction_covered_inclusive_pool_transactions(
+        self,
+        transaction: Transaction,
+        pool_transactions: List[Transaction]
+    ):
         """
-        Check if a transaction is covered also keeping the transactions within the 
+        Check if a transaction is covered also keeping the transactions within the
         transaction pool in mind.
         """
         if transaction.transaction_type == TransactionType.EXCHANGE.name:
