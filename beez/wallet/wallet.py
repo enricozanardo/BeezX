@@ -51,8 +51,11 @@ class Wallet:
     def sign(self, data):
         "Creates a signature based on the given data."
         data_hash = BeezUtils.hash(data)
+        encoded_hash_hex = data_hash.hexdigest().encode('utf-8')
+        data_hex = binascii.hexlify(encoded_hash_hex).decode('utf-8')
+        data_bytes = bytes.fromhex(data_hex)
         signer = eddsa.new(self.key_pair, "rfc8032")
-        signature = signer.sign(data_hash)
+        signature = signer.sign(data_bytes)
 
         return signature.hex()
 
