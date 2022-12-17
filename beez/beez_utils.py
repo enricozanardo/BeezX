@@ -2,21 +2,21 @@
 
 import json
 import jsonpickle   # type: ignore
-from Crypto.Hash import SHA256
+from Crypto.Hash import SHA512
 
 
 class BeezUtils:
     """Utility class providing frequently used functions across the project."""
     @staticmethod
     def hash(data):
-        """Takes arbitrary data and returns its corresponding SHA256 hash."""
+        """Takes arbitrary data and returns its corresponding SHA512 hash."""
         data_string = json.dumps(
-            data, default=str
+            data, default=str, separators=(',', ':')
         )  # create a string representation of the data
         data_bytes = data_string.encode(
             "utf-8"
         )  # trasform the string data into a byte representation
-        data_hash = SHA256.new(data_bytes)
+        data_hash = SHA512.new(data_bytes)
 
         return data_hash
 

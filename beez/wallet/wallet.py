@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING, List, Optional, cast
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA256
+import binascii
+import codecs
+from Crypto.PublicKey import ECC
+from Crypto.Signature import eddsa
+from Crypto.Hash import SHA512
 from loguru import logger
 
 from beez.block.header import Header
@@ -29,13 +31,13 @@ class Wallet:
 
     def __init__(self):
         # 1024 is the modulo that we are going to use.
-        self.key_pair = RSA.generate(1024)
+        self.key_pair = ECC.generate(curve="ed25519")
         self.generate_address()
         logger.info("A Wallet is generated")
 
     def generate_address(self) -> None:
         """Generate a new address."""
-        hash_value = SHA256.new(self.key_pair.public_key().exportKey().hex().encode("utf-8"))
+        hash_value = SHA512.new(self.key_pair.public_key().export_key(format="DER").hex().encode("utf-8"))
         self.address: "WalletAddress" = cast("WalletAddress", "bz" + hash_value.hexdigest()[0:42])
         logger.info(f"Address: {self.address}")
 
@@ -43,33 +45,41 @@ class Wallet:
         """Creates a new wallet from a given key."""
         key = ""
         with open(file, "r", encoding="utf-8") as keyfile:
-            key = RSA.import_key(keyfile.read())
+            key = ECC.import_key(keyfile.read())
         self.key_pair = key
 
     def sign(self, data):
         "Creates a signature based on the given data."
         data_hash = BeezUtils.hash(data)
-        signature_scheme_object = PKCS1_v1_5.new(self.key_pair)
-        signature = signature_scheme_object.sign(data_hash)
+        signer = eddsa.new(self.key_pair, "rfc8032")
+        signature = signer.sign(data_hash)
 
         return signature.hex()
 
     @staticmethod
     def signature_valid(data, signature, public_key_string: PublicKeyString) -> bool:
         """Checks if a given signature is valid based on data and public key."""
-        signature = bytes.fromhex(signature)
+        signature = codecs.decode(signature, 'hex_codec')
         data_hash = BeezUtils.hash(data)
-        public_key = RSA.importKey(public_key_string)
+        encoded_hash_hex = data_hash.hexdigest().encode('utf-8')
+        data_hex = binascii.hexlify(encoded_hash_hex).decode('utf-8')
+        data_bytes = bytes.fromhex(data_hex)
+        logger.info(f'data_hash: {BeezUtils.hash(data).hexdigest()}')
+        if not public_key_string.startswith("-----"):
+            public_key_string = codecs.decode(public_key_string, 'hex_codec')
+        public_key = ECC.import_key(public_key_string, curve_name="ed25519")
         # providing the pubKey is able to validate the signature
-        signature_scheme_object = PKCS1_v1_5.new(public_key)
-        signature_valid = signature_scheme_object.verify(data_hash, signature)  # type: ignore # pylint: disable=not-callable
-
-        return signature_valid
+        verifier = eddsa.new(public_key, 'rfc8032')
+        try:
+            verifier.verify(data_bytes, signature)
+            return True
+        except ValueError:
+            return False
 
     def public_key_string(self) -> PublicKeyString:
         """Returns the public key in string format."""
         public_key_string: PublicKeyString = (
-            self.key_pair.publickey().exportKey("PEM").decode("utf-8")
+            self.key_pair.public_key().export_key(format="PEM")
         )
 
         return public_key_string

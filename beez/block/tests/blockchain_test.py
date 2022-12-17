@@ -43,10 +43,10 @@ def test_serialize(blockchain):
         ],
         "accountStateModel": {"accounts": [], "balances": {}},
         "pos": {
-            "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----": 1
+            "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----": 1
         },
         "beezKeeper": {},
-        "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----",
+        "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----",
     }
 
 
@@ -69,10 +69,10 @@ def test_deserialize(blockchain):
             ],
             "accountStateModel": {"accounts": [], "balances": {}},
             "pos": {
-                "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----": 1
+                "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----": 1
             },
             "beezKeeper": {},
-            "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----",
+            "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----",
         }
     )
 
