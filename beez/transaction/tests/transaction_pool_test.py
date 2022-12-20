@@ -149,8 +149,8 @@ def test_forger_required(transaction_pool):
     )
     assert transaction_pool.forger_required() == False
     transaction_pool.add_transaction(exchange_tx)
-    assert transaction_pool.forger_required() == False
+    assert transaction_pool.forger_required() == True
     transaction_pool.add_transaction(exchange_tx_2)
-    assert transaction_pool.forger_required() == False
+    assert transaction_pool.forger_required() == True
     transaction_pool.add_transaction(exchange_tx_3)
     assert transaction_pool.forger_required() == True
