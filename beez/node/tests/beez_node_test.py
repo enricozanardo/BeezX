@@ -71,9 +71,9 @@ def test_handle_transaction():
     node.handle_transaction(transfer_tx)
 
     node.handle_transaction(uncovered_tx)
-    assert len(node.transaction_pool.transactions()) == 1
-    assert len(node.blockchain.blocks()) == 2
-    assert len(node.blockchain.blocks()[1].transactions) == 3
+    assert len(node.transaction_pool.transactions()) == 0
+    assert len(node.blockchain.blocks()) == 5
+    assert len(node.blockchain.blocks()[1].transactions) == 1
 
     clear_indices()
 
