@@ -211,11 +211,13 @@ class Blockchain:
     def transaction_exist(self, transaction: Transaction):
         """Check if a given transaction exists in the current blockchain state."""
         # TODO: Find a better solution to check if a transaction already exist into the blockchain!
+        response = []
         for block in self.blocks():
-            for block_transaction in block.transactions:
-                if transaction.equals(block_transaction):
-                    return True
-        return False
+            all_tx_hash = list(map(lambda x: x.identifier, block.transactions))
+            response.append(BeezUtils.tx_binary_search(all_tx_hash, transaction.identifier))
+        return any(response)
+
+    
 
     def next_forger(self) -> Optional[str]:
         """Returns the forger for of the next block."""
