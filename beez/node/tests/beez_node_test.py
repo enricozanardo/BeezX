@@ -62,13 +62,19 @@ def test_handle_transaction():
     transfer_tx = alice_wallet.create_transaction(
         bob_wallet.public_key_string(), 50, TransactionType.TRANSFER.name
     )
+    uncovered_tx = alice_wallet.create_transaction(
+        bob_wallet.public_key_string(), 5000, TransactionType.TRANSFER.name
+    )
     node.handle_transaction(exchange_tx)
     node.handle_transaction(exchange_tx_2)
     node.handle_transaction(exchange_tx_3)
     node.handle_transaction(transfer_tx)
-    assert len(node.transaction_pool.transactions()) == 0
-    assert len(node.blockchain.blocks()) == 5
-    assert len(node.blockchain.blocks()[1].transactions) == 1
+
+    node.handle_transaction(uncovered_tx)
+    assert len(node.transaction_pool.transactions()) == 1
+    assert len(node.blockchain.blocks()) == 2
+    assert len(node.blockchain.blocks()[1].transactions) == 3
+
     clear_indices()
 
 def test_handle_block():
