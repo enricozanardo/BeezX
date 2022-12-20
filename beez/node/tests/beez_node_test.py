@@ -66,9 +66,9 @@ def test_handle_transaction():
     node.handle_transaction(exchange_tx_2)
     node.handle_transaction(exchange_tx_3)
     node.handle_transaction(transfer_tx)
-    assert len(node.transaction_pool.transactions()) == 1
-    assert len(node.blockchain.blocks()) == 2
-    assert len(node.blockchain.blocks()[1].transactions) == 3
+    assert len(node.transaction_pool.transactions()) == 0
+    assert len(node.blockchain.blocks()) == 5
+    assert len(node.blockchain.blocks()[1].transactions) == 1
     clear_indices()
 
 def test_handle_block():
@@ -107,11 +107,11 @@ def test_handle_block():
     node.handle_transaction(exchange_tx_2)
     node.handle_transaction(exchange_tx_3)
 
-    block = genesis_wallet.create_block(None, [transfer_tx], BeezUtils.hash(node.blockchain.blocks()[-1].payload()).hexdigest(), 2)
-    invalid_block = genesis_wallet.create_block(None, [transfer_tx], BeezUtils.hash(node.blockchain.blocks()[-1].payload()).hexdigest(), 2)
+    block = genesis_wallet.create_block(None, [transfer_tx], BeezUtils.hash(node.blockchain.blocks()[-1].payload()).hexdigest(), 4)
+    invalid_block = genesis_wallet.create_block(None, [transfer_tx], BeezUtils.hash(node.blockchain.blocks()[-1].payload()).hexdigest(), 4)
     node.handle_block(block)
     node.handle_block(invalid_block)
-    assert len(node.blockchain.blocks()) == 3
+    assert len(node.blockchain.blocks()) == 5
     assert len(node.blockchain.blocks()[-1].transactions) == 1
     assert node.blockchain.blocks()[-1].transactions[0].identifier == transfer_tx.identifier
     clear_indices()
@@ -160,16 +160,16 @@ def test_handle_challenge_tx():
     challenge_tx = alice_wallet.create_challenge_transaction(10, TransactionType.CHALLENGE.name, challenge)
     node.handle_challenge_tx(challenge_tx)
     
-    assert len(node.blockchain.blocks()) == 3
-    assert len(node.blockchain.blocks()[-1].transactions) == 3
+    assert len(node.blockchain.blocks()) == 7
+    assert len(node.blockchain.blocks()[-1].transactions) == 1
 
     last_block_tx_ids = []
     for tx in node.blockchain.blocks()[-1].transactions:
         last_block_tx_ids.append(tx.identifier)
 
     assert challenge_tx.identifier in last_block_tx_ids
-    assert exchange_tx_5.identifier in last_block_tx_ids
-    assert exchange_tx_4.identifier in last_block_tx_ids
+    assert exchange_tx_5.identifier not in last_block_tx_ids
+    assert exchange_tx_4.identifier not in last_block_tx_ids
 
     clear_indices()
 
@@ -200,7 +200,7 @@ def test_forge():
 
     node.forge()
 
-    assert len(node.blockchain.blocks()) == 2
+    assert len(node.blockchain.blocks()) == 4
     assert len(node.transaction_pool.transactions()) == 0
     clear_indices()
 

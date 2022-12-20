@@ -2,7 +2,8 @@
 
 ### [Unreleased] - yyyy-mm-dd
 
-- Added stake index to use for proof of stake module.
+
+- Changed transaction pool threshold to one transaction.
 - Added changelog ([#7]([https://github.com/onezerobinary/BeezX/issues/7])).
 
 ### v1.0 - 2022-11-29

@@ -52,7 +52,7 @@ class TransactionPool:
         check when is time to forge a new Block of transactions
         """
         # 1 = Mine a Block every time that a transaction is present into the transaction pool.
-        number_of_transactions_for_each_block = 3
+        number_of_transactions_for_each_block = 1
         if len(self.transactions()) >= number_of_transactions_for_each_block:
             return True
         return False
