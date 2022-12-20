@@ -1,14 +1,14 @@
 """Utility functions used across the project."""
 
 import json
-import jsonpickle   # type: ignore
-from Crypto.Hash import SHA256
-
 import typing
+import jsonpickle  # type: ignore
+from Crypto.Hash import SHA256
 
 
 class BeezUtils:
     """Utility class providing frequently used functions across the project."""
+
     @staticmethod
     def hash(data):
         """Takes arbitrary data and returns its corresponding SHA256 hash."""
@@ -42,7 +42,8 @@ class BeezUtils:
         Time complexity: O(log(n))
 
         --Parameters
-         - all_tx_hash: (List[str]) list of the UIDs for all the transactions already in the pool transactions
+         - all_tx_hash: (List[str]) list of the UIDs for all the transactions already in the
+           pool transactions
          - current_tx_has: (str) the transaction UID to be searched.
 
         --Return
@@ -55,7 +56,7 @@ class BeezUtils:
         low, high = 0, len(all_tx_hash) - 1
         while low <= high:
             mid = (low + high) // 2
-            if all_tx_hash[mid] == current_tx_hash:
+            if all_tx_hash[mid] == current_tx_hash:  # pylint: disable=no-else-return
                 return True
             elif all_tx_hash[mid] < current_tx_hash:
                 low = mid + 1

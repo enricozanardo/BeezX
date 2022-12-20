@@ -217,7 +217,6 @@ class Blockchain:
             response.append(BeezUtils.tx_binary_search(all_tx_hash, transaction.identifier))
         return any(response)
 
-    
 
     def next_forger(self) -> Optional[str]:
         """Returns the forger for of the next block."""
