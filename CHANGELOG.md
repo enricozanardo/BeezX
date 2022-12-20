@@ -2,6 +2,7 @@
 
 ### [Unreleased] - yyyy-mm-dd
 
+
 - Changed transaction pool threshold to one transaction.
 - Added changelog ([#7]([https://github.com/onezerobinary/BeezX/issues/7])).
 
