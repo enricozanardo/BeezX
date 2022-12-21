@@ -48,6 +48,7 @@ def test_set_genesis_node_stake(pos):
     genesis_wallet.from_pem(GenesisPublicKey().priv_key)
     assert pos.get(genesis_wallet.public_key_string()) == 1
 
+
 def test_stakers(pos):
     genesis_wallet = Wallet()
     genesis_wallet.from_pem(GenesisPublicKey().priv_key)

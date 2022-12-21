@@ -13,6 +13,7 @@ from beez.beez_utils import BeezUtils
 
 def remove_blockchain():
     shutil.rmtree("blocks_indices")
+    shutil.rmtree("pos_indices")
 
 
 @pytest.fixture(scope="function")
