@@ -6,7 +6,8 @@ from whoosh.fields import Schema, TEXT, KEYWORD, ID, NUMERIC  # type: ignore
 from beez.consensus.lot import Lot
 from beez.beez_utils import BeezUtils
 from beez.keys.genesis_public_key import GenesisPublicKey
-from beez.index.index_engine import PosModelEngine
+from beez.wallet.wallet import Wallet
+
 
 if TYPE_CHECKING:
     from beez.types import Stake, PublicKeyString
@@ -55,9 +56,9 @@ class ProofOfStake:
 
     def set_genesis_node_stake(self):
         """Sets the state of the genesis node."""
-        genesis_public_key = GenesisPublicKey()
-        # give to the genesis staker 1 stake to allow him to forge the initial Block
-        self.update(genesis_public_key.pub_key, 1)
+        genesis_wallet = Wallet()
+        genesis_wallet.from_pem(GenesisPublicKey().priv_key)
+        self.update(genesis_wallet.public_key_string(), 1)
 
     def stakers(self) -> list[str]:
         """Returns the stakers public keys."""

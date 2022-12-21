@@ -2,7 +2,6 @@
 
 import pathlib
 
-
 class GenesisPublicKey:     # pylint: disable=too-few-public-methods
     """
     This key allow the Blockchain to start to forge the first block
@@ -17,3 +16,4 @@ class GenesisPublicKey:     # pylint: disable=too-few-public-methods
         self.priv_key = open(   # pylint: disable=consider-using-with
             f"{current_path}/beez/keys/genesisPrivateKey.pem", "r", encoding="utf-8"
         ).read()
+        self.private_key_path = f"{current_path}/beez/keys/genesisPrivateKey.pem"

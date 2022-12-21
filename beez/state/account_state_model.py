@@ -72,7 +72,7 @@ class AccountStateModel:
 
     def update_balance(self, public_key_string: PublicKeyString, amount: int):
         """Updates the balance of account by amount."""
-        logger.info("Update balance: %s, amount: %s", public_key_string, str(amount))
+        logger.info(f"Update balance: {public_key_string}, amount: {str(amount)}")
         if public_key_string not in self.accounts_index:
             self.add_account(public_key_string)
 

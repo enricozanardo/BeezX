@@ -16,11 +16,11 @@ from beez.keys.genesis_public_key import GenesisPublicKey
 from beez.block.header import Header
 from beez.challenge.beez_keeper import BeezKeeper
 from beez.index.index_engine import BlockIndexEngine
+from beez.wallet.wallet import Wallet
 
 
 if TYPE_CHECKING:
     from beez.transaction.transaction import Transaction
-    from beez.wallet.wallet import Wallet
     from beez.challenge.challenge import Challenge
 
 
@@ -41,7 +41,9 @@ class Blockchain:
         self.account_state_model = AccountStateModel()
         self.pos = ProofOfStake()
         self.beez_keeper = BeezKeeper()
-        self.genesis_public_key = GenesisPublicKey().pub_key
+        genesis_wallet = Wallet()
+        genesis_wallet.from_pem(GenesisPublicKey().priv_key)
+        self.genesis_public_key = genesis_wallet.public_key_string()
         self.block_count = -1
         self.in_memory_blocks: List[Block] = []
 
@@ -269,9 +271,9 @@ class Blockchain:
                 added_transaction_ids.append(transaction.identifier)
             else:
                 logger.info(
-                    f"""This transaction {transaction.identifier} is not covered
-                    [no enogh tokes ({transaction.amount})] or already added to covered
-                    transactions."""
+                    f"""This transaction {transaction.identifier}: {transaction.sender_public_key}
+                    is not covered [no enogh tokes ({transaction.amount})] or already added
+                    to covered transactions."""
                 )
 
         return covered_transactions

@@ -22,29 +22,38 @@ def pos():
     clear_indices()
 
 def test_pos_creation(pos):
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
     assert pos is not None
-    assert pos.get(GenesisPublicKey().pub_key) == 1
+    assert pos.get(genesis_wallet.public_key_string()) == 1
 
 def test_serialize(pos):
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
     assert pos.serialize() == {
-        GenesisPublicKey().pub_key: 1
+        genesis_wallet.public_key_string(): 1
     }
 
 def test_deserialize():
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
     local_pos = ProofOfStake.deserialize({
-        GenesisPublicKey().pub_key: 25
+        genesis_wallet.public_key_string(): 25
     })
     assert local_pos is not None
-    assert local_pos.get(GenesisPublicKey().pub_key) == 25
+    assert local_pos.get(genesis_wallet.public_key_string()) == 25
 
-def test_set_genesis_node_stake():
-    shutil.rmtree("pos_indices", ignore_errors=True)
-    local_pos = ProofOfStake()
-    assert local_pos.get(GenesisPublicKey().pub_key) == 1
+def test_set_genesis_node_stake(pos):
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
+    assert pos.get(genesis_wallet.public_key_string()) == 1
+
 
 def test_stakers(pos):
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
     assert len(pos.stakers()) == 1
-    assert pos.stakers()[0] == GenesisPublicKey().pub_key
+    assert pos.stakers()[0] == genesis_wallet.public_key_string()
 
 def test_update(pos):
     currentPath = pathlib.Path().resolve()
@@ -58,11 +67,15 @@ def test_update(pos):
     assert len(pos.stakers()) == 2
 
 def test_get(pos):
-    assert pos.get(GenesisPublicKey().pub_key) == 1
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
+    assert pos.get(genesis_wallet.public_key_string()) == 1
 
 def test_validator_lot(pos):
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
     assert len(pos.validator_lots("seed")) == 1
-    assert pos.validator_lots("seed")[0].public_key_string == GenesisPublicKey().pub_key
+    assert pos.validator_lots("seed")[0].public_key_string == genesis_wallet.public_key_string()
 
 def test_winner_lot(pos):
     currentPath = pathlib.Path().resolve()
@@ -74,6 +87,8 @@ def test_winner_lot(pos):
     assert pos.winner_lot([lot], "seed_string") == lot
 
 def test_forger(pos):
+    genesis_wallet = Wallet()
+    genesis_wallet.from_pem(GenesisPublicKey().priv_key)
     blockchain = Blockchain()
     last_block_hash = BeezUtils.hash(blockchain.blocks()[-1].payload()).hexdigest()
-    assert pos.forger(last_block_hash) == GenesisPublicKey().pub_key
+    assert pos.forger(last_block_hash) == genesis_wallet.public_key_string()
