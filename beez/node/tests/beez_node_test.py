@@ -9,6 +9,7 @@ from beez.wallet.wallet import Wallet
 from beez.block.block import Block
 from beez.block.blockchain import Blockchain
 from beez.transaction.challenge_tx import ChallengeTX
+from beez.socket.message_type import MessageType
 from beez.challenge.challenge import Challenge
 from typing import cast
 from beez.types import PublicKeyString
@@ -21,6 +22,7 @@ def clear_indices():
     shutil.rmtree("challenge_indices", ignore_errors=True)
     shutil.rmtree("pos_indices", ignore_errors=True)
     shutil.rmtree("txp_indices", ignore_errors=True)
+    shutil.rmtree("address_indices", ignore_errors=True)
 
 def shared_func(a: int, b: int):
     return a+b
@@ -251,4 +253,30 @@ def test_handle_blockchain():
     node.handle_blockchain(local_blockchain)
 
     assert len(node.blockchain.blocks()) == 2
+    clear_indices()
+
+def test_handle_address_registration():
+    node = BeezNode(port=4005)
+
+    assert node.get_public_key_from_address("bzx302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913") is None
+    
+    node.handle_address_registration(
+        public_key_hex="302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913",
+        address="bzx302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+    )
+    assert node.get_public_key_from_address("bzx302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913") == "302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+    clear_indices()
+
+def test_get_registered_addresses():
+    node = BeezNode(port=4006)
+    assert node.get_registered_addresses() == []
+    node.handle_address_registration(
+        public_key_hex="302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913",
+        address="bzx302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+    )
+    assert len(node.get_registered_addresses()) == 1
+    registration = node.get_registered_addresses()[0]
+    assert registration["id"] == "302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+    assert registration["public_key_hex"] == "302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+    assert registration["address"] == "bzx302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
     clear_indices()
