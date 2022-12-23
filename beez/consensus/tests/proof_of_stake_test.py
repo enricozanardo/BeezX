@@ -37,8 +37,10 @@ def test_deserialize():
     assert local_pos is not None
     assert local_pos.get(GenesisPublicKey().pub_key) == 25
 
-def test_set_genesis_node_stake(pos):
-    assert pos.get(GenesisPublicKey().pub_key) == 1
+def test_set_genesis_node_stake():
+    shutil.rmtree("pos_indices", ignore_errors=True)
+    local_pos = ProofOfStake()
+    assert local_pos.get(GenesisPublicKey().pub_key) == 1
 
 def test_stakers(pos):
     assert len(pos.stakers()) == 1
