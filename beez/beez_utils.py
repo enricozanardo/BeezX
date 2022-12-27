@@ -13,7 +13,7 @@ class BeezUtils:
     def hash(data):
         """Takes arbitrary data and returns its corresponding SHA512 hash."""
         data_string = json.dumps(
-            data, default=str
+            data, default=str, separators=(',', ':')
         )  # create a string representation of the data
         data_bytes = data_string.encode(
             "utf-8"

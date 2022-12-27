@@ -32,10 +32,7 @@ def test_from_key():
     bob_wallet.from_key(bob_private_key_path)
 
     assert bob_wallet.public_key_string() == """-----BEGIN PUBLIC KEY-----
-MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHwThmqbokUFapc59gXvkvxPprCw
-3W/Wuqe3Uk9ydREKN6txNfnLipafxTIwe7fjtaKFBONYDz9kM0ewdtLawDQuYMwL
-VAz50GFbXKpydXB7J/Yr+7WKYFq3Ww5hwcteAMGkf8QRJWleZF+EebkBZX/QHJ+c
-WdwHw8z+UktpWafXAgMBAAE=
+MCowBQYDK2VwAyEA64XvCF47cEFjKYKrYoPfG9YkoRYvrhJWHIgl5hdsi08=
 -----END PUBLIC KEY-----"""
 
 def test_sign(wallet):
@@ -59,10 +56,7 @@ def test_public_key_string():
     bob_wallet = Wallet()
     bob_wallet.from_key(bob_private_key_path)
     assert bob_wallet.public_key_string() == """-----BEGIN PUBLIC KEY-----
-MIGeMA0GCSqGSIb3DQEBAQUAA4GMADCBiAKBgHwThmqbokUFapc59gXvkvxPprCw
-3W/Wuqe3Uk9ydREKN6txNfnLipafxTIwe7fjtaKFBONYDz9kM0ewdtLawDQuYMwL
-VAz50GFbXKpydXB7J/Yr+7WKYFq3Ww5hwcteAMGkf8QRJWleZF+EebkBZX/QHJ+c
-WdwHw8z+UktpWafXAgMBAAE=
+MCowBQYDK2VwAyEA64XvCF47cEFjKYKrYoPfG9YkoRYvrhJWHIgl5hdsi08=
 -----END PUBLIC KEY-----"""
 
 def test_challenge_transaction(wallet):
