@@ -14,7 +14,11 @@ if TYPE_CHECKING:
 class MessageAddressRegistration(Message):  # pylint: disable=too-few-public-methods
     """Message address registration."""
 
-    def __init__(self, sender_connector: SocketConnector, message_type: MessageType, public_key_hex: str, address: str):
+    def __init__(
+        self,
+        sender_connector: SocketConnector,
+        message_type: MessageType,
+        public_key_hex: str,
+    ):
         super().__init__(sender_connector, message_type)
         self.public_key_hex = public_key_hex
-        self.address = address

@@ -165,8 +165,8 @@ class Blockchain:
         # case of Stake transaction [involve POS]
         if transaction.transaction_type == TransactionType.STAKE.name:
             logger.info("STAKE")
-            sender = transaction.sender_public_key
-            receiver = transaction.receiver_public_key
+            sender = transaction.sender_address
+            receiver = transaction.receiver_address
             if sender == receiver:
                 amount: int = transaction.amount
                 self.pos.update(sender, amount)
@@ -177,8 +177,8 @@ class Blockchain:
             logger.info("CHALLENGE")
             # cast the kind of transaction
             challenge_transaction: ChallengeTX = cast(ChallengeTX, transaction)
-            sender = challenge_transaction.sender_public_key
-            receiver = transaction.receiver_public_key
+            sender = challenge_transaction.sender_address
+            receiver = transaction.receiver_address
             if sender == receiver:
                 # Check with the challenge Keeeper
                 challenge: Challenge = challenge_transaction.challenge
@@ -200,8 +200,8 @@ class Blockchain:
 
         else:
             # case of [TRANSACTION]
-            sender = transaction.sender_public_key
-            receiver = transaction.receiver_public_key
+            sender = transaction.sender_address
+            receiver = transaction.receiver_address
             tx_amount: int = transaction.amount
             # first update the sender balance
             self.account_state_model.update_balance(sender, -tx_amount)
@@ -296,7 +296,7 @@ class Blockchain:
             return True
 
         sender_balance = self.account_state_model.get_balance(
-            transaction.sender_public_key
+            transaction.sender_address
         )
 
         if sender_balance >= transaction.amount:
@@ -315,11 +315,11 @@ class Blockchain:
         if transaction.transaction_type == TransactionType.EXCHANGE.name:
             return True
         sender_balance = self.account_state_model.get_balance(
-            transaction.sender_public_key
+            transaction.sender_address
         )
         sender_outgoing_from_pool = 0
         for pool_transaction in pool_transactions:
-            if pool_transaction.sender_public_key == transaction.sender_public_key:
+            if pool_transaction.sender_address == transaction.sender_address:
                 sender_outgoing_from_pool += transaction.amount
         return sender_balance >= sender_outgoing_from_pool + transaction.amount
 
@@ -341,9 +341,9 @@ class Blockchain:
     def forger_valid(self, block: Block):
         """Checks if the forger of a given block is valid."""
         forger_public_key = str(self.pos.forger(block.last_hash)).strip()
-        proposed_block_forger = str(block.forger).strip()
+        proposed_block_forger = str(block.forger_address).strip()
 
-        if forger_public_key == proposed_block_forger:
+        if BeezUtils.address_from_public_key(forger_public_key) == proposed_block_forger:
             return True
         return False
 

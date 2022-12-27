@@ -24,9 +24,6 @@ def blockchain():
 def test_wallet_creation(wallet):
     assert wallet is not None
 
-def test_generate_address(wallet):
-    assert wallet.address != ""
-
 def test_from_key():
     currentPath = pathlib.Path().resolve()
     bob_private_key_path = f"{currentPath}/beez/keys/bobPrivateKey.pem"

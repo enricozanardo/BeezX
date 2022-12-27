@@ -8,7 +8,9 @@ from dotenv import load_dotenv
 from loguru import logger
 import GPUtil  # type: ignore
 
-from beez.beez_utils import BeezUtils
+
+from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
+
 from beez.wallet.wallet import Wallet
 from beez.socket.socket_communication import SocketCommunication
 from beez.api.node_api import NodeAPI
@@ -22,7 +24,7 @@ from beez.block.blockchain import Blockchain
 from beez.socket.message_block import MessageBlock
 from beez.socket.message_blockchain import MessageBlockchain
 from beez.socket.message import Message
-from whoosh.fields import Schema, TEXT, KEYWORD, ID # type: ignore
+from beez.beez_utils import BeezUtils
 from beez.index.index_engine import AddressIndexEngine
 
 if TYPE_CHECKING:
@@ -55,7 +57,7 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
             Schema(
                 id=ID(stored=True),
                 type=KEYWORD(stored=True),
-                public_key_hex=TEXT(stored=True),
+                public_key_pem=TEXT(stored=True),
                 address=TEXT(stored=True),
             )
         )
@@ -96,50 +98,55 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
 
     def get_registered_addresses(self) -> list[dict[str, str]]:
         """Returns a dict of address to public-key-hex mappings."""
-        registrations = self.address_index.query("ADDR", ["id", "type", "public_key_hex", "address"], highlight=True)
+        registrations = self.address_index.query(
+            "ADDR", ["id", "type", "public_key_pem", "address"], highlight=True
+        )
         print(registrations)
         return registrations
 
     def get_public_key_from_address(self, address: str) -> Optional[str]:
-        """Returns the corresponding public_key_hex for a given address or None"""
-        registrations = self.address_index.query("ADDR", ["id", "type", "public_key_hex", "address"], highlight=True)
+        """Returns the corresponding public_key_pem for a given address or None"""
+        registrations = self.address_index.query(
+            "ADDR", ["id", "type", "public_key_pem", "address"], highlight=True
+        )
         public_key = None
         for doc in registrations:
             if doc["address"] == address:
-                public_key = doc["public_key_hex"]
+                public_key = doc["public_key_pem"]
         return public_key
 
     # TODO: address request
 
-    def handle_address_registration(self, public_key_hex: str, address: str) -> None:
+    def handle_address_registration(self, public_key_pem: str, broadcast=True) -> None:
         """Handles an incomming address to public-key registration."""
-        logger.info(f"Handle the incomming address to public-key mapping {address}:{public_key_hex}")
+        logger.info(f"Handle the incomming to public-key {public_key_pem}")
+        beez_address = BeezUtils.address_from_public_key(public_key_pem)
+        logger.info(f"Public key to address mapping {public_key_pem}: {beez_address}")
         # 1. check if mapping already in index
-        public_key = self.get_public_key_from_address(address)
+        public_key = self.get_public_key_from_address(beez_address)
         # 2. add to index if not already exists
-        if not public_key and address not in self.address_buffer:
-            self.address_buffer[address] = public_key_hex
+        if not public_key and beez_address not in self.address_buffer:
+            self.address_buffer[beez_address] = public_key_pem
             self.address_index.index_documents(
                 [
                     {
-                        "id": public_key_hex,
+                        "id": public_key_pem,
                         "type": "ADDR",
-                        "public_key_hex": public_key_hex,
-                        "address": address
+                        "public_key_pem": public_key_pem,
+                        "address": beez_address,
                     }
                 ]
             )
             # 3. broadcast between nodes
-            address_registration_message = MessageAddressRegistration(
-                self.p2p.socket_connector,
-                MessageType.ADDRESSREGISTRATION,
-                public_key_hex,
-                address
-            )
-            encoded_message = BeezUtils.encode(address_registration_message)
-            self.p2p.broadcast(encoded_message)
-            self.address_buffer.pop(address, None)
-
+            if broadcast:
+                address_registration_message = MessageAddressRegistration(
+                    self.p2p.socket_connector,
+                    MessageType.ADDRESSREGISTRATION,
+                    public_key,
+                )
+                encoded_message = BeezUtils.encode(address_registration_message)
+                self.p2p.broadcast(encoded_message)
+            self.address_buffer.pop(beez_address, None)
 
     # Manage requests that come from the NodeAPI
     def handle_transaction(self, transaction: Transaction):
@@ -148,18 +155,21 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
 
         data = transaction.payload()
         signature = transaction.signature
-        signature_public_key = transaction.sender_public_key
+        signature_address = transaction.sender_address
 
         # # # is valid?
-        signature_valid = Wallet.signature_valid(data, signature, signature_public_key)
+        # get public_key from address
+        public_key = self.get_public_key_from_address(signature_address)
+        signature_valid = Wallet.signature_valid(data, signature, public_key)
 
         # already exist in the transaction pool
         transaction_exist = self.transaction_pool.transaction_exists(transaction)
 
         # transaction covered
-        transaction_covered = self.blockchain.transaction_covered_inclusive_pool_transactions(
-            transaction,
-            self.transaction_pool.transactions()
+        transaction_covered = (
+            self.blockchain.transaction_covered_inclusive_pool_transactions(
+                transaction, self.transaction_pool.transactions()
+            )
         )
 
         # already exist in the Blockchain
@@ -194,7 +204,8 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
         if not self.pending_block_handling and not self.pending_blockchain_request:
             self.pending_block_handling = True
 
-            forger = block.forger
+            forger_address = block.forger_address
+            forger_public_key = self.get_public_key_from_address(forger_address)
             block_hash = block.payload()
             signature = block.signature
 
@@ -205,9 +216,15 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
             forger_valid = self.blockchain.forger_valid(block)
             transaction_valid = self.blockchain.transaction_valid(block.transactions)
 
-            signature_valid = Wallet.signature_valid(block_hash, signature, forger)
+            signature_valid = Wallet.signature_valid(
+                block_hash, signature, forger_public_key
+            )
 
             logger.info(f"What is wrong? blockCountValid: {block_count_valid}")
+            logger.info(f"What is wrong? last_block_hash_valid: {last_block_hash_valid}")
+            logger.info(f"What is wrong? forger_valid: {forger_valid}")
+            logger.info(f"What is wrong? transaction_valid: {transaction_valid}")
+            logger.info(f"What is wrong? signature_valid: {signature_valid}")
 
             if (
                 not block_count_valid
@@ -263,7 +280,8 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
 
         data = challenge_tx.payload()
         signature = challenge_tx.signature
-        signature_public_key = challenge_tx.sender_public_key
+        signature_address = challenge_tx.sender_address
+        signature_public_key = self.get_public_key_from_address(signature_address)
 
         # # # is valid?
         signature_valid = Wallet.signature_valid(data, signature, signature_public_key)

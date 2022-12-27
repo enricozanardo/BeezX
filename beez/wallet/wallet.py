@@ -1,10 +1,9 @@
 """Beez blockchain - wallet."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Optional, cast
+from typing import TYPE_CHECKING, List, Optional
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA256
 from loguru import logger
 
 from beez.block.header import Header
@@ -30,14 +29,7 @@ class Wallet:
     def __init__(self):
         # 1024 is the modulo that we are going to use.
         self.key_pair = RSA.generate(1024)
-        self.generate_address()
         logger.info("A Wallet is generated")
-
-    def generate_address(self) -> None:
-        """Generate a new address."""
-        hash_value = SHA256.new(self.key_pair.public_key().exportKey().hex().encode("utf-8"))
-        self.address: "WalletAddress" = cast("WalletAddress", "bz" + hash_value.hexdigest()[0:42])
-        logger.info(f"Address: {self.address}")
 
     def from_key(self, file):
         """Creates a new wallet from a given key."""
@@ -71,15 +63,23 @@ class Wallet:
         public_key_string: PublicKeyString = (
             self.key_pair.publickey().exportKey("PEM").decode("utf-8")
         )
-
         return public_key_string
+
+    def public_key_hex(self) -> str:
+        """Returns the public key in hex format"""
+        return self.key_pair.public_key().exportKey().hex()
 
     # Manage Transaction
     def create_transaction(
-        self, receiver: PublicKeyString, amount, transaction_type: TransactionType
+        self, receiver: str, amount, transaction_type: TransactionType
     ) -> Transaction:
         """Creates a new, signed transaction."""
-        transaction = Transaction(self.public_key_string(), receiver, amount, transaction_type)
+        transaction = Transaction(
+            BeezUtils.address_from_public_key(self.public_key_string()),
+            receiver,
+            amount,
+            transaction_type,
+        )
         signature = self.sign(transaction.payload())
         transaction.sign(signature)
 
@@ -91,8 +91,8 @@ class Wallet:
     ) -> ChallengeTX:
         """Creates a new, signed challenge transaction."""
         challenge_transaction = ChallengeTX(
-            self.public_key_string(),
-            self.public_key_string(),
+            BeezUtils.address_from_public_key(self.public_key_string()),
+            BeezUtils.address_from_public_key(self.public_key_string()),
             amount,
             transaction_type,
             challenge,
@@ -118,7 +118,7 @@ class Wallet:
             header,
             transactions,
             last_hash,
-            self.public_key_string(),
+            BeezUtils.address_from_public_key(self.public_key_string()),
             block_counter,
         )
 

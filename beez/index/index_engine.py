@@ -306,3 +306,4 @@ class AddressIndexEngine(Engine):
             new_engine = AddressIndexEngine(schema)
             AddressIndexEngine.engine = new_engine
         return AddressIndexEngine.engine
+        

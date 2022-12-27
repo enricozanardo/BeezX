@@ -19,13 +19,13 @@ class Transaction:
 
     def __init__(
         self,
-        sender_public_key: PublicKeyString,
-        receiver_public_key: PublicKeyString,
+        sender_address: str,
+        receiver_address: str,
         amount: int,
         transaction_type: TransactionType,
     ):
-        self.sender_public_key = sender_public_key
-        self.receiver_public_key = receiver_public_key
+        self.sender_address = sender_address
+        self.receiver_address = receiver_address
         self.amount = amount
         self.transaction_type = transaction_type
         self.identifier = uuid.uuid1().hex
@@ -40,8 +40,8 @@ class Transaction:
         """Converts the transaction to json."""
         json_block = {}
         json_block["id"] = self.identifier
-        json_block["senderPublicKey"] = self.sender_public_key
-        json_block["receiverPublicKey"] = self.receiver_public_key
+        json_block["senderAddress"] = self.sender_address
+        json_block["receiverAddress"] = self.receiver_address
         json_block["amount"] = self.amount
         json_block["type"] = self.transaction_type
         json_block["timestamp"] = self.timestamp
@@ -53,8 +53,8 @@ class Transaction:
     def from_json(json_block):
         """Creates a new transaction from a json serialization."""
         transaction = Transaction(
-            sender_public_key=json_block["senderPublicKey"],
-            receiver_public_key=json_block["receiverPublicKey"],
+            sender_address=json_block["senderAddress"],
+            receiver_address=json_block["receiverAddress"],
             amount=json_block["amount"],
             transaction_type=json_block["type"],
         )
