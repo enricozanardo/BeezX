@@ -75,7 +75,9 @@ class PeerDiscoveryHandler:
         own_connections = self.socket_communication.own_connections
         message_type = MessageType.DISCOVERY
 
-        message = MessageOwnConnections(own_connector, message_type, own_connections)
+        own_addresses = self.socket_communication.beez_node.get_registered_addresses()
+
+        message = MessageOwnConnections(own_connector, message_type, own_connections, own_addresses)
 
         # Encode the message since peers communicate with bytes!
         encoded_message: str = BeezUtils.encode(message)
@@ -86,6 +88,7 @@ class PeerDiscoveryHandler:
         """Handles message."""
         peer_socket_connector = message.sender_connector
         peer_connection_list: List[SocketConnector] = message.own_connections
+        peer_addresses = message.own_addresses
         new_peer = True
 
         for connection in self.socket_communication.own_connections:
@@ -109,3 +112,7 @@ class PeerDiscoveryHandler:
                 self.socket_communication.connect_with_node(
                     connection_peer.ip_address, connection_peer.port
                 )
+
+        # Update addresses
+        for address in peer_addresses:
+            self.socket_communication.beez_node.handle_address_registration(address["public_key_pem"], False)

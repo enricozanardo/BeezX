@@ -65,6 +65,9 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
 
         if key is not None:
             self.wallet.from_key(key)
+        
+        # eigene addresse registrieren
+        self.handle_address_registration(self.wallet.public_key_string())
 
     def get_ip(self) -> Address:
         """Return IP of node."""
@@ -99,15 +102,14 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
     def get_registered_addresses(self) -> list[dict[str, str]]:
         """Returns a dict of address to public-key-hex mappings."""
         registrations = self.address_index.query(
-            "ADDR", ["id", "type", "public_key_pem", "address"], highlight=True
+            "ADDR", ["type", "public_key_pem", "address"], highlight=True
         )
-        print(registrations)
         return registrations
 
     def get_public_key_from_address(self, address: str) -> Optional[str]:
         """Returns the corresponding public_key_pem for a given address or None"""
         registrations = self.address_index.query(
-            "ADDR", ["id", "type", "public_key_pem", "address"], highlight=True
+            "ADDR", ["type", "public_key_pem", "address"], highlight=True
         )
         public_key = None
         for doc in registrations:
@@ -117,11 +119,9 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
 
     # TODO: address request
 
-    def handle_address_registration(self, public_key_pem: str, broadcast=True) -> None:
+    def handle_address_registration(self, public_key_pem: str, broadcast=True) -> str:
         """Handles an incomming address to public-key registration."""
-        logger.info(f"Handle the incomming to public-key {public_key_pem}")
         beez_address = BeezUtils.address_from_public_key(public_key_pem)
-        logger.info(f"Public key to address mapping {public_key_pem}: {beez_address}")
         # 1. check if mapping already in index
         public_key = self.get_public_key_from_address(beez_address)
         # 2. add to index if not already exists
@@ -142,11 +142,12 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
                 address_registration_message = MessageAddressRegistration(
                     self.p2p.socket_connector,
                     MessageType.ADDRESSREGISTRATION,
-                    public_key,
+                    public_key_pem,
                 )
                 encoded_message = BeezUtils.encode(address_registration_message)
                 self.p2p.broadcast(encoded_message)
             self.address_buffer.pop(beez_address, None)
+        return beez_address
 
     # Manage requests that come from the NodeAPI
     def handle_transaction(self, transaction: Transaction):

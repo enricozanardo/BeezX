@@ -146,4 +146,4 @@ class SocketCommunication(Node):
         elif message.message_type == MessageType.ADDRESSREGISTRATION:
             # handle address registration
             if self.beez_node:
-                self.beez_node.handle_address_registration(message.public_key_hex, message.address)
+                self.beez_node.handle_address_registration(message.public_key_hex)

@@ -249,16 +249,12 @@ class NodeAPI(FlaskView):
         """Post a new address to public-key mapping."""
         values = request.get_json()  # we aspect to receive json objects!
 
-        if not "address" in values:
-            return "Missing address value", 400
-
         if not "publickey" in values:
             return "Missing public-key value", 400
 
-        return_string = f"Added {values['address']}: {values['publickey']}"
-
         # manage the transaction on the Blockchain
-        BEEZ_NODE.handle_address_registration(values['publickey'], values['address'])
+        beez_address = BEEZ_NODE.handle_address_registration(values['publickey'])
+        return_string = f"Added {beez_address}: {values['publickey']}"
 
         response = {"message": return_string}
 
