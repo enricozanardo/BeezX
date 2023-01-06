@@ -274,3 +274,36 @@ class ChallengeModelEngine(Engine):
             new_engine = ChallengeModelEngine(schema)
             ChallengeModelEngine.engine = new_engine
         return ChallengeModelEngine.engine
+
+
+class AddressIndexEngine(Engine):
+    """Index engine for address to public-key mapping."""
+
+    engine = None
+
+    def __init__(self, schema):
+        super().__init__()
+        self.schema = schema
+        schema.add("raw", TEXT(stored=True))
+        if not os.path.isdir("address_indices"):
+            os.makedirs("address_indices", exist_ok=True)
+            self.index = FileStorage("address_indices").create_index(
+                self.schema, indexname="address_index"
+            )
+        else:
+            self.index = FileStorage("address_indices").open_index("address_index")
+        AddressIndexEngine.engine = self
+
+    # Singleton
+    @staticmethod
+    def get_engine(schema, force_new: bool = False):
+        """Returns an engine for the given schema."""
+        if (
+            not AddressIndexEngine.engine
+            or force_new
+            or not index.exists_in("address_indices")
+        ):
+            new_engine = AddressIndexEngine(schema)
+            AddressIndexEngine.engine = new_engine
+        return AddressIndexEngine.engine
+        

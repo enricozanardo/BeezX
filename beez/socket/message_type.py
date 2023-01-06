@@ -18,6 +18,7 @@ class MessageType(Enum):
     KEEPER: Send to the requesting node a copy of the Keeper
     ACCEPT: Send to the requesting node an acceptance transaction of the Challenge.
     UPDATE: Ask to peers about the current state of the Challenge
+    ADDRESSREGISTRATION: Registering a public-key-hex to address mapping.
     """
     DISCOVERY = "discovery"
     TRANSACTION = "transaction"
@@ -30,4 +31,5 @@ class MessageType(Enum):
     KEEPER = "keeper"
     ACCEPT = "accept"
     UPDATE = "update"
+    ADDRESSREGISTRATION = "addressregistration"
     

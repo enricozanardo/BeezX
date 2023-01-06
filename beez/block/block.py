@@ -9,7 +9,6 @@ import json
 from beez.transaction.transaction_type import TransactionType
 from beez.transaction.transaction import Transaction
 from beez.block.header import Header
-from beez.types import PublicKeyString
 
 if TYPE_CHECKING:
     from beez.transaction.challenge_tx import ChallengeTX
@@ -26,13 +25,13 @@ class Block:
         header: Optional[Header],
         transactions: List[Transaction],
         last_hash: str,
-        forger: PublicKeyString,
+        forger_address: str,
         block_count: int,
     ):
         self.header = header
         self.transactions = transactions
         self.last_hash = last_hash
-        self.forger = forger
+        self.forger_address = forger_address
         self.block_count = block_count
         self.timestamp = time.time()
         self.signature = ""
@@ -44,7 +43,7 @@ class Block:
             None,
             [],
             "Hello Beezkeepers! 🐝",
-            cast(PublicKeyString, "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"),
+            cast(str, "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"),
             0,
         )
         genesis_block.timestamp = (
@@ -58,7 +57,7 @@ class Block:
             "header": self.header.serialize() if self.header else "",
             "transactions": [tx.to_json() for tx in self.transactions],
             "lastHash": self.last_hash,
-            "forger": self.forger,
+            "forger": self.forger_address,
             "blockCount": self.block_count,
             "timestamp": self.timestamp,
             "signature": self.signature,
@@ -82,7 +81,7 @@ class Block:
                 for tx_json in serialized_block["transactions"]
             ],
             last_hash=serialized_block["lastHash"],
-            forger=serialized_block["forger"],
+            forger_address=serialized_block["forger"],
             block_count=serialized_block["blockCount"],
         )
         block.timestamp = serialized_block["timestamp"]
@@ -93,7 +92,7 @@ class Block:
         """Converting the block to json."""
         json_block = {}
         json_block["lastHash"] = self.last_hash
-        json_block["forger"] = self.forger
+        json_block["forger"] = self.forger_address
         json_block["blockCount"] = self.block_count
         json_block["timestamp"] = self.timestamp
         json_block["signature"] = self.signature

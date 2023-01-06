@@ -143,3 +143,7 @@ class SocketCommunication(Node):
                 self.beez_node.handle_blockchain(blockchain)
             else:
                 logger.info("Socket communication module has to node reference.")
+        elif message.message_type == MessageType.ADDRESSREGISTRATION:
+            # handle address registration
+            if self.beez_node:
+                self.beez_node.handle_address_registration(message.public_key_hex)

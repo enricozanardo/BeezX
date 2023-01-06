@@ -57,24 +57,24 @@ class AccountStateModel:
         """Logs the current status of the account state model."""
         logger.info("Not yet implemented")
 
-    def add_account(self, public_key_string: PublicKeyString):
+    def add_account(self, address: str):
         """Adds a new account to the account state model and initializes the balance to 0."""
-        logger.info("Adding account: %s", public_key_string)
-        if public_key_string not in self.accounts_index:
-            self.accounts_index.append(public_key_string)
-            self.balance_index[public_key_string] = 0
+        logger.info("Adding account: %s", address)
+        if address not in self.accounts_index:
+            self.accounts_index.append(address)
+            self.balance_index[address] = 0
 
-    def get_balance(self, public_key_string: PublicKeyString):
+    def get_balance(self, address: str):
         """Returns the balance of the given account."""
-        if public_key_string not in self.accounts_index:
-            self.add_account(public_key_string)
-        return self.balance_index[public_key_string]
+        if address not in self.accounts_index:
+            self.add_account(address)
+        return self.balance_index[address]
 
-    def update_balance(self, public_key_string: PublicKeyString, amount: int):
+    def update_balance(self, address: str, amount: int):
         """Updates the balance of account by amount."""
-        logger.info("Update balance: %s, amount: %s", public_key_string, str(amount))
-        if public_key_string not in self.accounts_index:
-            self.add_account(public_key_string)
+        logger.info("Update balance: %s, amount: %s", address, str(amount))
+        if address not in self.accounts_index:
+            self.add_account(address)
 
-        old_balance = self.get_balance(public_key_string)
-        self.balance_index[public_key_string] = old_balance + amount
+        old_balance = self.get_balance(address)
+        self.balance_index[address] = old_balance + amount

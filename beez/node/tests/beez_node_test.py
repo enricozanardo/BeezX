@@ -9,6 +9,7 @@ from beez.wallet.wallet import Wallet
 from beez.block.block import Block
 from beez.block.blockchain import Blockchain
 from beez.transaction.challenge_tx import ChallengeTX
+from beez.socket.message_type import MessageType
 from beez.challenge.challenge import Challenge
 from typing import cast
 from beez.types import PublicKeyString
@@ -21,6 +22,7 @@ def clear_indices():
     shutil.rmtree("challenge_indices", ignore_errors=True)
     shutil.rmtree("pos_indices", ignore_errors=True)
     shutil.rmtree("txp_indices", ignore_errors=True)
+    shutil.rmtree("address_indices", ignore_errors=True)
 
 def shared_func(a: int, b: int):
     return a+b
@@ -51,20 +53,23 @@ def test_handle_transaction():
     node.wallet = genesis_wallet
 
     exchange_tx = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 100, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 100, TransactionType.EXCHANGE.name
     )
     exchange_tx_2 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 200, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 200, TransactionType.EXCHANGE.name
     )
     exchange_tx_3 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 300, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 300, TransactionType.EXCHANGE.name
     )
     transfer_tx = alice_wallet.create_transaction(
-        bob_wallet.public_key_string(), 50, TransactionType.TRANSFER.name
+        BeezUtils.address_from_public_key(bob_wallet.public_key_string()), 50, TransactionType.TRANSFER.name
     )
     uncovered_tx = alice_wallet.create_transaction(
-        bob_wallet.public_key_string(), 5000, TransactionType.TRANSFER.name
+        BeezUtils.address_from_public_key(bob_wallet.public_key_string()), 5000, TransactionType.TRANSFER.name
     )
+    node.handle_address_registration(alice_wallet.public_key_string())
+    node.handle_address_registration(genesis_wallet.public_key_string())
+    node.handle_address_registration(bob_wallet.public_key_string())
     node.handle_transaction(exchange_tx)
     node.handle_transaction(exchange_tx_2)
     node.handle_transaction(exchange_tx_3)
@@ -97,18 +102,21 @@ def test_handle_block():
     node.wallet = genesis_wallet
 
     exchange_tx = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 100, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 100, TransactionType.EXCHANGE.name
     )
     exchange_tx_2 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 200, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 200, TransactionType.EXCHANGE.name
     )
     exchange_tx_3 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 300, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 300, TransactionType.EXCHANGE.name
     )
     transfer_tx = alice_wallet.create_transaction(
-        bob_wallet.public_key_string(), 50, TransactionType.TRANSFER.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 50, TransactionType.TRANSFER.name
     )
 
+    node.handle_address_registration(alice_wallet.public_key_string())
+    node.handle_address_registration(genesis_wallet.public_key_string())
+    node.handle_address_registration(bob_wallet.public_key_string())
     node.handle_transaction(exchange_tx)
     node.handle_transaction(exchange_tx_2)
     node.handle_transaction(exchange_tx_3)
@@ -142,20 +150,23 @@ def test_handle_challenge_tx():
     node.wallet = genesis_wallet
 
     exchange_tx = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 100, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 100, TransactionType.EXCHANGE.name
     )
     exchange_tx_2 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 200, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 200, TransactionType.EXCHANGE.name
     )
     exchange_tx_3 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 200, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 200, TransactionType.EXCHANGE.name
     )
     exchange_tx_4 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 200, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 200, TransactionType.EXCHANGE.name
     )
     exchange_tx_5 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 200, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 200, TransactionType.EXCHANGE.name
     )
+    node.handle_address_registration(alice_wallet.public_key_string())
+    node.handle_address_registration(genesis_wallet.public_key_string())
+    node.handle_address_registration(bob_wallet.public_key_string())
     node.handle_transaction(exchange_tx)
     node.handle_transaction(exchange_tx_2)
     node.handle_transaction(exchange_tx_3)
@@ -196,11 +207,13 @@ def test_forge():
     node.wallet = genesis_wallet
 
     exchange_tx = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 100, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 100, TransactionType.EXCHANGE.name
     )
     exchange_tx_2 = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 200, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 200, TransactionType.EXCHANGE.name
     )
+    node.handle_address_registration(alice_wallet.public_key_string())
+    node.handle_address_registration(genesis_wallet.public_key_string())
     node.handle_transaction(exchange_tx)
     node.handle_transaction(exchange_tx_2)
 
@@ -227,8 +240,10 @@ def test_handle_blockchain():
     node.wallet = genesis_wallet
 
     exchange_tx = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 100, TransactionType.EXCHANGE.name
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 100, TransactionType.EXCHANGE.name
     )
+    node.handle_address_registration(genesis_wallet.public_key_string())
+    node.handle_address_registration(alice_wallet.public_key_string())
     node.handle_transaction(exchange_tx)
 
     local_blockchain = Blockchain()
@@ -237,7 +252,7 @@ def test_handle_blockchain():
         None,
         [exchange_tx],
         BeezUtils.hash(local_blockchain.blocks()[-1].payload()).hexdigest(),
-        cast(PublicKeyString, genesis_wallet.public_key_string()),
+        BeezUtils.address_from_public_key(genesis_wallet.public_key_string()),
         1,
     )
     local_blockchain.add_block(block)
@@ -252,3 +267,28 @@ def test_handle_blockchain():
 
     assert len(node.blockchain.blocks()) == 2
     clear_indices()
+
+# def test_handle_address_registration():
+#     node = BeezNode(port=4005)
+
+#     assert node.get_public_key_from_address("bzx302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913") is None
+    
+#     node.handle_address_registration(
+#         public_key_hex="302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913",
+#     )
+#     assert node.get_public_key_from_address(BeezUtils.address_from_public_key("302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913")) == "302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+#     clear_indices()
+
+# def test_get_registered_addresses():
+#     clear_indices()
+#     node = BeezNode(port=4006)
+#     assert node.get_registered_addresses() == []
+#     node.handle_address_registration(
+#         public_key_hex="302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913",
+#     )
+#     assert len(node.get_registered_addresses()) == 1
+#     registration = node.get_registered_addresses()[0]
+#     assert registration["id"] == "302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+#     assert registration["public_key_hex"] == "302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913"
+#     assert registration["address"] == BeezUtils.address_from_public_key("302a300506032b657003210033d68a25a5118b21d6ae5bdd5ac438fadcb0b27a5683695ae0e84d6d23cf4913")
+#     clear_indices()

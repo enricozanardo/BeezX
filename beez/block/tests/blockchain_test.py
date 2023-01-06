@@ -2,6 +2,7 @@
 import pathlib
 import shutil
 import pytest
+from beez.node.beez_node import BeezNode
 from beez.block.blockchain import Blockchain
 from beez.block.block import Block
 from beez.wallet.wallet import Wallet
@@ -44,10 +45,10 @@ def test_serialize(blockchain):
         ],
         "accountStateModel": {"accounts": [], "balances": {}},
         "pos": {
-            "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----": 1
+            "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----": 1
         },
         "beezKeeper": {},
-        "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----",
+        "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----",
     }
 
 
@@ -70,10 +71,10 @@ def test_deserialize(blockchain):
             ],
             "accountStateModel": {"accounts": [], "balances": {}},
             "pos": {
-                "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----": 1
+                "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----": 1
             },
             "beezKeeper": {},
-            "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUJ+yqg8M03TmNrDw2R2aif/nm\nsm+O2jOnGYbag+iwFJk8fqWjvA3M1axx3vmfcMIYBE+PTy2ih2pjGVB5U0XLME6a\nCwK6GwFsfvGsvn9VJXv77CnzFj4dJVp6OcmQyvD7WA0MU1yMl1IlTW/d9P7AQ9PG\nNUDwi2X/mpSlrGovKwIDAQAB\n-----END PUBLIC KEY-----",
+            "genesisPublicKey": "-----BEGIN PUBLIC KEY-----\nMCowBQYDK2VwAyEApHB1O1bl5R4izPxVQp7zezNraz3fAwhkwfy7LR3uI+c=\n-----END PUBLIC KEY-----",
         }
     )
 
@@ -90,7 +91,7 @@ def test_blocks(blockchain):
     }
     assert blocks[0].transactions == []
     assert blocks[0].last_hash == "Hello Beezkeepers! 🐝"
-    assert blocks[0].forger == "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"
+    assert blocks[0].forger_address == "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"
     assert blocks[0].block_count == 0
     assert blocks[0].timestamp == 0
     assert blocks[0].signature == ""
@@ -141,7 +142,8 @@ def test_add_block(blockchain):
     assert len(blockchain.blocks()) == 2
 
 
-def test_execute_transactions(blockchain):
+def test_execute_transactions():
+    node = BeezNode(port=4004)
     currentPath = pathlib.Path().resolve()
 
     genesis_private_key_path = f"{currentPath}/beez/keys/genesisPrivateKey.pem"
@@ -156,19 +158,21 @@ def test_execute_transactions(blockchain):
     bob_wallet.from_key(bob_private_key_path)
 
     exchange_tx = genesis_wallet.create_transaction(
-        alice_wallet.public_key_string(), 100, TransactionType.EXCHANGE
+        BeezUtils.address_from_public_key(alice_wallet.public_key_string()), 100, TransactionType.EXCHANGE
     )
     transfer_tx = alice_wallet.create_transaction(
-        bob_wallet.public_key_string(), 50, TransactionType.TRANSFER
+        BeezUtils.address_from_public_key(bob_wallet.public_key_string()), 50, TransactionType.TRANSFER
     )
-
-    blockchain.execute_transactions([exchange_tx, transfer_tx])
+    node.handle_address_registration(genesis_wallet.public_key_string())
+    node.handle_address_registration(alice_wallet.public_key_string())
+    node.blockchain.execute_transactions([exchange_tx, transfer_tx])
     assert (
-        blockchain.account_state_model.get_balance(alice_wallet.public_key_string()) == 50
+        node.blockchain.account_state_model.get_balance(BeezUtils.address_from_public_key(alice_wallet.public_key_string())) == 50
     )
     assert (
-        blockchain.account_state_model.get_balance(bob_wallet.public_key_string()) == 50
+       node.blockchain.account_state_model.get_balance(BeezUtils.address_from_public_key(bob_wallet.public_key_string())) == 50
     )
+    remove_blockchain()
 
 
 def test_transaction_exists(blockchain):
@@ -234,7 +238,7 @@ def test_mint_block(blockchain):
     new_block = blockchain.mint_block([exchange_tx, new_exchange_tx], genesis_wallet)
 
     assert new_block.transactions == [exchange_tx, new_exchange_tx]
-    assert new_block.forger == genesis_wallet.public_key_string()
+    assert new_block.forger_address == BeezUtils.address_from_public_key(genesis_wallet.public_key_string())
     assert new_block.block_count == 1
 
 
@@ -368,7 +372,7 @@ def test_forger_valid(blockchain):
         None,
         [],
         "invalid_hash",
-        genesis_wallet.public_key_string(),
+        BeezUtils.address_from_public_key(genesis_wallet.public_key_string()),
         2,
     )
     valid_block.timestamp = 1

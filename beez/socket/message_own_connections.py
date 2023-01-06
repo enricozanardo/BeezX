@@ -18,6 +18,8 @@ class MessageOwnConnections(Message):  # pylint: disable=too-few-public-methods
         sender_connector: SocketConnector,
         message_type: MessageType,
         own_connections: List[SocketConnector],
+        own_addresses: list[dict[str, str]],
     ):
         super().__init__(sender_connector, message_type)
         self.own_connections = own_connections
+        self.own_addresses = own_addresses

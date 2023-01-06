@@ -5,6 +5,7 @@ import shutil
 import json
 import jsonpickle
 
+from beez.beez_utils import BeezUtils
 from beez.wallet.wallet import Wallet
 from beez.transaction.challenge_tx import ChallengeTX
 from beez.challenge.challenge import Challenge
@@ -50,8 +51,8 @@ def test_challenge_tx_creation(challenge_tx):
     alice_wallet.from_key(alice_private_key_path)
 
     assert challenge_tx is not None
-    assert challenge_tx.sender_public_key == alice_wallet.public_key_string()
-    assert challenge_tx.receiver_public_key == alice_wallet.public_key_string()
+    assert challenge_tx.sender_address == BeezUtils.address_from_public_key(alice_wallet.public_key_string())
+    assert challenge_tx.receiver_address == BeezUtils.address_from_public_key(alice_wallet.public_key_string())
     assert challenge_tx.amount == 10
     assert challenge_tx.transaction_type == TransactionType.CHALLENGE.name
     assert challenge_tx.challenge.shared_function == shared_function
@@ -69,8 +70,8 @@ def test_to_json(challenge_tx):
 
     assert challenge_tx.to_json() == {
         "id": challenge_tx.identifier,
-        "senderPublicKey": alice_wallet.public_key_string(),
-        "receiverPublicKey": alice_wallet.public_key_string(),
+        "senderAddress": BeezUtils.address_from_public_key(alice_wallet.public_key_string()),
+        "receiverAddress": BeezUtils.address_from_public_key(alice_wallet.public_key_string()),
         "amount": 10,
         "type": TransactionType.CHALLENGE.name,
         "timestamp": challenge_tx.timestamp,
@@ -92,8 +93,8 @@ def test_from_json():
     challenge = Challenge(shared_function, 10)
     local_challenge_tx = ChallengeTX.from_json({
         "id": "abc",
-        "senderPublicKey": alice_wallet.public_key_string(),
-        "receiverPublicKey": alice_wallet.public_key_string(),
+        "senderPublicKey": BeezUtils.address_from_public_key(alice_wallet.public_key_string()),
+        "receiverPublicKey": BeezUtils.address_from_public_key(alice_wallet.public_key_string()),
         "amount": 10,
         "type": TransactionType.CHALLENGE.name,
         "timestamp": "now",
@@ -101,8 +102,8 @@ def test_from_json():
         "challenge": json.loads(jsonpickle.encode(challenge))
     })
 
-    assert local_challenge_tx.sender_public_key == alice_wallet.public_key_string()
-    assert local_challenge_tx.receiver_public_key == alice_wallet.public_key_string()
+    assert local_challenge_tx.sender_address == BeezUtils.address_from_public_key(alice_wallet.public_key_string())
+    assert local_challenge_tx.receiver_address == BeezUtils.address_from_public_key(alice_wallet.public_key_string())
     assert local_challenge_tx.amount == 10
     assert local_challenge_tx.transaction_type == TransactionType.CHALLENGE.name
     assert local_challenge_tx.timestamp == "now"

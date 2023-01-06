@@ -15,7 +15,7 @@ def test_genesis_block():
     assert genesis.header is None
     assert genesis.transactions == []
     assert genesis.last_hash == "Hello Beezkeepers! 🐝"
-    assert genesis.forger == "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"
+    assert genesis.forger_address == "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"
     assert genesis.signature == ""
     assert genesis.block_count == 0
 
@@ -59,7 +59,7 @@ def test_deserialize():
     assert block.header is None
     assert block.transactions == []
     assert block.last_hash == "Hello Beezkeepers! 🐝"
-    assert block.forger == "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"
+    assert block.forger_address == "BeezAuthors: Enrico Zanardo 🤙🏽 & ⭐"
     assert block.signature == ""
     assert block.block_count == 0
 

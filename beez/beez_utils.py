@@ -3,7 +3,7 @@
 import json
 import typing
 import jsonpickle  # type: ignore
-from Crypto.Hash import SHA256
+from Crypto.Hash import SHA512
 
 
 class BeezUtils:
@@ -11,14 +11,14 @@ class BeezUtils:
 
     @staticmethod
     def hash(data):
-        """Takes arbitrary data and returns its corresponding SHA256 hash."""
+        """Takes arbitrary data and returns its corresponding SHA512 hash."""
         data_string = json.dumps(
-            data, default=str
+            data, default=str, separators=(',', ':')
         )  # create a string representation of the data
         data_bytes = data_string.encode(
             "utf-8"
         )  # trasform the string data into a byte representation
-        data_hash = SHA256.new(data_bytes)
+        data_hash = SHA512.new(data_bytes)
 
         return data_hash
 
@@ -34,6 +34,12 @@ class BeezUtils:
     def decode(encoded_object):
         """Takes a pickled object and recreates the original object from it."""
         return jsonpickle.decode(encoded_object)
+
+    @staticmethod
+    def address_from_public_key(public_key_pem: str) -> str:
+        """Returns the corresponding beez address for a given public key pem"""
+        hash_value = BeezUtils.hash(public_key_pem)
+        return f"bzx{hash_value.hexdigest()[0:42]}"
 
     @staticmethod
     def tx_binary_search(all_tx_hash: typing.List[str], current_tx_hash: str) -> bool:

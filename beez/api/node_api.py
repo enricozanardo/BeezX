@@ -242,3 +242,26 @@ class NodeAPI(FlaskView):
         """Returns the state of the in-memory blockchain."""
         logger.info("Blockchain called...")
         return BEEZ_NODE.blockchain.to_json(), 200
+
+
+    @route("/registeraddress", methods=["POST"])
+    def register_address(self):
+        """Post a new address to public-key mapping."""
+        values = request.get_json()  # we aspect to receive json objects!
+
+        if not "publickey" in values:
+            return "Missing public-key value", 400
+
+        # manage the transaction on the Blockchain
+        beez_address = BEEZ_NODE.handle_address_registration(values['publickey'])
+        return_string = f"Added {beez_address}: {values['publickey']}"
+
+        response = {"message": return_string}
+
+        return jsonify(response), 201
+
+    @route("/registeredaddresses", methods=["GET"])
+    def registered_addresses(self):
+        """Returns the registered addresses of this node."""
+        registered_addresses = BEEZ_NODE.get_registered_addresses()
+        return {"registered_addresses": registered_addresses}, 200
