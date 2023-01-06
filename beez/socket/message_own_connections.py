@@ -1,7 +1,7 @@
 """Beez blockchain - own connections message"""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List, Any
+from typing import TYPE_CHECKING, List
 
 from beez.socket.message import Message
 from beez.socket.message_type import MessageType

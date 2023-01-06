@@ -65,7 +65,7 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
 
         if key is not None:
             self.wallet.from_key(key)
-        
+
         # eigene addresse registrieren
         self.handle_address_registration(self.wallet.public_key_string())
 

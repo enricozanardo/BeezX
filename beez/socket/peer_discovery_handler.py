@@ -115,4 +115,6 @@ class PeerDiscoveryHandler:
 
         # Update addresses
         for address in peer_addresses:
-            self.socket_communication.beez_node.handle_address_registration(address["public_key_pem"], False)
+            self.socket_communication.beez_node.handle_address_registration(
+                address["public_key_pem"], False
+            )
