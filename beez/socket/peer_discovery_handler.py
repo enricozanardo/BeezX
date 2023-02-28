@@ -36,8 +36,8 @@ class PeerDiscoveryHandler:
         status_thread = threading.Thread(target=self.status, args={})
         status_thread.start()
 
-        discovery_thread = threading.Thread(target=self.discovery, args={})
-        discovery_thread.start()
+        # discovery_thread = threading.Thread(target=self.discovery, args={})
+        # discovery_thread.start()
 
     def status(self):
         """Display the nodes that are connected to a node"""
@@ -101,17 +101,17 @@ class PeerDiscoveryHandler:
             self.socket_communication.own_connections.append(peer_socket_connector)
 
         # Check if in the peersPeerList there are new peers and connect to them
-        for connection_peer in peer_connection_list:
-            peer_known = False
-            for connection in self.socket_communication.own_connections:
-                if connection.equals(connection_peer):
-                    peer_known = True
-            if not peer_known and not connection_peer.equals(
-                self.socket_communication.socket_connector
-            ):
-                self.socket_communication.connect_with_node(
-                    connection_peer.ip_address, connection_peer.port
-                )
+        # for connection_peer in peer_connection_list:
+        #     peer_known = False
+        #     for connection in self.socket_communication.own_connections:
+        #         if connection.equals(connection_peer):
+        #             peer_known = True
+        #     if not peer_known and not connection_peer.equals(
+        #         self.socket_communication.socket_connector
+        #     ):
+        #         self.socket_communication.connect_with_node(
+        #             connection_peer.ip_address, connection_peer.port
+        #         )
 
         # Update addresses
         for address in peer_addresses:

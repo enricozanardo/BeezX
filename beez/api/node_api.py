@@ -41,7 +41,7 @@ class NodeAPI(FlaskView):
         # register the application to routes
         NodeAPI.register(self.app, route_base="/")
         serve(self.app, host=node_ip, port=port if port else NODE_API_PORT)
-        # self.app.run(host=nodeIP, port=NODE_API_PORT)
+        # self.app.run(host=node_ip, port=port if port else NODE_API_PORT)
 
     # find a way to use the properties of the node in the nodeAPI
     def inject_node(self, incjected_node: BeezNode) -> None:
@@ -244,7 +244,7 @@ class NodeAPI(FlaskView):
         return BEEZ_NODE.blockchain.to_json(), 200
 
 
-    @route("/registeraddress", methods=["POST"])
+    @route("/registeraddress", methods=["POST", "OPTIONS"])
     def register_address(self):
         """Post a new address to public-key mapping."""
         values = request.get_json()  # we aspect to receive json objects!
@@ -265,3 +265,11 @@ class NodeAPI(FlaskView):
         """Returns the registered addresses of this node."""
         registered_addresses = BEEZ_NODE.get_registered_addresses()
         return {"registered_addresses": registered_addresses}, 200
+    
+    @route("/connectednodes", methods=["GET"])
+    def connected_nodes(self):
+        """Returns the node's connected nodes."""
+        connected_nodes = BEEZ_NODE.p2p.own_connections
+        return {"connected_nodes": connected_nodes}, 200
+    
+    

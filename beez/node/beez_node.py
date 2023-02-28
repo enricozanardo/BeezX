@@ -12,7 +12,7 @@ import GPUtil  # type: ignore
 from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
 
 from beez.wallet.wallet import Wallet
-from beez.socket.socket_communication import SocketCommunication
+from beez.socket.socket_communication import SocketCommunication, SeedSocketCommunication, BaseSocketCommunication
 from beez.api.node_api import NodeAPI
 from beez.transaction.transaction_pool import TransactionPool
 from beez.socket.message_transaction import MessageTransation
@@ -38,19 +38,49 @@ load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envvar-default
 
 
-class BeezNode:  # pylint: disable=too-many-instance-attributes
-    """Beez Node - represents the core blockchain node."""
-
-    def __init__(self, key=None, port=None) -> None:
+class BasicNode:
+    def __init__(self, key=None, port=None, communication_protocol:BaseSocketCommunication=BaseSocketCommunication) -> None:
         self.api = None
         self.ip_address = self.get_ip()
         self.port = int(P_2_P_PORT)
         self.wallet = Wallet()
+        self.p2p = communication_protocol(self.ip_address, port if port else self.port)
+
+        if key is not None:
+            self.wallet.from_key(key)
+
+    def get_ip(self) -> Address:
+        """Return IP of node."""
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
+            sock.connect(("8.8.8.8", 53))
+            node_address: Address = sock.getsockname()[0]
+            logger.info(f"Node IP: {node_address}")
+
+            return node_address
+
+    def start_p2p(self):
+        self.p2p.start_socket_communication()
+
+    def start_api(self, port=None):
+        """Starts the nodes API."""
+        self.api = NodeAPI()
+        # Inject Node to NodeAPI
+        self.api.inject_node(self)
+        self.api.start(self.ip_address, port)
+
+class SeedNode(BasicNode):
+    def __init__(self, key=None, port=None) -> None:
+        BasicNode.__init__(self, key=key, port=port, communication_protocol=SeedSocketCommunication)
+
+class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
+    """Beez Node - represents the core blockchain node."""
+
+    def __init__(self, key=None, port=None) -> None:
+        BasicNode.__init__(self, key=key, port=port, communication_protocol=SocketCommunication)
         self.transaction_pool = TransactionPool()
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
-        self.p2p = SocketCommunication(self.ip_address, port if port else self.port)
         self.pending_blockchain_request = False
         self.pending_block_handling = False
         self.address_index = AddressIndexEngine.get_engine(
@@ -63,20 +93,8 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
         )
         self.address_buffer = {}
 
-        if key is not None:
-            self.wallet.from_key(key)
-
         # eigene addresse registrieren
         self.handle_address_registration(self.wallet.public_key_string())
-
-    def get_ip(self) -> Address:
-        """Return IP of node."""
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.connect(("8.8.8.8", 53))
-            node_address: Address = sock.getsockname()[0]
-            logger.info(f"Node IP: {node_address}")
-
-            return node_address
 
     def start_p2p(self):
         """Starts the p2p communication thread."""
@@ -91,13 +109,6 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
             self.blockchain.block_count = self.blockchain.blocks()[-1].block_count
             self.blockchain.beez_keeper = self.blockchain.blocks()[-1].header.beez_keeper
         self.p2p.start_socket_communication(self)
-
-    def start_api(self, port=None):
-        """Starts the nodes API."""
-        self.api = NodeAPI()
-        # Inject Node to NodeAPI
-        self.api.inject_node(self)
-        self.api.start(self.ip_address, port)
 
     def get_registered_addresses(self) -> list[dict[str, str]]:
         """Returns a dict of address to public-key-hex mappings."""
@@ -389,3 +400,5 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
                         # we have to clean up txpool
                         self.transaction_pool.remove_from_pool(block.transactions)
             self.pending_blockchain_request = False
+
+

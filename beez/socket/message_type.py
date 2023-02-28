@@ -19,6 +19,8 @@ class MessageType(Enum):
     ACCEPT: Send to the requesting node an acceptance transaction of the Challenge.
     UPDATE: Ask to peers about the current state of the Challenge
     ADDRESSREGISTRATION: Registering a public-key-hex to address mapping.
+    HEALTHREQUEST: Request health metric from node.
+    HEALTH: Return health metric score.
     """
     DISCOVERY = "discovery"
     TRANSACTION = "transaction"
@@ -32,4 +34,6 @@ class MessageType(Enum):
     ACCEPT = "accept"
     UPDATE = "update"
     ADDRESSREGISTRATION = "addressregistration"
+    HEALTHREQUEST = "healthrequest"
+    HEALTH = "health"
     
