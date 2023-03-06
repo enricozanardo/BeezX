@@ -30,8 +30,10 @@ LOCAL_P2P_PORT = 5444
 
 FIRST_SERVER_IP = os.getenv("FIRST_SERVER_IP", LOCAL_TEST_IP)   # pylint: disable=invalid-envvar-default
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", LOCAL_P2P_PORT))   # pylint: disable=invalid-envvar-default
-LOCAL_INTERVALS = 10
+LOCAL_INTERVALS = 60
 INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))    # pylint: disable=invalid-envvar-default
+LOCAL_DISCONNECT_INTERVALS = 180
+DISCONNECT_INTERVALS = int(os.getenv("DISCONNECT_INTERVALS", LOCAL_DISCONNECT_INTERVALS))    # pylint: disable=invalid-envvar-default
 
 
 
@@ -45,6 +47,10 @@ class SeedSocketCommunication(BaseSocketCommunication):
     def network_health_scan(self):
         status_thread = threading.Thread(target=self.check_health, args={})
         status_thread.start()
+
+    def available_peers_broadcast_thread(self):
+        peers_thread = threading.Thread(target=self.broadcast_available_peers, args={})
+        peers_thread.start()
 
     def switch_neighbor(self, affected_node, neighbor_node):
         pass
@@ -60,7 +66,7 @@ class SeedSocketCommunication(BaseSocketCommunication):
             peers_to_pop_from_health_status: list[str] = []
             for peer_socket_connector, health_dict in self.node_health_status.items():
                 now = datetime.now()
-                if (now-health_dict["last_update"]).total_seconds() > 30:
+                if (now-health_dict["last_update"]).total_seconds() > DISCONNECT_INTERVALS:
                     logger.info(f"!!!! Node is not responding {peer_socket_connector}")
                     # close connection to node
                     nodes_to_disconnect: list[Node] = []
@@ -104,6 +110,11 @@ class SeedSocketCommunication(BaseSocketCommunication):
         # Encode the message since peers communicate with bytes!
         encoded_peers_message: str = BeezUtils.encode(message)
         return encoded_peers_message
+    
+    def broadcast_available_peers(self):
+        encoded_peers_message = self.create_available_peers_message()
+        self.broadcast(encoded_peers_message)
+        time.sleep(60)
 
 
     def inbound_node_connected(self, node: Node):
@@ -124,8 +135,6 @@ class SeedSocketCommunication(BaseSocketCommunication):
             self.own_connections.sort(key=lambda x: f"{x.ip_address}:{x.port}", reverse=True)
     
         encoded_peers_message = self.create_available_peers_message()
-
-        # self.send(node, encoded_peers_message)
         self.broadcast(encoded_peers_message)
 
     def node_message(self, node: Node, data: Message):
