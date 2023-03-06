@@ -7,6 +7,7 @@ services:
     - FIRST_SERVER_IP=10.5.0.6
     - P_2_P_PORT=5444
     - NODE_TYPE=seed
+    - API_STARTUP_DELAY=20
     # image: beezblockchain/beez-node
     image: beez-node
     ports:
@@ -23,10 +24,11 @@ services:
     - NODE_API_PORT=81
     - FIRST_SERVER_IP=10.5.0.6
     - P_2_P_PORT=5444
+    - API_STARTUP_DELAY=20
     # image: beezblockchain/beez-node
     image: beez-node
-    depends_on:
-      - beez-node-genesis
+    # depends_on:
+    #   - beez-node-genesis
     ports:
       - "5446:5445"
       - "5447:5444"
@@ -41,17 +43,39 @@ services:
     - NODE_API_PORT=82
     - FIRST_SERVER_IP=10.5.0.6
     - P_2_P_PORT=5444
+    - API_STARTUP_DELAY=20
     # image: beezblockchain/beez-node
     image: beez-node
-    depends_on:
-      - beez-node-genesis
-      - beez-node-alice
+    # depends_on:
+    #   - beez-node-genesis
+    #   - beez-node-alice
     ports:
       - "5448:5445"
       - "5449:5444"
     networks:
       vpcbr:
         ipv4_address: 10.5.0.8
+    command: python3.9 main.py
+
+  beez-node-lukas:
+    environment:
+    - BEEZ_NODE_KEY_PATH=/beez/keys/bobPrivateKey.pem
+    - NODE_API_PORT=82
+    - FIRST_SERVER_IP=10.5.0.6
+    - P_2_P_PORT=5444
+    - API_STARTUP_DELAY=20
+    # image: beezblockchain/beez-node
+    image: beez-node
+    # depends_on:
+    #   - beez-node-genesis
+    #   - beez-node-alice
+    #   - beez-node-bob
+    ports:
+      - "5450:5445"
+      - "5451:5444"
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.9
     command: python3.9 main.py
 
 networks:

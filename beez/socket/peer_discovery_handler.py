@@ -1,20 +1,19 @@
 """Beez blockchain - peer discovery handler."""
 
 from __future__ import annotations
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING
 import threading
 import time
 import os
 from loguru import logger
 from dotenv import load_dotenv
 
-from beez.socket.socket_connector import SocketConnector
-from beez.socket.message_type import MessageType
-from beez.socket.message_own_connections import MessageOwnConnections
+from beez.socket.messages.message_type import MessageType
+from beez.socket.messages.message_own_connections import MessageOwnConnections
 from beez.beez_utils import BeezUtils
 
 if TYPE_CHECKING:
-    from beez.socket.socket_communication import SocketCommunication
+    from beez.socket.socket_communication.socket_communication import SocketCommunication
     from p2pnetwork.node import Node    # type: ignore
 
 load_dotenv()  # load .env
@@ -87,7 +86,7 @@ class PeerDiscoveryHandler:
     def handle_message(self, message: MessageOwnConnections):
         """Handles message."""
         peer_socket_connector = message.sender_connector
-        peer_connection_list: List[SocketConnector] = message.own_connections
+        # peer_connection_list: List[SocketConnector] = message.own_connections
         peer_addresses = message.own_addresses
         new_peer = True
 

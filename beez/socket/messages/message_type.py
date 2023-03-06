@@ -36,4 +36,5 @@ class MessageType(Enum):
     ADDRESSREGISTRATION = "addressregistration"
     HEALTHREQUEST = "healthrequest"
     HEALTH = "health"
+    PEERSREQUEST = "request_peers"
     

@@ -3,7 +3,6 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import os
-import socket
 from dotenv import load_dotenv
 from loguru import logger
 import GPUtil  # type: ignore
@@ -11,24 +10,24 @@ import GPUtil  # type: ignore
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
 
+from beez.node.basic_node import BasicNode
 from beez.wallet.wallet import Wallet
-from beez.socket.socket_communication import SocketCommunication, SeedSocketCommunication, BaseSocketCommunication
+from beez.socket.socket_communication.socket_communication import SocketCommunication
 from beez.api.node_api import NodeAPI
 from beez.transaction.transaction_pool import TransactionPool
-from beez.socket.message_transaction import MessageTransation
-from beez.socket.message_type import MessageType
-from beez.socket.message_challenge_transaction import MessageChallengeTransation
-from beez.socket.message_challenge import MessageChallenge
-from beez.socket.message_address_registration import MessageAddressRegistration
+from beez.socket.messages.message_transaction import MessageTransation
+from beez.socket.messages.message_type import MessageType
+from beez.socket.messages.message_challenge_transaction import MessageChallengeTransation
+from beez.socket.messages.message_challenge import MessageChallenge
+from beez.socket.messages.message_address_registration import MessageAddressRegistration
 from beez.block.blockchain import Blockchain
-from beez.socket.message_block import MessageBlock
-from beez.socket.message_blockchain import MessageBlockchain
-from beez.socket.message import Message
+from beez.socket.messages.message_block import MessageBlock
+from beez.socket.messages.message_blockchain import MessageBlockchain
+from beez.socket.messages.message import Message
 from beez.beez_utils import BeezUtils
 from beez.index.index_engine import AddressIndexEngine
 
 if TYPE_CHECKING:
-    from beez.types import Address
     from beez.transaction.transaction import Transaction
     from beez.transaction.challenge_tx import ChallengeTX
     from beez.challenge.challenge import Challenge
@@ -38,45 +37,14 @@ load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envvar-default
 
 
-class BasicNode:
-    def __init__(self, key=None, port=None, communication_protocol:BaseSocketCommunication=BaseSocketCommunication) -> None:
-        self.api = None
-        self.ip_address = self.get_ip()
-        self.port = int(P_2_P_PORT)
-        self.wallet = Wallet()
-        self.p2p = communication_protocol(self.ip_address, port if port else self.port)
-
-        if key is not None:
-            self.wallet.from_key(key)
-
-    def get_ip(self) -> Address:
-        """Return IP of node."""
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.connect(("8.8.8.8", 53))
-            node_address: Address = sock.getsockname()[0]
-            logger.info(f"Node IP: {node_address}")
-
-            return node_address
-
-    def start_p2p(self):
-        self.p2p.start_socket_communication()
-
-    def start_api(self, port=None):
-        """Starts the nodes API."""
-        self.api = NodeAPI()
-        # Inject Node to NodeAPI
-        self.api.inject_node(self)
-        self.api.start(self.ip_address, port)
-
-class SeedNode(BasicNode):
-    def __init__(self, key=None, port=None) -> None:
-        BasicNode.__init__(self, key=key, port=port, communication_protocol=SeedSocketCommunication)
-
 class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
     """Beez Node - represents the core blockchain node."""
 
     def __init__(self, key=None, port=None) -> None:
-        BasicNode.__init__(self, key=key, port=port, communication_protocol=SocketCommunication)
+        BasicNode.__init__(
+            self, key=key, port=port, communication_protocol=SocketCommunication
+        )
+        self.api = None
         self.transaction_pool = TransactionPool()
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
@@ -95,6 +63,13 @@ class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
 
         # eigene addresse registrieren
         self.handle_address_registration(self.wallet.public_key_string())
+
+    def start_api(self, port=None):
+        """Starts the nodes API."""
+        self.api = NodeAPI()
+        # Inject Node to NodeAPI
+        self.api.inject_node(self)
+        self.api.start(self.ip_address, port)
 
     def start_p2p(self):
         """Starts the p2p communication thread."""
@@ -400,5 +375,3 @@ class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
                         # we have to clean up txpool
                         self.transaction_pool.remove_from_pool(block.transactions)
             self.pending_blockchain_request = False
-
-

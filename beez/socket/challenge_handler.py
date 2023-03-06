@@ -9,15 +9,14 @@ from loguru import logger
 from dotenv import load_dotenv
 
 
-from beez.socket.message_type import MessageType
-from beez.socket.message_challenge import MessageChallenge
+from beez.socket.messages.message_type import MessageType
+from beez.socket.messages.message_challenge import MessageChallenge
 from beez.beez_utils import BeezUtils
 
 
 if TYPE_CHECKING:
-    from beez.socket.socket_communication import SocketCommunication
+    from beez.socket.socket_communication.socket_communication import SocketCommunication
     from p2pnetwork.node import Node    # type: ignore
-    from beez.challenge.challenge import Challenge
     from beez.types import ChallengeID
 
 load_dotenv()  # load .env

@@ -2,26 +2,27 @@
 
 from __future__ import annotations
 import json
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING, Optional
 import os
 from dotenv import load_dotenv
 from loguru import logger
 from p2pnetwork.node import Node    # type: ignore
 
+from beez.socket.socket_communication.base_socket_communication import BaseSocketCommunication
 from beez.socket.socket_connector import SocketConnector
 from beez.socket.peer_discovery_handler import PeerDiscoveryHandler
 from beez.beez_utils import BeezUtils
-from beez.socket.message_type import MessageType
+from beez.socket.messages.message_type import MessageType
 from beez.transaction.transaction import Transaction
 from beez.transaction.challenge_tx import ChallengeTX
 from beez.block.blockchain import Blockchain
 from beez.block.block import Block
-from beez.socket.message_available_peers import MessageAvailablePeers
+from beez.socket.messages.message_health import MessageHealth
 
 if TYPE_CHECKING:
     from beez.types import Address
     from beez.node.beez_node import BeezNode
-    from beez.socket.message import Message
+    from beez.socket.messages.message import Message
 
 
 load_dotenv()  # load .env
@@ -30,69 +31,9 @@ LOCAL_P2P_PORT = 5444
 
 FIRST_SERVER_IP = os.getenv("FIRST_SERVER_IP", LOCAL_TEST_IP)   # pylint: disable=invalid-envvar-default
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", LOCAL_P2P_PORT))   # pylint: disable=invalid-envvar-default
+LOCAL_INTERVALS = 10
+INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))    # pylint: disable=invalid-envvar-default
 
-
-class BaseSocketCommunication(Node):
-    def __init__(self, ip: Address, port: int):
-        super(BaseSocketCommunication, self).__init__(ip, port, None)   # pylint: disable=super-with-arguments
-        self.own_connections: List[SocketConnector] = []
-        self.socket_connector = SocketConnector(ip, port)
-
-        logger.info(f"Socket Communication created.. {FIRST_SERVER_IP}: {P_2_P_PORT}")
-
-    def start_socket_communication(self):
-        """Starts socket communication."""
-        self.start()
-
-    def broadcast(self, message: str):
-        """Broadcast the message to all connected nodes."""
-        self.send_to_nodes(message)
-
-    def send(self, receiver: Node, message: str):
-        """Send the message to a specific node."""
-        self.send_to_node(receiver, message)
-
-class SeedSocketCommunication(BaseSocketCommunication):
-
-
-    def check_health(self):
-        # TODO: get current health status of each connected storage node
-        pass
-
-    def inbound_node_connected(self, node: Node):
-        """Callback method of receiving requests from nodes."""
-        logger.info("Storage node wants to connect - send list of peers")
-
-        own_connector = self.socket_connector
-        message_type = MessageType.DISCOVERY
-        message_type = "request_peers"
-
-        # calculate list of peers
-        peers_list = {}
-        for socket_connector in self.own_connections:
-            peers_list[f"{socket_connector.ip_address}:{socket_connector.port}"] = 100   # TODO: calculate real health
-
-        message = MessageAvailablePeers(own_connector, message_type, peers_list)
-
-        # Encode the message since peers communicate with bytes!
-        encoded_peers_message: str = BeezUtils.encode(message)
-
-        new_peer = True
-        node_socket_connector = SocketConnector(node.host, node.port)
-        # node_socket_connector = SocketConnector(node.host, 5444)
-        logger.info('GOT SOCKET CONNECTOR')
-        logger.info(node_socket_connector.ip_address)
-        logger.info(node_socket_connector.port)
-        for connection in self.own_connections:
-            if connection.equals(node_socket_connector):
-                # the node is itself
-                new_peer = False
-
-        if new_peer is True:
-            # if is not itself add to the list of peers
-            self.own_connections.append(node_socket_connector)
-    
-        self.send(node, encoded_peers_message)
 
 
 class SocketCommunication(BaseSocketCommunication):
@@ -104,6 +45,7 @@ class SocketCommunication(BaseSocketCommunication):
         BaseSocketCommunication.__init__(self, ip, port)   # pylint: disable=super-with-arguments
         self.peer_discovery_handler = PeerDiscoveryHandler(self)
         self.beez_node: Optional[BeezNode] = None
+        self.neighbor: Optional[SocketConnector] = None
 
     def connect_to_first_node(self):
         """Connects to first, hardcoded beez blockchain node."""
@@ -115,6 +57,7 @@ class SocketCommunication(BaseSocketCommunication):
         ):
             # connect to the first node
             self.connect_with_node(FIRST_SERVER_IP, P_2_P_PORT)
+            # self.connect_with_node(FIRST_SERVER_IP, 8122)
 
     def connect_with_adjacent_node(self, ip, port):
         logger.info(f"Check to connect to neighbor node {ip} at port {port}")
@@ -125,10 +68,12 @@ class SocketCommunication(BaseSocketCommunication):
         ):
             # connect to adjacent neighbor node
             connection_to_neighbor = False
+            import time
             while not connection_to_neighbor:
-                logger.info("connecting with node")
-                connection_to_neighbor = self.connect_with_node(ip, port)
+                logger.info(f"connecting with node {ip}:{port}")
+                connection_to_neighbor = self.connect_with_node(str(ip), int(port))
                 logger.info(connection_to_neighbor)
+                time.sleep(10)
             
 
     def start_socket_communication(self, beez_node: BeezNode):
@@ -218,22 +163,73 @@ class SocketCommunication(BaseSocketCommunication):
             # handle address registration
             if self.beez_node:
                 self.beez_node.handle_address_registration(message.public_key_hex)
-        elif message.message_type == 'request_peers':
-            logger.info(100*'##')
-            logger.info('got list of available peers from seed node')
-            logger.info(message.available_peers)
-            logger.info('calculate adjacent node')
-            logger.info('adjacent node is ')
-            self.own_connections.append(message.sender_connector)
-            if list(message.available_peers.keys()):
-                adjacent_key = list(message.available_peers.keys())[-1]
-                logger.info(message.available_peers[adjacent_key])
-                logger.info('connecting with neighbor')
-                self.connect_with_adjacent_node(ip=adjacent_key.split(':')[0], port=adjacent_key.split(':')[1])
-            else:
-                logger.info('there is no node yet')
-        elif message.message_type == 'request_health':
+        elif message.message_type == MessageType.PEERSREQUEST:
+
+            # add sender of message to own connections if not exists
+            sender_connector_exists: bool = False
+            for connector in self.own_connections:
+                if f"{connector.ip_address}:{connector.port}" == f"{message.sender_connector.ip_address}:{message.sender_connector.port}":
+                    sender_connector_exists = True
+            if not sender_connector_exists:
+                self.own_connections.append(message.sender_connector)
+                self.own_connections.sort(key=lambda x: f"{x.ip_address}:{x.port}", reverse=True)
+
+            # check if there are any dead nodes and if this node has connection to dead node
+            if message.dead_peers:
+                for dead_peer in message.dead_peers:
+                    self.disconnect_peer(SocketConnector(dead_peer.split(':')[0], int(dead_peer.split(':')[1])))
+            
+            # check if there are any available peers (this node should also be part of the list)
+            if not list(message.available_peers.keys()) or (len(list(message.available_peers.keys())) == 1 and list(message.available_peers.keys())[0] == f"{self.socket_connector.ip_address}:{self.socket_connector.port}"):
+                logger.info('No peers available')
+                return
+
+            # get adjacent neighbor
+            adjacent_index: int = -1
+            for index, available_peer in enumerate(list(message.available_peers.keys())):
+                if available_peer == f"{self.socket_connector.ip_address}:{self.socket_connector.port}":
+                    adjacent_index = index + 1
+            if adjacent_index >= len(list(message.available_peers.keys())):
+                adjacent_index = 0
+            if adjacent_index < 0:
+                logger.info('Could not calculate valid adjacent_index')
+                return
+            adjacent_key = list(message.available_peers.keys())[adjacent_index]
+
+            # check if adjacent neighbor is already the neighbor
+            if self.neighbor and adjacent_key == f"{self.neighbor.ip_address}:{self.neighbor.port}":
+                logger.info('Already connected to correct neighbor')
+                return
+            
+            # disconnect form current neighbor if exists
+            if self.neighbor:
+                self.disconnect_peer(self.neighbor)
+
+            # connect to neighbor
+            logger.info('connecting with neighbor')
+            self.connect_with_adjacent_node(ip=adjacent_key.split(':')[0], port=adjacent_key.split(':')[1])
+            self.neighbor = SocketConnector(adjacent_key.split(':')[0], int(adjacent_key.split(':')[1]))
+            
+        elif message.message_type == MessageType.HEALTHREQUEST:
             logger.info(100*'-')
             logger.info('seed node is requesting health')
-            logger.info(message)
-
+            health_reply = MessageHealth(self.socket_connector, MessageType.HEALTH, 95)
+            encoded_health_reply_message: str = BeezUtils.encode(health_reply)
+            self.send(node, encoded_health_reply_message)
+    
+    def disconnect_peer(self, socket_connector: SocketConnector):
+        nodes_to_disconnect: list[Node] = []
+        for node in self.all_nodes:
+            if f"{node.host}:{node.port}" == f"{socket_connector.ip_address}:{socket_connector.port}":
+                nodes_to_disconnect.append(node)
+        for node in nodes_to_disconnect:
+            index_to_delete = -1
+            for index,connection in enumerate(self.own_connections):
+                if f"{node.host}:{node.port}" == f"{connection.ip_address}:{connection.port}":
+                    index_to_delete = index
+            if index_to_delete > -1:
+                del self.own_connections[index_to_delete]
+            if self.neighbor and f"{self.neighbor.ip_address}:{self.neighbor.port}" == f"{node.host}:{node.port}":
+                self.neighbor = None
+            self.own_connections.sort(key=lambda x: f"{x.ip_address}:{x.port}", reverse=True)
+            self.node_disconnect_with_outbound_node(node)

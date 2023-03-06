@@ -2,11 +2,11 @@
 from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
-from flask_classful import FlaskView, route # type:ignore
+from flask_classful import FlaskView, route  # type:ignore
 from flask import Flask, jsonify, request
 from waitress import serve
 from loguru import logger
-from whoosh.fields import Schema, TEXT, KEYWORD, ID # type: ignore
+from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
 from dotenv import load_dotenv
 from beez.beez_utils import BeezUtils
 
@@ -29,26 +29,43 @@ if TYPE_CHECKING:
 BEEZ_NODE = None
 
 
-class NodeAPI(FlaskView):
-    """NodeAPI class which represents the HTTP communication interface."""
+class BaseNodeAPI(FlaskView):
+    """Base class for Beez Nodes REST API interface."""
     def __init__(self) -> None:
-        self.app = Flask(__name__)  # create the Flask application
-        # for testing index
-
-    def start(self, node_ip: Address, port=None) -> None:
-        """Starting the nodes api."""
-        logger.info(f"Node API started at {node_ip}:{NODE_API_PORT}")
-        # register the application to routes
-        NodeAPI.register(self.app, route_base="/")
-        serve(self.app, host=node_ip, port=port if port else NODE_API_PORT)
-        # self.app.run(host=node_ip, port=port if port else NODE_API_PORT)
+        self.app = Flask(__name__)
 
     # find a way to use the properties of the node in the nodeAPI
     def inject_node(self, incjected_node: BeezNode) -> None:
         """Inject the node object of this Blockchain instance and make it
         available for the endpoints."""
-        global BEEZ_NODE    # pylint: disable=global-statement
+        global BEEZ_NODE  # pylint: disable=global-statement
         BEEZ_NODE = incjected_node
+
+
+class SeedNodeAPI(BaseNodeAPI):
+    """Beez Seed Node REST API interface."""
+
+    def start(self, node_ip: Address, port=None) -> None:
+        """Starts the REST API."""
+        logger.info(f"Seed Node API started at {node_ip}:{NODE_API_PORT}")
+        SeedNodeAPI.register(self.app, route_base="/")
+        serve(self.app, host=node_ip, port=port if port else NODE_API_PORT)
+
+    @route("/clusterhealth", methods=["GET"])
+    def cluster_health(self):
+        """Returns the node's connected nodes."""
+        cluster_health = BEEZ_NODE.p2p.node_health_status
+        return {"cluster_health": cluster_health}, 200
+
+
+class NodeAPI(BaseNodeAPI):
+    """NodeAPI class which represents the HTTP communication interface."""
+
+    def start(self, node_ip: Address, port=None) -> None:
+        """Starts the REST API."""
+        logger.info(f"Node API started at {node_ip}:{NODE_API_PORT}")
+        NodeAPI.register(self.app, route_base="/")
+        serve(self.app, host=node_ip, port=port if port else NODE_API_PORT)
 
     @route("/txpindex", methods=["GET"])
     def txpindex(self) -> tuple[str, int]:
@@ -139,7 +156,6 @@ class NodeAPI(FlaskView):
             for block in blocks:
                 resultsset.append(block.serialize())
 
-
         return str(resultsset), 200
 
     @route("/info", methods=["GET"])
@@ -186,16 +202,12 @@ class NodeAPI(FlaskView):
     def transaction_pool(self):
         """Returns the current state of the in-memory transaction pool"""
         # Implement this
-        logger.info(
-            "Send all the transactions that are on the transaction pool"
-        )
+        logger.info("Send all the transactions that are on the transaction pool")
         transactions = {}
 
         # logger.info(f"Transactions: {node.transactionPool.transactions}")
 
-        for idx, transaction in enumerate(
-            BEEZ_NODE.transaction_pool.transactions
-        ):
+        for idx, transaction in enumerate(BEEZ_NODE.transaction_pool.transactions):
             logger.info(f"Transaction: {idx} : {transaction.id}")
             transactions[idx] = transaction.toJson()
 
@@ -207,9 +219,7 @@ class NodeAPI(FlaskView):
     def account_state_model(self):
         """Returns the current state of the account_state_model"""
         # Implement this
-        logger.info(
-            "Send the current account_state_model state"
-        )
+        logger.info("Send the current account_state_model state")
 
         # logger.info(f"Transactions to Json: {transactions}")
 
@@ -243,7 +253,6 @@ class NodeAPI(FlaskView):
         logger.info("Blockchain called...")
         return BEEZ_NODE.blockchain.to_json(), 200
 
-
     @route("/registeraddress", methods=["POST", "OPTIONS"])
     def register_address(self):
         """Post a new address to public-key mapping."""
@@ -253,7 +262,7 @@ class NodeAPI(FlaskView):
             return "Missing public-key value", 400
 
         # manage the transaction on the Blockchain
-        beez_address = BEEZ_NODE.handle_address_registration(values['publickey'])
+        beez_address = BEEZ_NODE.handle_address_registration(values["publickey"])
         return_string = f"Added {beez_address}: {values['publickey']}"
 
         response = {"message": return_string}
@@ -265,11 +274,16 @@ class NodeAPI(FlaskView):
         """Returns the registered addresses of this node."""
         registered_addresses = BEEZ_NODE.get_registered_addresses()
         return {"registered_addresses": registered_addresses}, 200
-    
+
     @route("/connectednodes", methods=["GET"])
     def connected_nodes(self):
         """Returns the node's connected nodes."""
         connected_nodes = BEEZ_NODE.p2p.own_connections
-        return {"connected_nodes": connected_nodes}, 200
-    
-    
+        connections: dict[str:int] = {}
+        for connected_node in connected_nodes:
+            connections[connected_node.ip_address] = connected_node.port
+        if BEEZ_NODE.p2p.neighbor:
+            connections[
+                BEEZ_NODE.p2p.neighbor.ip_address
+            ] = f"{BEEZ_NODE.p2p.neighbor.port} -- Neighbor"
+        return {"connected_nodes": connections}, 200
