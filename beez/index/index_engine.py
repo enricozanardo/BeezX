@@ -306,4 +306,36 @@ class AddressIndexEngine(Engine):
             new_engine = AddressIndexEngine(schema)
             AddressIndexEngine.engine = new_engine
         return AddressIndexEngine.engine
+    
+
+class DigitalAssetMetadataIndexEngine(Engine):
+    """Index engine for for digital asset metadata."""
+
+    engine = None
+
+    def __init__(self, schema):
+        super().__init__()
+        self.schema = schema
+        schema.add("raw", TEXT(stored=True))
+        if not os.path.isdir("dam_metadata_indices"):
+            os.makedirs("dam_metadata_indices", exist_ok=True)
+            self.index = FileStorage("dam_metadata_indices").create_index(
+                self.schema, indexname="dam_metadata_index"
+            )
+        else:
+            self.index = FileStorage("dam_metadata_indices").open_index("dam_metadata_index")
+        DigitalAssetMetadataIndexEngine.engine = self
+
+    # Singleton
+    @staticmethod
+    def get_engine(schema, force_new: bool = False):
+        """Returns an engine for the given schema."""
+        if (
+            not DigitalAssetMetadataIndexEngine.engine
+            or force_new
+            or not index.exists_in("dam_metadata_indices")
+        ):
+            new_engine = DigitalAssetMetadataIndexEngine(schema)
+            DigitalAssetMetadataIndexEngine.engine = new_engine
+        return DigitalAssetMetadataIndexEngine.engine
         
