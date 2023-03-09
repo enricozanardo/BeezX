@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING
 from flask_classful import FlaskView, route  # type:ignore
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_file
 from waitress import serve
 from loguru import logger
 from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
@@ -19,6 +19,7 @@ from beez.index.index_engine import (
 load_dotenv()  # load .env
 
 NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
+NODE_DAM_FOLDER = '/'
 
 if TYPE_CHECKING:
     from beez.node.beez_node import BeezNode
@@ -31,8 +32,10 @@ BEEZ_NODE = None
 
 class BaseNodeAPI(FlaskView):
     """Base class for Beez Nodes REST API interface."""
+
     def __init__(self) -> None:
         self.app = Flask(__name__)
+        self.app.config['UPLOAD_FOLDER'] = NODE_DAM_FOLDER
 
     # find a way to use the properties of the node in the nodeAPI
     def inject_node(self, incjected_node: BeezNode) -> None:
@@ -56,6 +59,52 @@ class SeedNodeAPI(BaseNodeAPI):
         """Returns the node's connected nodes."""
         cluster_health = BEEZ_NODE.p2p.node_health_status
         return {"cluster_health": cluster_health}, 200
+    
+    @route("/uploadasset", methods=["POST"])
+    def upload_asset(self):
+        """Upload a new asset."""
+        # check if the post request has the file part
+        if 'file' not in request.files:
+            return "Missing file", 400
+        
+        file = request.files['file']
+        # If the user does not select a file, the browser submits an
+        # empty file without a filename.
+        if file.filename == '':
+            return "Missing file", 400
+        
+        if file:
+            filename = file.filename
+            file.save(os.path.join(self.app.config['UPLOAD_FOLDER'], filename))
+            content = b''
+            with open(os.path.join(self.app.config['UPLOAD_FOLDER'], filename), 'rb') as infile:
+                content = infile.read()
+            if content != b'':
+                BEEZ_NODE.process_uploaded_asset(filename, content)
+            return f"Uploaded file {filename}", 201
+        
+    @route("/downloadasset", methods=["POST"])
+    def download_asset(self):
+        """Download an asset."""
+        values = request.get_json()
+
+        if not "filename" in values:
+            return "Missing filename", 400
+
+        file_content = BEEZ_NODE.get_distributed_asset(values["filename"])
+        with open("/tmp/testtext.txt", 'w+b') as outfile:
+            outfile.write(file_content)
+
+        
+        # return {"file_content": file_content.decode()}, 201
+    
+        try:
+            return send_file("/tmp/testtext.txt", attachment_filename="testtext.txt")
+            # return send_file(os.path.join(self.app.config['UPLOAD_FOLDER'], values["filename"]), attachment_filename=values["filename"])
+        except Exception as e:
+            return str(e)
+
+    
 
 
 class NodeAPI(BaseNodeAPI):
