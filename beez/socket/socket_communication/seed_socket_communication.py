@@ -43,6 +43,11 @@ class SeedSocketCommunication(BaseSocketCommunication):
         BaseSocketCommunication.__init__(self, ip, port)   # pylint: disable=super-with-arguments
         self.node_health_status: dict[str, dict[str, Any]] = {}
         self.dead_nodes: list[str] = []
+        self.beez_node = None
+
+    def start_socket_communication(self, node):
+        self.beez_node = node
+        self.start()
 
     def network_health_scan(self):
         status_thread = threading.Thread(target=self.check_health, args={})
@@ -96,6 +101,8 @@ class SeedSocketCommunication(BaseSocketCommunication):
             time.sleep(INTERVALS)
 
     def create_available_peers_message(self):
+        logger.info(100*'#')
+        
         own_connector = self.socket_connector
 
         # calculate list of peers
@@ -103,6 +110,7 @@ class SeedSocketCommunication(BaseSocketCommunication):
         for socket_connector in self.own_connections:
             peers_list[f"{socket_connector.ip_address}:{socket_connector.port}"] = 100   # TODO: calculate real health
 
+        logger.info(peers_list)
         dead_peers = deepcopy(self.dead_nodes)
         message = MessageAvailablePeers(own_connector, MessageType.PEERSREQUEST, peers_list, dead_peers)
         self.dead_nodes = []
@@ -146,3 +154,8 @@ class SeedSocketCommunication(BaseSocketCommunication):
                 "health_metric": message.health_status,
                 "last_update": datetime.now(),
             }
+        elif message.message_type == "junk_reply":
+            junk = message.junk
+            chunk_name = message.junk_name
+            file_name = message.file_name
+            self.beez_node.add_asset_junks(file_name, chunk_name, junk)

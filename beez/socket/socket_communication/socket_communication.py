@@ -20,6 +20,7 @@ from beez.transaction.challenge_tx import ChallengeTX
 from beez.block.blockchain import Blockchain
 from beez.block.block import Block
 from beez.socket.messages.message_health import MessageHealth
+from beez.socket.messages.message_junk_reply import MessageJunkReply
 
 if TYPE_CHECKING:
     from beez.types import Address
@@ -58,6 +59,7 @@ class SocketCommunication(BaseSocketCommunication):
             or self.socket_connector.port != P_2_P_PORT
         ):
             # connect to the first node
+            logger.info('Connecting')
             self.connect_with_node(FIRST_SERVER_IP, P_2_P_PORT)
             # self.connect_with_node(FIRST_SERVER_IP, 8122)
 
@@ -165,6 +167,17 @@ class SocketCommunication(BaseSocketCommunication):
             # handle address registration
             if self.beez_node:
                 self.beez_node.handle_address_registration(message.public_key_hex)
+        elif message.message_type == "push_junk":
+            with open(f"/{message.junk_id}", "w+b") as outfile:
+                outfile.write(message.junk)
+        elif message.message_type == "pull_junk":
+            content = b''
+            with open(f"/{message.junk_name}", "rb") as infile:
+                content = infile.read()
+            junk_reply = MessageJunkReply(self.socket_connector, "junk_reply", message.file_name, message.junk_name, content)
+            # junk_reply = MessageJunkReply(self.socket_connector, "junk_reply", message.file_name, message.junk_name, str(content))
+            encoded_junk_reply: str = BeezUtils.encode(junk_reply)
+            self.send(node, encoded_junk_reply)
         elif message.message_type == MessageType.PEERSREQUEST:
 
             # add sender of message to own connections if not exists
@@ -221,6 +234,7 @@ class SocketCommunication(BaseSocketCommunication):
             health_reply = MessageHealth(self.socket_connector, MessageType.HEALTH, current_health)
             encoded_health_reply_message: str = BeezUtils.encode(health_reply)
             self.send(node, encoded_health_reply_message)
+        
 
     def health(self):
         """Calculates the health of the machine."""
@@ -233,7 +247,8 @@ class SocketCommunication(BaseSocketCommunication):
         network_test = speedtest.Speedtest() 
         download_performance = network_test.download()//8000 # 8000 bits = 1 kilobyte
         upload_performance = network_test.upload()//8000 # 8000 bits = 1 kilobyte
-        return download_performance, upload_performance
+        # return download_performance, upload_performance
+        return 500,500
 
     def available_storage_capacity(self):
         """Returns free storage capacity of machine."""
