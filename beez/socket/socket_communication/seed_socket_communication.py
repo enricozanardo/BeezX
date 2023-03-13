@@ -38,26 +38,32 @@ DISCONNECT_INTERVALS = int(os.getenv("DISCONNECT_INTERVALS", LOCAL_DISCONNECT_IN
 
 
 class SeedSocketCommunication(BaseSocketCommunication):
+    """
+    This class manage the P2P communication for seed nodes.
+    """
 
     def __init__(self, ip: Address, port: int):
+        """Initialize seed socket communication."""
         BaseSocketCommunication.__init__(self, ip, port)   # pylint: disable=super-with-arguments
         self.node_health_status: dict[str, dict[str, Any]] = {}
         self.dead_nodes: list[str] = []
+        self.health_checks_active = True
 
     def network_health_scan(self):
+        """Execution thread to iteratively request the peers health status."""
         status_thread = threading.Thread(target=self.check_health, args={})
+        status_thread.daemon = True
         status_thread.start()
 
     def available_peers_broadcast_thread(self):
+        """Execution thread to iteratively broadcast the available peers."""
         peers_thread = threading.Thread(target=self.broadcast_available_peers, args={})
+        peers_thread.daemon = True
         peers_thread.start()
 
-    def switch_neighbor(self, affected_node, neighbor_node):
-        pass
-
     def check_health(self):
-        # TODO: get current health status of each connected storage node
-        while True:
+        """Checks the current health status of the connected nodes."""
+        while self.health_checks_active:
             logger.info("Current health status")
             logger.info(self.node_health_status)
 
@@ -89,13 +95,13 @@ class SeedSocketCommunication(BaseSocketCommunication):
                 available_peers_message = self.create_available_peers_message()
                 self.broadcast(available_peers_message)
 
-
             health_request_message = MessageHealthRequest(self.socket_connector, MessageType.HEALTHREQUEST)
             encoded_health_request_message: str = BeezUtils.encode(health_request_message)
             self.broadcast(encoded_health_request_message)
             time.sleep(INTERVALS)
 
     def create_available_peers_message(self):
+        """Create message containing information about the available peers in the system."""
         own_connector = self.socket_connector
 
         # calculate list of peers
@@ -112,6 +118,7 @@ class SeedSocketCommunication(BaseSocketCommunication):
         return encoded_peers_message
     
     def broadcast_available_peers(self):
+        """Broadcast the currently available peers."""
         encoded_peers_message = self.create_available_peers_message()
         self.broadcast(encoded_peers_message)
         time.sleep(60)
@@ -138,9 +145,9 @@ class SeedSocketCommunication(BaseSocketCommunication):
         self.broadcast(encoded_peers_message)
 
     def node_message(self, node: Node, data: Message):
+        """Handle incomming p2p messages."""
         message = BeezUtils.decode(json.dumps(data))
         if message.message_type == MessageType.HEALTH:
-            logger.info(100*'0')
             logger.info('got health status from node {}, health is {}', message.sender_connector, message.health_status)
             self.node_health_status[f"{node.host}:{node.port}"] = {
                 "health_metric": message.health_status,

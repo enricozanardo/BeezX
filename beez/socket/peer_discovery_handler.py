@@ -31,21 +31,7 @@ class PeerDiscoveryHandler:
 
     def start(self):
         """Starts the status thread and the discovery thread."""
-        # start node threads...
-        status_thread = threading.Thread(target=self.status, args={})
-        status_thread.start()
-
-        # discovery_thread = threading.Thread(target=self.discovery, args={})
-        # discovery_thread.start()
-
-    def status(self):
-        """Display the nodes that are connected to a node"""
-        while True:
-            logger.info("Current connections:")
-            for connection in self.socket_communication.own_connections:
-                logger.info(f"Peer: {str(connection.ip_address)}:{str(connection.port)}")
-
-            time.sleep(INTERVALS)
+        pass
 
     def discovery(self):
         """Broadcasts discovery messages into the blockchain."""
@@ -86,7 +72,6 @@ class PeerDiscoveryHandler:
     def handle_message(self, message: MessageOwnConnections):
         """Handles message."""
         peer_socket_connector = message.sender_connector
-        # peer_connection_list: List[SocketConnector] = message.own_connections
         peer_addresses = message.own_addresses
         new_peer = True
 
@@ -98,19 +83,6 @@ class PeerDiscoveryHandler:
         if new_peer is True:
             # if is not itself add to the list of peers
             self.socket_communication.own_connections.append(peer_socket_connector)
-
-        # Check if in the peersPeerList there are new peers and connect to them
-        # for connection_peer in peer_connection_list:
-        #     peer_known = False
-        #     for connection in self.socket_communication.own_connections:
-        #         if connection.equals(connection_peer):
-        #             peer_known = True
-        #     if not peer_known and not connection_peer.equals(
-        #         self.socket_communication.socket_connector
-        #     ):
-        #         self.socket_communication.connect_with_node(
-        #             connection_peer.ip_address, connection_peer.port
-        #         )
 
         # Update addresses
         for address in peer_addresses:
