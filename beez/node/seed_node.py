@@ -17,9 +17,9 @@ P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envva
 class SeedNode(BasicNode):
     """Beez Seed Node class."""
 
-    def __init__(self, key=None, port=None) -> None:
+    def __init__(self, key=None, ip=None, port=None) -> None:
         BasicNode.__init__(
-            self, key=key, port=port, communication_protocol=SeedSocketCommunication
+            self, key=key, ip=ip, port=port, communication_protocol=SeedSocketCommunication
         )
         self.start_network_health_scans()
 
@@ -33,3 +33,7 @@ class SeedNode(BasicNode):
     def start_network_health_scans(self):
         """Starts the network scans for Beez Node health discovery."""
         self.p2p.network_health_scan()
+
+    def stop(self):
+        self.p2p.health_checks_active = False
+        self.p2p.stop()
