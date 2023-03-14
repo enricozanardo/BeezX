@@ -32,10 +32,10 @@ def test_connected_nodes():
         clear_indices()
         ip = get_ip()
         port = 8312
-        seed_node = SeedNode(ip=ip, port=8311)
+        seed_node = SeedNode(ip_address=ip, port=8311)
         seed_node.start_p2p()
         time.sleep(10)
-        storage_node_1 = BeezNode(ip=ip, port=5646, first_server_ip=ip, first_server_port=8311)
+        storage_node_1 = BeezNode(ip_address=ip, port=5646, first_server_ip=ip, first_server_port=8311)
         storage_node_1.start_p2p()
         time.sleep(5)
         api_thread = threading.Thread(target=start_api_thread, args=(storage_node_1, int(port), ))

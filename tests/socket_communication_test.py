@@ -9,7 +9,7 @@ def test_socketCommunication():
 
     ip = "192.168.1.209"
     port = 8181
-
+    
     socketCommunication = SocketCommunication(ip, port)
     socketCommunication.start_socket_communication(beezNode)
 

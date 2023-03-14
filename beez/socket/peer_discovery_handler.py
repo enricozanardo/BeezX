@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
-import threading
 import time
 import os
 from loguru import logger
@@ -28,10 +27,6 @@ class PeerDiscoveryHandler:
 
     def __init__(self, socket_communication: SocketCommunication) -> None:
         self.socket_communication = socket_communication
-
-    def start(self):
-        """Starts the status thread and the discovery thread."""
-        pass
 
     def discovery(self):
         """Broadcasts discovery messages into the blockchain."""

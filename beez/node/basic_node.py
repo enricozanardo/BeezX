@@ -24,12 +24,12 @@ class BasicNode:
     def __init__(
         self,
         key=None,
-        ip=None,
+        ip_address=None,
         port=None,
         communication_protocol: BaseSocketCommunication = BaseSocketCommunication,
     ) -> None:
         self.api = None
-        self.ip_address = ip if ip else self.get_ip()
+        self.ip_address = ip_address if ip_address else self.get_ip()
         self.port = port if port else int(P_2_P_PORT)
         self.wallet = Wallet()
         self.p2p = communication_protocol(self.ip_address, port if port else self.port)

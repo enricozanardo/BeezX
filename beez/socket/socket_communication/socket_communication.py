@@ -86,7 +86,6 @@ class SocketCommunication(BaseSocketCommunication):
         """Starts socket communication."""
         self.beez_node = beez_node
         self.start()
-        self.peer_discovery_handler.start()
         self.connect_to_first_node()
 
     def inbound_node_connected(self, node: Node):

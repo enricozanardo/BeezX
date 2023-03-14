@@ -33,7 +33,7 @@ def test_empty_peers_list():
         clear_indices()
         ip = get_ip()
         port = 8112
-        seed_node = SeedNode(ip=ip, port=8111)
+        seed_node = SeedNode(ip_address=ip, port=8111)
         seed_node.start_p2p()
         time.sleep(5)
         api_thread = threading.Thread(target=start_api_thread, args=(seed_node, int(port), ))
@@ -56,10 +56,10 @@ def test_non_empty_peer_list():
         clear_indices()
         ip = get_ip()
         port = 8612
-        seed_node = SeedNode(ip=ip, port=8611)
+        seed_node = SeedNode(ip_address=ip, port=8611)
         seed_node.start_p2p()
         time.sleep(10)
-        storage_node_1 = BeezNode(ip=ip, port=5746, first_server_ip=ip, first_server_port=8611)
+        storage_node_1 = BeezNode(ip_address=ip, port=5746, first_server_ip=ip, first_server_port=8611)
         storage_node_1.start_p2p()
         time.sleep(5)
         api_thread = threading.Thread(target=start_api_thread, args=(seed_node, int(port), ))

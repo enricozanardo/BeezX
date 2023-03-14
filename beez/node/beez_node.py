@@ -3,14 +3,13 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import os
-from dotenv import load_dotenv
-from loguru import logger
-import GPUtil  # type: ignore
 import threading
 import time
 import shutil
 import speedtest
-
+import GPUtil  # type: ignore
+from loguru import logger
+from dotenv import load_dotenv
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
 
@@ -44,9 +43,20 @@ P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envva
 class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
     """Beez Node - represents the core blockchain node."""
 
-    def __init__(self, key=None, ip=None, port=None, first_server_ip=None, first_server_port=None) -> None:
-        BasicNode.__init__(
-            self, key=key, ip=ip, port=port, communication_protocol=SocketCommunication
+    def __init__(   # pylint: disable=too-many-arguments
+        self,
+        key=None,
+        ip_address=None,
+        port=None,
+        first_server_ip=None,
+        first_server_port=None,
+    ) -> None:
+        BasicNode.__init__(     # pylint: disable=duplicate-code
+            self,
+            key=key,
+            ip_address=ip_address,
+            port=port,
+            communication_protocol=SocketCommunication,
         )
         self.api = None
         self.transaction_pool = TransactionPool()
@@ -93,28 +103,34 @@ class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
         self.p2p.start_socket_communication(self)
 
     def start_health_monitoring(self):
+        """Start the health monitoring execution thread."""
         health_thread = threading.Thread(target=self.calculate_health, args=())
         health_thread.daemon = True
         health_thread.start()
 
     def calculate_health(self):
+        """Iteratively recalculate health status."""
         while True:
             download_performance, upload_performance = self.network_performance()
             available_storage_capacity = self.available_storage_capacity()
-            self.node_health = download_performance + upload_performance + (available_storage_capacity * 1000)
+            self.node_health = (
+                download_performance
+                + upload_performance
+                + (available_storage_capacity * 1000)
+            )
             time.sleep(60)
 
     def network_performance(self):
         """Returns network download and upload performance of machine."""
-        network_test = speedtest.Speedtest() 
-        download_performance = network_test.download()//8000 # 8000 bits = 1 kilobyte
-        upload_performance = network_test.upload()//8000 # 8000 bits = 1 kilobyte
+        network_test = speedtest.Speedtest()
+        download_performance = network_test.download() // 8000  # 8000 bits = 1 kilobyte
+        upload_performance = network_test.upload() // 8000  # 8000 bits = 1 kilobyte
         return download_performance, upload_performance
 
     def available_storage_capacity(self):
         """Returns free storage capacity of machine."""
         _, _, free = shutil.disk_usage("/")
-        free_gb = free//(2**30)
+        free_gb = free // (2**30)
         return free_gb
 
     def get_registered_addresses(self) -> list[dict[str, str]]:
@@ -409,4 +425,5 @@ class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
             self.pending_blockchain_request = False
 
     def stop(self):
+        """Stops the p2p communication."""
         self.p2p.stop()
