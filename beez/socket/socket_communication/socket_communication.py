@@ -7,8 +7,6 @@ import os
 from dotenv import load_dotenv
 from loguru import logger
 from p2pnetwork.node import Node    # type: ignore
-import speedtest
-import shutil
 
 from beez.socket.socket_communication.base_socket_communication import BaseSocketCommunication
 from beez.socket.socket_connector import SocketConnector
@@ -52,18 +50,23 @@ class SocketCommunication(BaseSocketCommunication):
 
     def connect_to_first_node(self):
         """Connects to first, hardcoded beez blockchain node."""
-        logger.info(f"Check to connect to first node {FIRST_SERVER_IP} at port {P_2_P_PORT}")
+        first_server_ip = FIRST_SERVER_IP
+        first_server_port = P_2_P_PORT
+        if self.beez_node and self.beez_node.first_server_ip:
+            first_server_ip = self.beez_node.first_server_ip
+        if self.beez_node and self.beez_node.first_server_port:
+            first_server_port = self.beez_node.first_server_port
+        logger.info(f"Check to connect to first node {first_server_ip} at port {first_server_port}")
 
         if (
-            self.socket_connector.ip_address != FIRST_SERVER_IP
-            or self.socket_connector.port != P_2_P_PORT
+            self.socket_connector.ip_address != first_server_ip
+            or self.socket_connector.port != first_server_port
         ):
             # connect to the first node
-            logger.info('Connecting')
-            self.connect_with_node(FIRST_SERVER_IP, P_2_P_PORT)
-            # self.connect_with_node(FIRST_SERVER_IP, 8122)
-
+            self.connect_with_node(first_server_ip, first_server_port)
+            
     def connect_with_adjacent_node(self, ip, port):
+        """Connects to adjacent neighbor based on peers list from seed node."""
         logger.info(f"Check to connect to neighbor node {ip} at port {port}")
 
         if (
@@ -84,7 +87,6 @@ class SocketCommunication(BaseSocketCommunication):
         """Starts socket communication."""
         self.beez_node = beez_node
         self.start()
-        self.peer_discovery_handler.start()
         self.connect_to_first_node()
 
     def inbound_node_connected(self, node: Node):
@@ -195,8 +197,6 @@ class SocketCommunication(BaseSocketCommunication):
                     self.disconnect_peer(SocketConnector(dead_peer.split(':')[0], int(dead_peer.split(':')[1])))
             
             # check if there are any available peers (this node should also be part of the list)
-            logger.info('AVAILABLE PEERS')
-            logger.info(list(message.available_peers.keys()))
             if not list(message.available_peers.keys()) or (len(list(message.available_peers.keys())) == 1 and list(message.available_peers.keys())[0] == f"{self.socket_connector.ip_address}:{self.socket_connector.port}"):
                 logger.info('No peers available')
                 return
@@ -228,36 +228,13 @@ class SocketCommunication(BaseSocketCommunication):
             self.neighbor = SocketConnector(adjacent_key.split(':')[0], int(adjacent_key.split(':')[1]))
             
         elif message.message_type == MessageType.HEALTHREQUEST:
-            logger.info(100*'-')
-            logger.info('seed node is requesting health')
-            current_health = self.health()
+            current_health = self.beez_node.node_health
             health_reply = MessageHealth(self.socket_connector, MessageType.HEALTH, current_health)
             encoded_health_reply_message: str = BeezUtils.encode(health_reply)
             self.send(node, encoded_health_reply_message)
-        
-
-    def health(self):
-        """Calculates the health of the machine."""
-        download_performance, upload_performance = self.network_performance()
-        available_storage_capacity = self.available_storage_capacity()
-        return download_performance + upload_performance + (available_storage_capacity * 1000)
-
-    def network_performance(self):
-        """Returns network download and upload performance of machine."""
-        network_test = speedtest.Speedtest() 
-        download_performance = network_test.download()//8000 # 8000 bits = 1 kilobyte
-        upload_performance = network_test.upload()//8000 # 8000 bits = 1 kilobyte
-        # return download_performance, upload_performance
-        return 500,500
-
-    def available_storage_capacity(self):
-        """Returns free storage capacity of machine."""
-        _, _, free = shutil.disk_usage("/")
-        free_gb = free//(2**30)
-        return free_gb
-
     
     def disconnect_peer(self, socket_connector: SocketConnector):
+        """Disconnect form peer with socket connector."""
         nodes_to_disconnect: list[Node] = []
         for node in self.all_nodes:
             if f"{node.host}:{node.port}" == f"{socket_connector.ip_address}:{socket_connector.port}":

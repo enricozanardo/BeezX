@@ -25,9 +25,13 @@ P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envva
 class SeedNode(BasicNode):
     """Beez Seed Node class."""
 
-    def __init__(self, key=None, port=None) -> None:
-        BasicNode.__init__(
-            self, key=key, port=port, communication_protocol=SeedSocketCommunication
+    def __init__(self, key=None, ip_address=None, port=None) -> None:
+        BasicNode.__init__(     # pylint: disable=duplicate-code
+            self,
+            key=key,
+            ip_address=ip_address,
+            port=port,
+            communication_protocol=SeedSocketCommunication
         )
         self.dam_metadata_index = DigitalAssetMetadataIndexEngine.get_engine(
             Schema(
@@ -133,3 +137,7 @@ class SeedNode(BasicNode):
 
     def get_junk_from_node(self, junk_id):
         pass
+    def stop(self):
+        """Stops the p2p communication."""
+        self.p2p.health_checks_active = False
+        self.p2p.stop()
