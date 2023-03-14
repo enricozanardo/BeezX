@@ -23,6 +23,7 @@ class AccountStateModel:
     def start(self):
         """Start status thread."""
         status_thread = threading.Thread(target=self.status, args={})
+        status_thread.daemon = True
         status_thread.start()
 
     def serialize(self) -> dict[str,Any]:

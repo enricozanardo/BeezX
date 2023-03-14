@@ -2,7 +2,7 @@
 import pytest
 import shutil
 from beez.socket.challenge_handler import ChallengeHandler
-from beez.socket.socket_communication import SocketCommunication
+from beez.socket.socket_communication.socket_communication import SocketCommunication
 
 def clear_indices():
     shutil.rmtree("account_indices", ignore_errors=True)

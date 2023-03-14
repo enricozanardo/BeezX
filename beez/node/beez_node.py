@@ -3,32 +3,34 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Optional
 import os
-import socket
-from dotenv import load_dotenv
-from loguru import logger
+import threading
+import time
+import shutil
+import speedtest
 import GPUtil  # type: ignore
-
+from loguru import logger
+from dotenv import load_dotenv
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
 
+from beez.node.basic_node import BasicNode
 from beez.wallet.wallet import Wallet
-from beez.socket.socket_communication import SocketCommunication
+from beez.socket.socket_communication.socket_communication import SocketCommunication
 from beez.api.node_api import NodeAPI
 from beez.transaction.transaction_pool import TransactionPool
-from beez.socket.message_transaction import MessageTransation
-from beez.socket.message_type import MessageType
-from beez.socket.message_challenge_transaction import MessageChallengeTransation
-from beez.socket.message_challenge import MessageChallenge
-from beez.socket.message_address_registration import MessageAddressRegistration
+from beez.socket.messages.message_transaction import MessageTransation
+from beez.socket.messages.message_type import MessageType
+from beez.socket.messages.message_challenge_transaction import MessageChallengeTransation
+from beez.socket.messages.message_challenge import MessageChallenge
+from beez.socket.messages.message_address_registration import MessageAddressRegistration
 from beez.block.blockchain import Blockchain
-from beez.socket.message_block import MessageBlock
-from beez.socket.message_blockchain import MessageBlockchain
-from beez.socket.message import Message
+from beez.socket.messages.message_block import MessageBlock
+from beez.socket.messages.message_blockchain import MessageBlockchain
+from beez.socket.messages.message import Message
 from beez.beez_utils import BeezUtils
 from beez.index.index_engine import AddressIndexEngine
 
 if TYPE_CHECKING:
-    from beez.types import Address
     from beez.transaction.transaction import Transaction
     from beez.transaction.challenge_tx import ChallengeTX
     from beez.challenge.challenge import Challenge
@@ -38,21 +40,34 @@ load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envvar-default
 
 
-class BeezNode:  # pylint: disable=too-many-instance-attributes
+class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
     """Beez Node - represents the core blockchain node."""
 
-    def __init__(self, key=None, port=None) -> None:
+    def __init__(   # pylint: disable=too-many-arguments
+        self,
+        key=None,
+        ip_address=None,
+        port=None,
+        first_server_ip=None,
+        first_server_port=None,
+    ) -> None:
+        BasicNode.__init__(     # pylint: disable=duplicate-code
+            self,
+            key=key,
+            ip_address=ip_address,
+            port=port,
+            communication_protocol=SocketCommunication,
+        )
         self.api = None
-        self.ip_address = self.get_ip()
-        self.port = int(P_2_P_PORT)
-        self.wallet = Wallet()
         self.transaction_pool = TransactionPool()
         self.gpus = GPUtil.getGPUs()
         self.cpus = os.cpu_count()
         self.blockchain = Blockchain()
-        self.p2p = SocketCommunication(self.ip_address, port if port else self.port)
         self.pending_blockchain_request = False
         self.pending_block_handling = False
+        self.node_health = 0
+        self.first_server_ip = first_server_ip
+        self.first_server_port = first_server_port
         self.address_index = AddressIndexEngine.get_engine(
             Schema(
                 id=ID(stored=True),
@@ -63,20 +78,15 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
         )
         self.address_buffer = {}
 
-        if key is not None:
-            self.wallet.from_key(key)
-
-        # eigene addresse registrieren
+        self.start_health_monitoring()
         self.handle_address_registration(self.wallet.public_key_string())
 
-    def get_ip(self) -> Address:
-        """Return IP of node."""
-        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-            sock.connect(("8.8.8.8", 53))
-            node_address: Address = sock.getsockname()[0]
-            logger.info(f"Node IP: {node_address}")
-
-            return node_address
+    def start_api(self, port=None):
+        """Starts the nodes API."""
+        self.api = NodeAPI()
+        # Inject Node to NodeAPI
+        self.api.inject_node(self)
+        self.api.start(self.ip_address, port)
 
     def start_p2p(self):
         """Starts the p2p communication thread."""
@@ -92,12 +102,36 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
             self.blockchain.beez_keeper = self.blockchain.blocks()[-1].header.beez_keeper
         self.p2p.start_socket_communication(self)
 
-    def start_api(self, port=None):
-        """Starts the nodes API."""
-        self.api = NodeAPI()
-        # Inject Node to NodeAPI
-        self.api.inject_node(self)
-        self.api.start(self.ip_address, port)
+    def start_health_monitoring(self):
+        """Start the health monitoring execution thread."""
+        health_thread = threading.Thread(target=self.calculate_health, args=())
+        health_thread.daemon = True
+        health_thread.start()
+
+    def calculate_health(self):
+        """Iteratively recalculate health status."""
+        while True:
+            download_performance, upload_performance = self.network_performance()
+            available_storage_capacity = self.available_storage_capacity()
+            self.node_health = (
+                download_performance
+                + upload_performance
+                + (available_storage_capacity * 1000)
+            )
+            time.sleep(60)
+
+    def network_performance(self):
+        """Returns network download and upload performance of machine."""
+        network_test = speedtest.Speedtest()
+        download_performance = network_test.download() // 8000  # 8000 bits = 1 kilobyte
+        upload_performance = network_test.upload() // 8000  # 8000 bits = 1 kilobyte
+        return download_performance, upload_performance
+
+    def available_storage_capacity(self):
+        """Returns free storage capacity of machine."""
+        _, _, free = shutil.disk_usage("/")
+        free_gb = free // (2**30)
+        return free_gb
 
     def get_registered_addresses(self) -> list[dict[str, str]]:
         """Returns a dict of address to public-key-hex mappings."""
@@ -389,3 +423,7 @@ class BeezNode:  # pylint: disable=too-many-instance-attributes
                         # we have to clean up txpool
                         self.transaction_pool.remove_from_pool(block.transactions)
             self.pending_blockchain_request = False
+
+    def stop(self):
+        """Stops the p2p communication."""
+        self.p2p.stop()

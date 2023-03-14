@@ -9,11 +9,12 @@ from beez.wallet.wallet import Wallet
 from beez.block.block import Block
 from beez.block.blockchain import Blockchain
 from beez.transaction.challenge_tx import ChallengeTX
-from beez.socket.message_type import MessageType
+from beez.socket.messages.message_type import MessageType
 from beez.challenge.challenge import Challenge
 from typing import cast
 from beez.types import PublicKeyString
 from beez.transaction.transaction_type import TransactionType
+from beez.socket.socket_communication.base_socket_communication import BaseSocketCommunication
 
 def clear_indices():
     shutil.rmtree("account_indices", ignore_errors=True)
@@ -31,6 +32,10 @@ def shared_func(a: int, b: int):
 def node():
     yield BeezNode()
     clear_indices()
+
+def test_communication_protocol():
+    node = BeezNode(port=3997)
+    assert isinstance(node.p2p, BaseSocketCommunication)
 
 def test_handle_transaction():
     clear_indices()

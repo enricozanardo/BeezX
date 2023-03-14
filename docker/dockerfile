@@ -4,3 +4,6 @@ COPY ../beez /beez
 COPY ../main.py /main.py
 RUN pip install -r /requirements/requirements.in
 RUN pip install -r /requirements/requirements.txt
+
+
+# nginx starten auf servern und die routen für registeraddress und registeredaddresses eintragen und die header einsetzen

@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from beez.socket.message_type import MessageType
+    from beez.socket.messages.message_type import MessageType
     from beez.socket.socket_connector import SocketConnector
 
 

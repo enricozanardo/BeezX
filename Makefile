@@ -67,6 +67,9 @@ test-node-module:
 test-transaction-module:
 	./scripts/test-transaction-module.sh
 
+test-api-module:
+	./scripts/test-api-module.sh
+
 # DOCKER AUTOMATION
 build-image:
 	docker build -t beez-node -f docker/dockerfile .
