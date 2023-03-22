@@ -1,6 +1,7 @@
 """The nodes API to get and post information from and to the Beez blockchain."""
 from __future__ import annotations
 import os
+import time
 from typing import TYPE_CHECKING
 from flask_classful import FlaskView, route  # type:ignore
 from flask import Flask, jsonify, request, send_file
@@ -19,7 +20,7 @@ from beez.index.index_engine import (
 load_dotenv()  # load .env
 
 NODE_API_PORT = os.environ.get("NODE_API_PORT", default=8176)
-NODE_DAM_FOLDER = '/'
+NODE_DAM_FOLDER = os.environ.get("NODE_DAM_FOLDER", default="/assets/")
 
 if TYPE_CHECKING:
     from beez.node.beez_node import BeezNode
@@ -35,6 +36,10 @@ class BaseNodeAPI(FlaskView):
 
     def __init__(self) -> None:
         self.app = Flask(__name__)
+        if not os.path.isdir(NODE_DAM_FOLDER):
+            oldmask = os.umask(000)
+            os.makedirs(NODE_DAM_FOLDER, 777, exist_ok=True)
+            os.umask(oldmask)
         self.app.config['UPLOAD_FOLDER'] = NODE_DAM_FOLDER
 
     # find a way to use the properties of the node in the nodeAPI
@@ -63,16 +68,22 @@ class SeedNodeAPI(BaseNodeAPI):
     @route("/uploadasset", methods=["POST"])
     def upload_asset(self):
         """Upload a new asset."""
+
+        # 1. Has to contain valid upload asset transaction
+        # transaction: Transaction = BeezUtils.decode(values["transaction"])
+        # BEEZ_NODE.handle_transaction(transaction)
+
+        # 2. Has to contain digital asset
         # check if the post request has the file part
         if 'file' not in request.files:
             return "Missing file", 400
-        
-        file = request.files['file']
         # If the user does not select a file, the browser submits an
         # empty file without a filename.
+        file = request.files['file']
         if file.filename == '':
             return "Missing file", 400
         
+        # 3. Only if the asset is pushed to the storage nodes successfully, the upload asset transaction is sent
         if file:
             filename = file.filename
             file.save(os.path.join(self.app.config['UPLOAD_FOLDER'], filename))
@@ -81,7 +92,19 @@ class SeedNodeAPI(BaseNodeAPI):
                 content = infile.read()
             if content != b'':
                 BEEZ_NODE.process_uploaded_asset(filename, content)
-            return f"Uploaded file {filename}", 201
+                for _ in range(6):
+                    time.sleep(10)
+                    asset_hash = BeezUtils.hash(content).hexdigest()
+                    all_acknowledged = True
+                    for chunk_id in list(BEEZ_NODE.pending_chunks[asset_hash].keys()):
+                        if BEEZ_NODE.pending_chunks[asset_hash][chunk_id] == True:
+                            all_acknowledged = False
+                    if all_acknowledged:
+                        return f"Uploaded file {filename}", 201
+                return f"Timout exceeded when trying to upload file {filename}", 400
+            else:
+                return f"Uploaded file {filename} is empty", 400
+        return f"Did not upload file", 400
         
     @route("/downloadasset", methods=["POST"])
     def download_asset(self):

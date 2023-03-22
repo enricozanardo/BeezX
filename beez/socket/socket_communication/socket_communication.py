@@ -19,6 +19,8 @@ from beez.block.blockchain import Blockchain
 from beez.block.block import Block
 from beez.socket.messages.message_health import MessageHealth
 from beez.socket.messages.message_junk_reply import MessageJunkReply
+from beez.socket.messages.message_push_junk_reply import MessagePushJunkReply
+from beez.socket.messages.message_push_junk import MessagePushJunk
 
 if TYPE_CHECKING:
     from beez.types import Address
@@ -34,6 +36,7 @@ FIRST_SERVER_IP = os.getenv("FIRST_SERVER_IP", LOCAL_TEST_IP)   # pylint: disabl
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", LOCAL_P2P_PORT))   # pylint: disable=invalid-envvar-default
 LOCAL_INTERVALS = 10
 INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))    # pylint: disable=invalid-envvar-default
+# NODE_DAM_FOLDER = os.environ.get("NODE_DAM_FOLDER", default="/assets/")
 
 
 
@@ -47,6 +50,7 @@ class SocketCommunication(BaseSocketCommunication):
         self.peer_discovery_handler = PeerDiscoveryHandler(self)
         self.beez_node: Optional[BeezNode] = None
         self.neighbor: Optional[SocketConnector] = None
+        self.primary_node: Optional[SocketConnector] = None
 
     def connect_to_first_node(self):
         """Connects to first, hardcoded beez blockchain node."""
@@ -81,7 +85,13 @@ class SocketCommunication(BaseSocketCommunication):
                 connection_to_neighbor = self.connect_with_node(str(ip), int(port))
                 logger.info(connection_to_neighbor)
                 time.sleep(10)
-            
+
+    def neighbor_node(self):
+        neighbor_node = None
+        for node in self.all_nodes:
+            if f"{node.host}:{node.port}" == f"{self.neighbor.ip_address}:{self.neighbor.port}":
+                neighbor_node = node
+        return neighbor_node
 
     def start_socket_communication(self, beez_node: BeezNode):
         """Starts socket communication."""
@@ -170,11 +180,29 @@ class SocketCommunication(BaseSocketCommunication):
             if self.beez_node:
                 self.beez_node.handle_address_registration(message.public_key_hex)
         elif message.message_type == "push_junk":
-            with open(f"/{message.junk_id}", "w+b") as outfile:
-                outfile.write(message.junk)
+            junk_reply = MessagePushJunkReply(self.socket_connector, "push_junk_reply", junk_id=message.junk_id, ack=True)
+            try:
+                with open(f"{self.beez_node.dam_asset_path}{message.junk_id}", "w+b") as outfile:
+                    outfile.write(message.junk)
+                if message.chunk_type == "primary":
+                    logger.info(50*'#')
+                    logger.info('GOT PRIMARY CHUNK')
+                    if message.junk_id not in self.beez_node.primary_chunks:
+                        self.beez_node.primary_chunks.append(message.junk_id)
+                        # also push to backup node
+                        self.push_chunk_to_neighbor(message.junk_id, message.junk)
+                elif message.chunk_type == "backup":
+                    logger.info(50*'#')
+                    logger.info('GOT BACKUP CHUNK')
+                    if message.junk_id not in self.beez_node.backup_chunks:
+                        self.beez_node.backup_chunks.append(message.junk_id)
+            except Exception as ex:
+                junk_reply = MessagePushJunkReply(self.socket_connector, "push_junk_reply", junk_id=message.junk_id, ack=False)
+            encoded_junk_reply: str = BeezUtils.encode(junk_reply)
+            self.send(node, encoded_junk_reply)
         elif message.message_type == "pull_junk":
             content = b''
-            with open(f"/{message.junk_name}", "rb") as infile:
+            with open(f"{self.beez_node.dam_asset_path}{message.junk_name}", "rb") as infile:
                 content = infile.read()
             junk_reply = MessageJunkReply(self.socket_connector, "junk_reply", message.file_name, message.junk_name, content)
             # junk_reply = MessageJunkReply(self.socket_connector, "junk_reply", message.file_name, message.junk_name, str(content))
@@ -195,23 +223,51 @@ class SocketCommunication(BaseSocketCommunication):
             if message.dead_peers:
                 for dead_peer in message.dead_peers:
                     self.disconnect_peer(SocketConnector(dead_peer.split(':')[0], int(dead_peer.split(':')[1])))
-            
+                    # check if the node to which this node is the neigbor is dead and if so, send the backup chunks
+                    # to this nodes neighbor
+
             # check if there are any available peers (this node should also be part of the list)
             if not list(message.available_peers.keys()) or (len(list(message.available_peers.keys())) == 1 and list(message.available_peers.keys())[0] == f"{self.socket_connector.ip_address}:{self.socket_connector.port}"):
                 logger.info('No peers available')
                 return
 
             # get adjacent neighbor
-            adjacent_index: int = -1
+            adjacent_index: int = -1    # index of this nodes neighbor
+            primary_node_index: int = -1    # index of node this node is neigbor to
             for index, available_peer in enumerate(list(message.available_peers.keys())):
                 if available_peer == f"{self.socket_connector.ip_address}:{self.socket_connector.port}":
                     adjacent_index = index + 1
+                    primary_node_index = index - 1
             if adjacent_index >= len(list(message.available_peers.keys())):
                 adjacent_index = 0
+            if primary_node_index < 0 and len(list(message.available_peers.keys())) > 1:
+                primary_node_index = len(list(message.available_peers.keys())) -1
             if adjacent_index < 0:
                 logger.info('Could not calculate valid adjacent_index')
                 return
+            if primary_node_index < 0:
+                logger.info('Could not find node this node is neigbor to')
+                return
             adjacent_key = list(message.available_peers.keys())[adjacent_index]
+            primary_node_key = list(message.available_peers.keys())[primary_node_index]
+
+            # check if node this node is neighbor to changed
+            if not self.primary_node or primary_node_key != f"{self.primary_node.ip_address}:{self.primary_node.port}":
+                # check if node this node was neighbor previously is dead
+                if not self.primary_node or (self.primary_node and f"{self.primary_node.ip_address}:{self.primary_node.port}" not in list(message.available_peers.keys())):
+                    # primary node is dead
+                    self.primary_node = SocketConnector(primary_node_key.split(':')[0], int(primary_node_key.split(':')[1]))    # define new primary node
+                    # push all backup chunks to primary_nodes primary chunks
+                    for chunk_id in self.beez_node.backup_chunks:
+                        with open(f"{self.beez_node.dam_asset_path}{chunk_id}", "rb") as infile:
+                            chunk = infile.read()
+                            logger.info('PUSHHHHHING')
+                            self.push_chunk_to_node(chunk_id, chunk, self.primary_node)
+                # check if there is a new node and thus this node is the neighbor of a new node now
+                elif self.primary_node and f"{self.primary_node.ip_address}:{self.primary_node.port}" in list(message.available_peers.keys()):
+                    self.primary_node = SocketConnector(primary_node_key.split(':')[0], int(primary_node_key.split(':')[1]))    # define new primary node
+                    # delete all backup chunks as this node is not neighbor to the node we got backups from anymore
+                    self.beez_node.backup_chunks = []
 
             # check if adjacent neighbor is already the neighbor
             if self.neighbor and adjacent_key == f"{self.neighbor.ip_address}:{self.neighbor.port}":
@@ -226,12 +282,38 @@ class SocketCommunication(BaseSocketCommunication):
             logger.info('connecting with neighbor')
             self.connect_with_adjacent_node(ip=adjacent_key.split(':')[0], port=adjacent_key.split(':')[1])
             self.neighbor = SocketConnector(adjacent_key.split(':')[0], int(adjacent_key.split(':')[1]))
-            
+            # push all asset chunks which this node is primary node to neighbor
+            for chunk_id in self.beez_node.primary_chunks:
+                with open(f"{self.beez_node.dam_asset_path}{chunk_id}", "rb") as infile:
+                    chunk = infile.read()
+                    self.push_chunk_to_neighbor(chunk_id, chunk)
         elif message.message_type == MessageType.HEALTHREQUEST:
             current_health = self.beez_node.node_health
             health_reply = MessageHealth(self.socket_connector, MessageType.HEALTH, current_health)
             encoded_health_reply_message: str = BeezUtils.encode(health_reply)
             self.send(node, encoded_health_reply_message)
+
+    def push_chunk_to_node(self, chunk_id, chunk, node_socket_connector):
+        logger.info('GOING TO PUSH CHUNKS TO NODE')
+        primary_node = None
+        for node in self.all_nodes:
+            logger.info(f"Target: {node_socket_connector.ip_address}:{node_socket_connector.port}")
+            logger.info(f"Node: {node.host}:{node.port}")
+            if f"{node.host}:{node.port}" == f"{node_socket_connector.ip_address}:{node_socket_connector.port}":
+                primary_node = node
+        if primary_node:
+            logger.info('SENDING CHUNK TO NODE')
+            logger.info(chunk_id)
+            chunk_message = MessagePushJunk(self.socket_connector, "push_junk", junk_id=chunk_id ,junk=chunk, chunk_type='primary')
+            encoded_junk_message: str = BeezUtils.encode(chunk_message)
+            self.send(primary_node, encoded_junk_message)
+
+    def push_chunk_to_neighbor(self, chunk_id, chunk):
+        neighbor_node = self.neighbor_node()
+        if neighbor_node:
+            chunk_message = MessagePushJunk(self.socket_connector, "push_junk", junk_id=chunk_id ,junk=chunk, chunk_type='backup')
+            encoded_junk_message: str = BeezUtils.encode(chunk_message)
+            self.send(neighbor_node, encoded_junk_message)
     
     def disconnect_peer(self, socket_connector: SocketConnector):
         """Disconnect form peer with socket connector."""

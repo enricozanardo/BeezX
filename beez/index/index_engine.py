@@ -317,7 +317,7 @@ class DigitalAssetMetadataIndexEngine(Engine):
         super().__init__()
         self.schema = schema
         schema.add("raw", TEXT(stored=True))
-        if not os.path.isdir("dam_metadata_indices"):
+        if not os.path.isdir("dam_metadata_indices") or not FileStorage("dam_metadata_indices").index_exists('dam_metadata_index'):
             os.makedirs("dam_metadata_indices", exist_ok=True)
             self.index = FileStorage("dam_metadata_indices").create_index(
                 self.schema, indexname="dam_metadata_index"

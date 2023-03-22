@@ -4,6 +4,8 @@ from __future__ import annotations
 import os
 from dotenv import load_dotenv
 import time
+import math
+import copy
 from loguru import logger
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
@@ -45,6 +47,7 @@ class SeedNode(BasicNode):
         self.digital_asset_metadata = {}
         self.asset_parts = {}
         self.concatenated_files = {}
+        self.pending_chunks = {}    # chunks without ack from storage node
 
     def start_p2p(self):
         self.p2p.start_socket_communication(self)
@@ -63,59 +66,118 @@ class SeedNode(BasicNode):
         """Starts the network scans for Beez Node health discovery."""
         self.p2p.network_health_scan()
 
+    def assign_chunks_to_nodes(self, chunks, nodes) -> dict[int, list(int)]:
+        """Gets the list of nodes and chunks and assigns the chunks to the nodes"""
+        number_of_chunks = len(chunks)
+        number_of_nodes = len(nodes)
+        chunk_assignment = {}
+        for i in range(number_of_chunks):
+            if not nodes[i%number_of_nodes] in chunk_assignment:
+                chunk_assignment[nodes[i%number_of_nodes]] = {}
+            chunk_assignment[nodes[i%number_of_nodes]][i]=chunks[i]
+        return chunk_assignment
+
     def process_uploaded_asset(self, filename, digital_asset):
+        # TODO HOW TO ASSIGN CHUNKS TO NODES IF THERE ARE MORE CHUNKS THAN NODES
         asset_hash = BeezUtils.hash(digital_asset).hexdigest()
         parts = self.split_digital_asset_in_junks(digital_asset)
+        chunks_assigned = self.assign_chunks_to_nodes(parts, self.p2p.all_nodes)
         # get nodes to store asset junks
-        nodes = []
-        for index,node in enumerate(self.p2p.all_nodes):
-            if index < len(parts):
-                nodes.append(node)
         chunk_locations = {}
-        for index, node in enumerate(nodes):
-            self.push_junk_to_node(node, f"{asset_hash}-{index}.dap", parts[index])
-            chunk_locations[node.id] = [index]
+        for node, dict_of_chunks in chunks_assigned.items():
+            for chunk_ctr, chunk in dict_of_chunks.items():
+                chunk_id = f"{asset_hash}-{chunk_ctr}.dap"
+                self.push_junk_to_node(node, chunk_id, chunk)
+                node_identifier = f"{node.host}:{node.port}"
+                if node_identifier not in chunk_locations:
+                    chunk_locations[node_identifier] = sorted([chunk_ctr])
+                else:
+                    chunk_locations[node_identifier] += [chunk_ctr]
+                    chunk_locations[node_identifier] = sorted(chunk_locations[node_identifier])
+                if asset_hash not in self.pending_chunks:
+                    self.pending_chunks[asset_hash] = {}
+                self.pending_chunks[asset_hash][chunk_id] = True
+            
         # store metadata for digital asset
         self.digital_asset_metadata[filename] = {
             "fileName": filename,
             "fileHash": asset_hash,
-            "numOfChunks": 3,
+            "numOfChunks": len(parts),
             "chunkLocations": chunk_locations,
         }
-        logger.info('GOT DIGITAL ASSET')
-        logger.info(self.digital_asset_metadata)
+        
+    def update_digital_asset_metadata(self, available_peers_status):
+        """Gets information about the node and whether it joined or left and updates the metdata accordingly."""        
+        # Iterate digital asset metadata
+        for _, metadata in self.digital_asset_metadata.items():
+            new_chunk_locations = copy.deepcopy(metadata["chunkLocations"])
+            current_locations = list(metadata["chunkLocations"].keys())
+            # Compare chunkLocations with available_peers_status.
+            # If there are etnryies not in available_peers_status but in chunkLocations, 
+            # move chunks from missing node to following node and delete obsolete chunkLocations entry
+            for node_socket_connector_string, chunk_list in metadata["chunkLocations"].items():
+                if node_socket_connector_string not in list(available_peers_status.keys()):
+                    # get next socket_connector in list of all
+                    new_socket_connector_index = current_locations.index(node_socket_connector_string) + 1
+                    if new_socket_connector_index >= len(current_locations):
+                        new_socket_connector_index = 0
+                    new_socket_connector = current_locations[new_socket_connector_index]
+                    # move chunks to new location
+                    new_chunk_locations[new_socket_connector] += chunk_list
+                    new_chunk_locations[new_socket_connector] = sorted(new_chunk_locations[new_socket_connector])
+                    # delete obsolete socket_connector entry in chunkList
+                    new_chunk_locations.pop(node_socket_connector_string, None)
+            # Update metadata for file
+            metadata["chunkLocations"] = new_chunk_locations
+
+    def get_number_of_chunks_for_size(self, size: int) -> int:
+        """Returns the required number of chunks based on the given file size in digits."""
+        if size > 10000000:
+            return 50
+        if size > 1000000:
+            return 25
+        if size > 100000:
+            return 10
+        if size > 10000:
+            return 5
+        if size > 5000:
+            return 2
+        return 1
 
 
     def split_digital_asset_in_junks(self, digital_asset):
         length = len(digital_asset)
-        part_1 = digital_asset[:int(length/3)]
-        part_2 = digital_asset[int(length/3):2*int(length/3)]
-        part_3 = digital_asset[2*int(length/3):]
-        parts = [part_1, part_2, part_3]
-        return parts
+        number_of_chunks = self.get_number_of_chunks_for_size(length)
+        chunk_size = math.ceil(length/number_of_chunks)
+        chunks = [digital_asset[i:i+chunk_size] for i in range(0, len(digital_asset), chunk_size)]
+        return chunks
 
     def push_junk_to_node(self, node, junk_id, digital_asset_junk):
-        junk_message = MessagePushJunk(self.p2p.socket_connector, "push_junk", junk_id=junk_id ,junk=digital_asset_junk)
+        junk_message = MessagePushJunk(self.p2p.socket_connector, "push_junk", junk_id=junk_id ,junk=digital_asset_junk, chunk_type='primary')
         encoded_junk_message: str = BeezUtils.encode(junk_message)
         self.p2p.send(node, encoded_junk_message)
 
     def get_distributed_asset(self, asset_name):
         # get metadata for file
         asset_metadata = self.digital_asset_metadata[asset_name]
-        asset_node_ids = asset_metadata["chunkLocations"].keys()
+        asset_node_socket_connector_strings = asset_metadata["chunkLocations"].keys()
         asset_hash = asset_metadata["fileHash"]
         asset_name = asset_metadata["fileName"]
         
         for node in self.p2p.all_nodes:
-            if node.id in asset_node_ids:
-                pull_junk_message = MessagePullJunk(self.p2p.socket_connector, "pull_junk", f"{asset_hash}-{asset_metadata['chunkLocations'][node.id][0]}.dap", asset_name)
-                encoded_pull_junk_message: str = BeezUtils.encode(pull_junk_message)
-                self.p2p.send(node, encoded_pull_junk_message)
+            node_socket_connector_string = f"{node.host}:{node.port}"
+            if node_socket_connector_string in asset_node_socket_connector_strings:
+                chunks_on_node = asset_metadata['chunkLocations'][node_socket_connector_string]
+                for chunk_index in chunks_on_node:
+                    pull_junk_message = MessagePullJunk(self.p2p.socket_connector, "pull_junk", f"{asset_hash}-{chunk_index}.dap", asset_name)
+                    encoded_pull_junk_message: str = BeezUtils.encode(pull_junk_message)
+                    self.p2p.send(node, encoded_pull_junk_message)
         while asset_hash not in self.concatenated_files:
             time.sleep(3)
         return self.concatenated_files[asset_hash]
 
     def add_asset_junks(self, file_name, chunk_name, junk):
+        logger.info('add asset chunk')
         digital_asset_hash = chunk_name.rsplit("-", 1)[0]
         if not digital_asset_hash in self.asset_parts:
             self.asset_parts[digital_asset_hash] = {chunk_name: junk}
@@ -125,6 +187,8 @@ class SeedNode(BasicNode):
         if len(self.asset_parts[digital_asset_hash]) == self.digital_asset_metadata[file_name]["numOfChunks"]:
             concatenated_file = self.concatenate_junks(self.asset_parts[digital_asset_hash])
             self.concatenated_files[digital_asset_hash] = concatenated_file
+
+        logger.info(chunk_name)
         
 
     def concatenate_junks(self, junks):
@@ -132,11 +196,11 @@ class SeedNode(BasicNode):
         chunk_names = sorted(junks.keys())
         for chunk_name in chunk_names:
             after_string = after_string + junks[chunk_name]
-            # after_string = after_string + junks[chunk_name].encode()
         return after_string
 
     def get_junk_from_node(self, junk_id):
         pass
+
     def stop(self):
         """Stops the p2p communication."""
         self.p2p.health_checks_active = False

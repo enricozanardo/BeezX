@@ -30,9 +30,9 @@ LOCAL_P2P_PORT = 5444
 
 FIRST_SERVER_IP = os.getenv("FIRST_SERVER_IP", LOCAL_TEST_IP)   # pylint: disable=invalid-envvar-default
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", LOCAL_P2P_PORT))   # pylint: disable=invalid-envvar-default
-LOCAL_INTERVALS = 60
+LOCAL_INTERVALS = 20
 INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))    # pylint: disable=invalid-envvar-default
-LOCAL_DISCONNECT_INTERVALS = 180
+LOCAL_DISCONNECT_INTERVALS = 60
 DISCONNECT_INTERVALS = int(os.getenv("DISCONNECT_INTERVALS", LOCAL_DISCONNECT_INTERVALS))    # pylint: disable=invalid-envvar-default
 
 
@@ -69,10 +69,9 @@ class SeedSocketCommunication(BaseSocketCommunication):
     def check_health(self):
         """Checks the current health status of the connected nodes."""
         while self.health_checks_active:
-            logger.info("Current health status")
-            logger.info(self.node_health_status)
+            # logger.info("Current health status")
+            # logger.info(self.node_health_status)
 
-            # check for nodes to disconnect from
             node_disconnected: bool = False
             peers_to_pop_from_health_status: list[str] = []
             for peer_socket_connector, health_dict in self.node_health_status.items():
@@ -81,22 +80,40 @@ class SeedSocketCommunication(BaseSocketCommunication):
                     logger.info(f"!!!! Node is not responding {peer_socket_connector}")
                     # close connection to node
                     nodes_to_disconnect: list[Node] = []
+                    found_dead_node_in_all_nodes = False
                     for node in self.all_nodes:
+                        # logger.info(f"{node.host}:{node.port}")
                         if f"{node.host}:{node.port}" == peer_socket_connector:
+                            found_dead_node_in_all_nodes = True
                             nodes_to_disconnect.append(node)
                             self.dead_nodes.append(peer_socket_connector)
+
+                    # also delete node from own_connections and node_health_status
                     for node in nodes_to_disconnect:
                         node_disconnected = True
-                        for index,connection in enumerate(self.own_connections):
+                        for index,connection in enumerate(self.own_connections):                            
                             if f"{node.host}:{node.port}" == f"{connection.ip_address}:{connection.port}":
                                 del self.own_connections[index]
                         self.own_connections.sort(key=lambda x: f"{x.ip_address}:{x.port}", reverse=True)
                         peers_to_pop_from_health_status.append(f"{node.host}:{node.port}")
                         self.node_disconnect_with_outbound_node(node)
+                    
+                    # if node stopped gracefully, the node is not in all_connections and thus in nodes_to_disconnect
+                    #  anymore so it has to be deleted from own_connections and node_health_status
+                    if not found_dead_node_in_all_nodes:
+                        for index,connection in enumerate(self.own_connections):
+                            if peer_socket_connector == f"{connection.ip_address}:{connection.port}":
+                                del self.own_connections[index]
+                                node_disconnected = True
+                        self.own_connections.sort(key=lambda x: f"{x.ip_address}:{x.port}", reverse=True)
+                        peers_to_pop_from_health_status.append(peer_socket_connector)
+
             for peer_to_pop_from_health_status in peers_to_pop_from_health_status:
                 self.node_health_status.pop(peer_to_pop_from_health_status, None)
                         
             if node_disconnected:
+                # TODO: Update file chunk metadata if new primaries and backup nodes assigned
+                self.beez_node.update_digital_asset_metadata(self.get_available_peers())
                 available_peers_message = self.create_available_peers_message()
                 self.broadcast(available_peers_message)
 
@@ -105,14 +122,18 @@ class SeedSocketCommunication(BaseSocketCommunication):
             self.broadcast(encoded_health_request_message)
             time.sleep(INTERVALS)
 
-    def create_available_peers_message(self):
-        """Create message containing information about the available peers in the system."""
-        own_connector = self.socket_connector
-
+    def get_available_peers(self):
         # calculate list of peers
         peers_list = {}
         for socket_connector in self.own_connections:
             peers_list[f"{socket_connector.ip_address}:{socket_connector.port}"] = 100   # TODO: calculate real health
+        return peers_list
+
+    def create_available_peers_message(self):
+        """Create message containing information about the available peers in the system."""
+        own_connector = self.socket_connector
+
+        peers_list = self.get_available_peers()
 
         logger.info(peers_list)
         dead_peers = deepcopy(self.dead_nodes)
@@ -154,13 +175,21 @@ class SeedSocketCommunication(BaseSocketCommunication):
         """Handle incomming p2p messages."""
         message = BeezUtils.decode(json.dumps(data))
         if message.message_type == MessageType.HEALTH:
-            logger.info('got health status from node {}, health is {}', message.sender_connector, message.health_status)
+            # logger.info('got health status from node {}, health is {}', message.sender_connector, message.health_status)
             self.node_health_status[f"{node.host}:{node.port}"] = {
                 "health_metric": message.health_status,
                 "last_update": datetime.now(),
             }
         elif message.message_type == "junk_reply":
+            logger.info(100*'#')
+            logger.info(f'GOT CHUNK REPLY {message.junk_name}')
             junk = message.junk
             chunk_name = message.junk_name
             file_name = message.file_name
             self.beez_node.add_asset_junks(file_name, chunk_name, junk)
+        elif message.message_type == "push_junk_reply":
+            junk_id = str(message.junk_id)
+            asset_hash = junk_id.rsplit("-", 1)[0]
+            ack = message.ack
+            if ack:
+                self.beez_node.pending_chunks[asset_hash][junk_id] = False

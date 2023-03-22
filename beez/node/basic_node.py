@@ -27,12 +27,14 @@ class BasicNode:
         ip_address=None,
         port=None,
         communication_protocol: BaseSocketCommunication = BaseSocketCommunication,
+        dam_asset_path="/assets/"
     ) -> None:
         self.api = None
         self.ip_address = ip_address if ip_address else self.get_ip()
         self.port = port if port else int(P_2_P_PORT)
         self.wallet = Wallet()
         self.p2p = communication_protocol(self.ip_address, port if port else self.port)
+        self.dam_asset_path=dam_asset_path
 
         if key is not None:
             self.wallet.from_key(key)

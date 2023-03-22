@@ -50,6 +50,7 @@ class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
         port=None,
         first_server_ip=None,
         first_server_port=None,
+        dam_asset_path="/assets/"
     ) -> None:
         BasicNode.__init__(     # pylint: disable=duplicate-code
             self,
@@ -57,6 +58,7 @@ class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
             ip_address=ip_address,
             port=port,
             communication_protocol=SocketCommunication,
+            dam_asset_path=dam_asset_path
         )
         self.api = None
         self.transaction_pool = TransactionPool()
@@ -77,6 +79,8 @@ class BeezNode(BasicNode):  # pylint: disable=too-many-instance-attributes
             )
         )
         self.address_buffer = {}
+        self.primary_chunks = []
+        self.backup_chunks = []
 
         self.start_health_monitoring()
         self.handle_address_registration(self.wallet.public_key_string())
