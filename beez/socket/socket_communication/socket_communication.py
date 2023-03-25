@@ -10,6 +10,8 @@ from loguru import logger
 from p2pnetwork.node import Node    # type: ignore
 
 from beez.socket.socket_communication.base_socket_communication import BaseSocketCommunication
+from beez.socket.socket_communication.dam_message_buffer import DamMessageBuffer
+from beez.socket.socket_communication.dam_message_worker import DamMessageWorker
 from beez.socket.socket_connector import SocketConnector
 from beez.socket.peer_discovery_handler import PeerDiscoveryHandler
 from beez.beez_utils import BeezUtils
@@ -20,7 +22,6 @@ from beez.block.blockchain import Blockchain
 from beez.block.block import Block
 from beez.socket.messages.message_health import MessageHealth
 from beez.socket.messages.message_junk_reply import MessageJunkReply
-from beez.socket.messages.message_push_junk_reply import MessagePushJunkReply
 from beez.socket.messages.message_push_junk import MessagePushJunk
 
 if TYPE_CHECKING:
@@ -52,6 +53,8 @@ class SocketCommunication(BaseSocketCommunication):
         self.beez_node: Optional[BeezNode] = None
         self.neighbor: Optional[SocketConnector] = None
         self.primary_node: Optional[SocketConnector] = None
+        self.dam_message_buffer = DamMessageBuffer()
+        self.dam_message_worker = None
 
     def connect_to_first_node(self):
         """Connects to first, hardcoded beez blockchain node."""
@@ -105,6 +108,8 @@ class SocketCommunication(BaseSocketCommunication):
     def start_socket_communication(self, beez_node: BeezNode):
         """Starts socket communication."""
         self.beez_node = beez_node
+        self.dam_message_worker = DamMessageWorker(self.dam_message_buffer, self)
+        self.dam_message_worker.start()
         self.start()
         self.connect_to_first_node()
 
@@ -195,26 +200,7 @@ class SocketCommunication(BaseSocketCommunication):
             if self.beez_node:
                 self.beez_node.handle_address_registration(message.public_key_hex)
         elif message.message_type == "push_junk":
-            junk_reply = MessagePushJunkReply(self.socket_connector, "push_junk_reply", junk_id=message.junk_id, ack=True)
-            try:
-                with open(f"{self.beez_node.dam_asset_path}{message.junk_id}", "w+b") as outfile:
-                    outfile.write(message.junk)
-                if message.chunk_type == "primary":
-                    logger.info(50*'#')
-                    logger.info('GOT PRIMARY CHUNK')
-                    if message.junk_id not in self.beez_node.primary_chunks:
-                        self.beez_node.primary_chunks.append(message.junk_id)
-                        # also push to backup node
-                        self.push_chunk_to_neighbor(message.junk_id, message.junk)
-                elif message.chunk_type == "backup":
-                    logger.info(50*'#')
-                    logger.info('GOT BACKUP CHUNK')
-                    if message.junk_id not in self.beez_node.backup_chunks:
-                        self.beez_node.backup_chunks.append(message.junk_id)
-            except Exception as ex:
-                junk_reply = MessagePushJunkReply(self.socket_connector, "push_junk_reply", junk_id=message.junk_id, ack=False)
-            encoded_junk_reply: str = BeezUtils.encode(junk_reply)
-            self.send(node, encoded_junk_reply)
+            self.dam_message_buffer.add_message(node, message)
         elif message.message_type == "pull_junk":
             content = b''
             with open(f"{self.beez_node.dam_asset_path}{message.junk_name}", "rb") as infile:

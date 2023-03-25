@@ -13,6 +13,8 @@ from datetime import datetime
 from copy import deepcopy
 
 from beez.socket.socket_communication.base_socket_communication import BaseSocketCommunication
+from beez.socket.socket_communication.dam_message_buffer import DamMessageBuffer
+from beez.socket.socket_communication.dam_push_reply_worker import DamPushReplyWorker
 from beez.socket.socket_connector import SocketConnector
 from beez.beez_utils import BeezUtils
 from beez.socket.messages.message_type import MessageType
@@ -49,9 +51,13 @@ class SeedSocketCommunication(BaseSocketCommunication):
         self.dead_nodes: list[str] = []
         self.beez_node = None
         self.health_checks_active = True
+        self.dam_push_reply_buffer = DamMessageBuffer()
+        self.dam_push_reply_worker = None
 
     def start_socket_communication(self, node):
         self.beez_node = node
+        self.dam_push_reply_worker = DamPushReplyWorker(self.dam_push_reply_buffer, self)
+        self.dam_push_reply_worker.start()
         self.start()
 
     def network_health_scan(self):
@@ -175,7 +181,6 @@ class SeedSocketCommunication(BaseSocketCommunication):
         """Handle incomming p2p messages."""
         message = BeezUtils.decode(json.dumps(data))
         if message.message_type == MessageType.HEALTH:
-            # logger.info('got health status from node {}, health is {}', message.sender_connector, message.health_status)
             self.node_health_status[f"{node.host}:{node.port}"] = {
                 "health_metric": message.health_status,
                 "last_update": datetime.now(),
@@ -188,8 +193,4 @@ class SeedSocketCommunication(BaseSocketCommunication):
             file_name = message.file_name
             self.beez_node.add_asset_junks(file_name, chunk_name, junk)
         elif message.message_type == "push_junk_reply":
-            junk_id = str(message.junk_id)
-            asset_hash = junk_id.rsplit("-", 1)[0]
-            ack = message.ack
-            if ack:
-                self.beez_node.pending_chunks[asset_hash][junk_id]["status"] = False
+            self.dam_push_reply_buffer.add_message(node, message)

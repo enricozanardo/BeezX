@@ -96,8 +96,8 @@ class SeedNodeAPI(BaseNodeAPI):
             if content != b'':
                 BEEZ_NODE.process_uploaded_asset(filename, content)
                 asset_hash = BeezUtils.hash(content).hexdigest()
-                for _ in range(6):
-                    time.sleep(10)
+                for _ in range(60):
+                    time.sleep(1)
                     all_acknowledged = True
                     acknowledged_chunks = 0
                     for chunk_id in list(BEEZ_NODE.pending_chunks[asset_hash].keys()):

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 import os
+import random
 from dotenv import load_dotenv
 import time
 import math
@@ -108,23 +109,30 @@ class SeedNode(BasicNode):
         chunks_assigned = self.assign_chunks_to_nodes(parts, self.p2p.all_nodes)
         # get nodes to store asset junks
         chunk_locations = {}
+        # do not send all chunks of a node directly but mix it up for better performance and smaller message buffers on nodes
+        mixed_chunk_tuples = []
         for node, dict_of_chunks in chunks_assigned.items():
             for chunk_ctr, chunk in dict_of_chunks.items():
                 chunk_id = f"{asset_hash}-{chunk_ctr}.dap"
-                self.push_junk_to_node(node, chunk_id, chunk)
-                node_identifier = f"{node.host}:{node.port}"
-                if asset_hash not in self.pending_chunks:
-                    self.pending_chunks[asset_hash] = {}
-                self.pending_chunks[asset_hash][chunk_id] = {"status": True, "chunk": chunk, "last_update": datetime.now(), "node_identifier": node_identifier}
-                if node_identifier not in chunk_locations:
-                    chunk_locations[node_identifier] = sorted([chunk_ctr])
-                else:
-                    chunk_locations[node_identifier] += [chunk_ctr]
-                    chunk_locations[node_identifier] = sorted(chunk_locations[node_identifier])
-                time.sleep(1)   # worked with 5s
-                while self.pending_chunks[asset_hash][chunk_id]["status"] == True:
-                    self.push_junk_to_node(node, chunk_id, chunk)
-                    time.sleep(1)   # worked with 5s
+                mixed_chunk_tuples.append((node, chunk_id, chunk))
+        random.shuffle(mixed_chunk_tuples)
+
+        # send chunks to nodes and add it to pending chunks
+        for chunk_tuple in mixed_chunk_tuples:
+            node = chunk_tuple[0]
+            chunk_id = chunk_tuple[1]
+            chunk = chunk_tuple[2]
+            self.push_junk_to_node(node, chunk_id, chunk)
+            node_identifier = f"{node.host}:{node.port}"
+            if asset_hash not in self.pending_chunks:
+                self.pending_chunks[asset_hash] = {}
+            self.pending_chunks[asset_hash][chunk_id] = {"status": True, "chunk": chunk, "last_update": datetime.now(), "node_identifier": node_identifier}
+            if node_identifier not in chunk_locations:
+                chunk_locations[node_identifier] = sorted([chunk_ctr])
+            else:
+                chunk_locations[node_identifier] += [chunk_ctr]
+                chunk_locations[node_identifier] = sorted(chunk_locations[node_identifier])
+            time.sleep(0.1)   # worked with 5s
                 
         # store metadata for digital asset
         self.digital_asset_metadata[filename] = {
