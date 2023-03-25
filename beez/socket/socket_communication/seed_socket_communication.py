@@ -32,7 +32,7 @@ FIRST_SERVER_IP = os.getenv("FIRST_SERVER_IP", LOCAL_TEST_IP)   # pylint: disabl
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", LOCAL_P2P_PORT))   # pylint: disable=invalid-envvar-default
 LOCAL_INTERVALS = 20
 INTERVALS = int(os.getenv("INTERVALS", LOCAL_INTERVALS))    # pylint: disable=invalid-envvar-default
-LOCAL_DISCONNECT_INTERVALS = 60
+LOCAL_DISCONNECT_INTERVALS = 300
 DISCONNECT_INTERVALS = int(os.getenv("DISCONNECT_INTERVALS", LOCAL_DISCONNECT_INTERVALS))    # pylint: disable=invalid-envvar-default
 
 
@@ -192,4 +192,4 @@ class SeedSocketCommunication(BaseSocketCommunication):
             asset_hash = junk_id.rsplit("-", 1)[0]
             ack = message.ack
             if ack:
-                self.beez_node.pending_chunks[asset_hash][junk_id] = False
+                self.beez_node.pending_chunks[asset_hash][junk_id]["status"] = False

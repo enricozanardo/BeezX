@@ -4,6 +4,7 @@ import json
 import typing
 import jsonpickle  # type: ignore
 from Crypto.Hash import SHA512
+from loguru import logger
 
 
 class BeezUtils:
@@ -33,7 +34,10 @@ class BeezUtils:
     @staticmethod
     def decode(encoded_object):
         """Takes a pickled object and recreates the original object from it."""
-        return jsonpickle.decode(encoded_object)
+        decoded_obj = jsonpickle.decode(encoded_object)
+        if isinstance(decoded_obj, str):
+            logger.info(f"Could not decode")
+        return decoded_obj
 
     @staticmethod
     def address_from_public_key(public_key_pem: str) -> str:

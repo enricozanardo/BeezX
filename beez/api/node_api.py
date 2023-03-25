@@ -41,6 +41,7 @@ class BaseNodeAPI(FlaskView):
             os.makedirs(NODE_DAM_FOLDER, 777, exist_ok=True)
             os.umask(oldmask)
         self.app.config['UPLOAD_FOLDER'] = NODE_DAM_FOLDER
+        self.app.config['MAX_CONTENT_LENGTH'] = 2 * 1000 * 1000 * 1000  # limit upload size to 2gb
 
     # find a way to use the properties of the node in the nodeAPI
     def inject_node(self, incjected_node: BeezNode) -> None:
@@ -76,11 +77,13 @@ class SeedNodeAPI(BaseNodeAPI):
         # 2. Has to contain digital asset
         # check if the post request has the file part
         if 'file' not in request.files:
+            logger.info('file missing in request')
             return "Missing file", 400
         # If the user does not select a file, the browser submits an
         # empty file without a filename.
         file = request.files['file']
         if file.filename == '':
+            logger.info('file has no filname')
             return "Missing file", 400
         
         # 3. Only if the asset is pushed to the storage nodes successfully, the upload asset transaction is sent
@@ -92,18 +95,28 @@ class SeedNodeAPI(BaseNodeAPI):
                 content = infile.read()
             if content != b'':
                 BEEZ_NODE.process_uploaded_asset(filename, content)
+                asset_hash = BeezUtils.hash(content).hexdigest()
                 for _ in range(6):
                     time.sleep(10)
-                    asset_hash = BeezUtils.hash(content).hexdigest()
                     all_acknowledged = True
+                    acknowledged_chunks = 0
                     for chunk_id in list(BEEZ_NODE.pending_chunks[asset_hash].keys()):
-                        if BEEZ_NODE.pending_chunks[asset_hash][chunk_id] == True:
+                        if BEEZ_NODE.pending_chunks[asset_hash][chunk_id]["status"] == True:
                             all_acknowledged = False
+                        else:
+                            acknowledged_chunks += 1
                     if all_acknowledged:
+                        BEEZ_NODE.pending_chunks.pop(asset_hash, None)
                         return f"Uploaded file {filename}", 201
+                    else:
+                        logger.info(f'Currently acknowledged {acknowledged_chunks}')
+                logger.info('Timeout exceeded when trying to upload file')
+                BEEZ_NODE.pending_chunks.pop(asset_hash, None)
                 return f"Timout exceeded when trying to upload file {filename}", 400
             else:
+                logger.info('uploaded file is empty')
                 return f"Uploaded file {filename} is empty", 400
+        logger.info('Cant upload file')
         return f"Did not upload file", 400
         
     @route("/downloadasset", methods=["POST"])

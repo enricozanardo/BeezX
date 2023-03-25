@@ -8,6 +8,7 @@ services:
     - P_2_P_PORT=5444
     - NODE_TYPE=seed
     - API_STARTUP_DELAY=20
+    - DISCONNECT_INTERVALS=300
     # image: beezblockchain/beez-node
     image: beez-node
     ports:

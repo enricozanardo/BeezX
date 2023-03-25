@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 from typing import TYPE_CHECKING, Optional
 import os
+import time
 from dotenv import load_dotenv
 from loguru import logger
 from p2pnetwork.node import Node    # type: ignore
@@ -67,7 +68,13 @@ class SocketCommunication(BaseSocketCommunication):
             or self.socket_connector.port != first_server_port
         ):
             # connect to the first node
-            self.connect_with_node(first_server_ip, first_server_port)
+            connection_timeout = 30*60
+            establish_connection_time = 0
+            success = False
+            while not success and establish_connection_time < connection_timeout:
+                success = self.connect_with_node(first_server_ip, first_server_port, reconnect=True)
+                establish_connection_time += 5
+                time.sleep(5)
             
     def connect_with_adjacent_node(self, ip, port):
         """Connects to adjacent neighbor based on peers list from seed node."""
@@ -78,12 +85,14 @@ class SocketCommunication(BaseSocketCommunication):
             or self.socket_connector.port != port
         ):
             # connect to adjacent neighbor node
+            connection_timeout = 30*60
+            establish_connection_time = 0
             connection_to_neighbor = False
-            import time
-            while not connection_to_neighbor:
+            while not connection_to_neighbor and establish_connection_time < connection_timeout:
                 logger.info(f"connecting with node {ip}:{port}")
-                connection_to_neighbor = self.connect_with_node(str(ip), int(port))
+                connection_to_neighbor = self.connect_with_node(str(ip), int(port), reconnect=True)
                 logger.info(connection_to_neighbor)
+                establish_connection_time += 5
                 time.sleep(10)
 
     def neighbor_node(self):
@@ -115,6 +124,12 @@ class SocketCommunication(BaseSocketCommunication):
     def node_message(self, node: Node, data: Message):  # pylint: disable=too-many-branches
         """Handles incomming messages."""
         message = BeezUtils.decode(json.dumps(data))
+
+        if isinstance(message, str):
+            logger.info('INVALID MESSAGE TYPE')
+            with open("/tmp/notype.txt", mode="w+") as outfile:
+                outfile.write(message)
+            return
 
         logger.info(f"messagetype? {message.message_type}")
 

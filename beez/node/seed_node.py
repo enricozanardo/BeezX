@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 import time
 import math
 import copy
+import threading
+from datetime import datetime
 from loguru import logger
 
 from whoosh.fields import Schema, TEXT, KEYWORD, ID  # type: ignore
@@ -51,6 +53,7 @@ class SeedNode(BasicNode):
 
     def start_p2p(self):
         self.p2p.start_socket_communication(self)
+        self.resend_pending_chunks()
 
     def start_api(self, port=None):
         """Starts the nodes API."""
@@ -58,6 +61,28 @@ class SeedNode(BasicNode):
         # Inject Node to NodeAPI
         self.api.inject_node(self)
         self.api.start(self.ip_address, port)
+
+    # TODO: resend chunks which i got no response from
+    def resend_pending_chunks(self):
+        """Execution thread to iteratively request the peers health status."""
+        resend_chunks_thread = threading.Thread(target=self.resend_chunks, args={})
+        resend_chunks_thread.daemon = True
+        resend_chunks_thread.start()
+
+    def resend_chunks(self):
+        while True:
+            current_pending_chunks = copy.deepcopy(self.pending_chunks)
+            for asset_hash in current_pending_chunks.keys():
+                for chunk_id in current_pending_chunks[asset_hash].keys():
+                    status_dict = current_pending_chunks[asset_hash][chunk_id]
+                    if status_dict["status"] == True:
+                        now = datetime.now()
+                        if (now-status_dict["last_update"]).total_seconds() > 30 and (now-status_dict["last_update"]).total_seconds() < 300:
+                            for node in self.p2p.all_nodes:
+                                if f"{node.host}:{node.port}" == status_dict["node_identifier"]:
+                                    logger.info(f'RESENDING CHUNK {chunk_id}')
+                                    self.push_junk_to_node(node, chunk_id, status_dict["chunk"])
+            time.sleep(10)
 
     def start_available_peers_broadcast(self):
         self.p2p.available_peers_broadcast_thread()
@@ -78,7 +103,6 @@ class SeedNode(BasicNode):
         return chunk_assignment
 
     def process_uploaded_asset(self, filename, digital_asset):
-        # TODO HOW TO ASSIGN CHUNKS TO NODES IF THERE ARE MORE CHUNKS THAN NODES
         asset_hash = BeezUtils.hash(digital_asset).hexdigest()
         parts = self.split_digital_asset_in_junks(digital_asset)
         chunks_assigned = self.assign_chunks_to_nodes(parts, self.p2p.all_nodes)
@@ -89,15 +113,19 @@ class SeedNode(BasicNode):
                 chunk_id = f"{asset_hash}-{chunk_ctr}.dap"
                 self.push_junk_to_node(node, chunk_id, chunk)
                 node_identifier = f"{node.host}:{node.port}"
+                if asset_hash not in self.pending_chunks:
+                    self.pending_chunks[asset_hash] = {}
+                self.pending_chunks[asset_hash][chunk_id] = {"status": True, "chunk": chunk, "last_update": datetime.now(), "node_identifier": node_identifier}
                 if node_identifier not in chunk_locations:
                     chunk_locations[node_identifier] = sorted([chunk_ctr])
                 else:
                     chunk_locations[node_identifier] += [chunk_ctr]
                     chunk_locations[node_identifier] = sorted(chunk_locations[node_identifier])
-                if asset_hash not in self.pending_chunks:
-                    self.pending_chunks[asset_hash] = {}
-                self.pending_chunks[asset_hash][chunk_id] = True
-            
+                time.sleep(1)   # worked with 5s
+                while self.pending_chunks[asset_hash][chunk_id]["status"] == True:
+                    self.push_junk_to_node(node, chunk_id, chunk)
+                    time.sleep(1)   # worked with 5s
+                
         # store metadata for digital asset
         self.digital_asset_metadata[filename] = {
             "fileName": filename,
@@ -132,6 +160,12 @@ class SeedNode(BasicNode):
 
     def get_number_of_chunks_for_size(self, size: int) -> int:
         """Returns the required number of chunks based on the given file size in digits."""
+        if size > 10000000000:
+            return 800
+        if size > 1000000000:
+            return 400
+        if size > 100000000:
+            return 200
         if size > 10000000:
             return 50
         if size > 1000000:
@@ -155,6 +189,9 @@ class SeedNode(BasicNode):
     def push_junk_to_node(self, node, junk_id, digital_asset_junk):
         junk_message = MessagePushJunk(self.p2p.socket_connector, "push_junk", junk_id=junk_id ,junk=digital_asset_junk, chunk_type='primary')
         encoded_junk_message: str = BeezUtils.encode(junk_message)
+        if not "message_type" in encoded_junk_message or not "junk_id" in encoded_junk_message or not "chunk_type" in encoded_junk_message or not "junk" in encoded_junk_message:
+            logger.info('COULD NOT ENCODE!!!!!!!!')
+            encoded_junk_message: str = BeezUtils.encode(junk_message)
         self.p2p.send(node, encoded_junk_message)
 
     def get_distributed_asset(self, asset_name):
@@ -172,6 +209,7 @@ class SeedNode(BasicNode):
                     pull_junk_message = MessagePullJunk(self.p2p.socket_connector, "pull_junk", f"{asset_hash}-{chunk_index}.dap", asset_name)
                     encoded_pull_junk_message: str = BeezUtils.encode(pull_junk_message)
                     self.p2p.send(node, encoded_pull_junk_message)
+                    time.sleep(2)
         while asset_hash not in self.concatenated_files:
             time.sleep(3)
         return self.concatenated_files[asset_hash]
