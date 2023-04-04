@@ -15,6 +15,7 @@ from copy import deepcopy
 from beez.socket.socket_communication.base_socket_communication import BaseSocketCommunication
 from beez.socket.socket_communication.dam_message_buffer import DamMessageBuffer
 from beez.socket.socket_communication.dam_push_reply_worker import DamPushReplyWorker
+from beez.socket.socket_communication.dam_chunk_reply_worker import DamChunkReplyWorker
 from beez.socket.socket_connector import SocketConnector
 from beez.beez_utils import BeezUtils
 from beez.socket.messages.message_type import MessageType
@@ -52,12 +53,16 @@ class SeedSocketCommunication(BaseSocketCommunication):
         self.beez_node = None
         self.health_checks_active = True
         self.dam_push_reply_buffer = DamMessageBuffer()
+        self.chunk_reply_buffer = DamMessageBuffer()
         self.dam_push_reply_worker = None
+        self.dam_chunk_reply_worker = None
 
     def start_socket_communication(self, node):
         self.beez_node = node
         self.dam_push_reply_worker = DamPushReplyWorker(self.dam_push_reply_buffer, self)
         self.dam_push_reply_worker.start()
+        self.dam_chunk_reply_worker = DamChunkReplyWorker(self.chunk_reply_buffer, self)
+        self.dam_chunk_reply_worker.start()
         self.start()
 
     def network_health_scan(self):
@@ -180,17 +185,19 @@ class SeedSocketCommunication(BaseSocketCommunication):
     def node_message(self, node: Node, data: Message):
         """Handle incomming p2p messages."""
         message = BeezUtils.decode(json.dumps(data))
+
+        if isinstance(message, str):
+            logger.info('INVALID MESSAGE TYPE')
+            return
+
+        logger.info(f"messagetype? {message.message_type}")
+
         if message.message_type == MessageType.HEALTH:
             self.node_health_status[f"{node.host}:{node.port}"] = {
                 "health_metric": message.health_status,
                 "last_update": datetime.now(),
             }
-        elif message.message_type == "junk_reply":
-            logger.info(100*'#')
-            logger.info(f'GOT CHUNK REPLY {message.junk_name}')
-            junk = message.junk
-            chunk_name = message.junk_name
-            file_name = message.file_name
-            self.beez_node.add_asset_junks(file_name, chunk_name, junk)
-        elif message.message_type == "push_junk_reply":
+        elif message.message_type == "chunk_reply":
+            self.chunk_reply_buffer.add_message(node, message)
+        elif message.message_type == "push_chunk_reply":
             self.dam_push_reply_buffer.add_message(node, message)

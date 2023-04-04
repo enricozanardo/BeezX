@@ -1,4 +1,4 @@
-"""Beez blockchain - message digital asset junk."""
+"""Beez blockchain - message digital asset chunk."""
 
 from __future__ import annotations
 from typing import TYPE_CHECKING
@@ -11,19 +11,17 @@ if TYPE_CHECKING:
     from beez.block.block import Block
 
 
-class MessagePushJunk(Message):  # pylint: disable=too-few-public-methods
-    """Message push digital asset junk."""
+class MessagePushChunkReply(Message):  # pylint: disable=too-few-public-methods
+    """Message reply on push digital asset chunk."""
 
     def __init__(
         self,
         sender_connector: SocketConnector,
         message_type: MessageType,
-        junk_id: str,
-        junk: str,
-        chunk_type: str
+        chunk_id: str,
+        ack: bool
     ):
         super().__init__(sender_connector, message_type)
-        self.junk_id = junk_id
-        self.junk = junk
-        self.chunk_type = chunk_type
+        self.chunk_id = chunk_id
+        self.ack = ack
         

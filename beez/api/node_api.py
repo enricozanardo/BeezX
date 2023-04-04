@@ -2,6 +2,7 @@
 from __future__ import annotations
 import os
 import time
+import json
 from typing import TYPE_CHECKING
 from flask_classful import FlaskView, route  # type:ignore
 from flask import Flask, jsonify, request, send_file
@@ -71,8 +72,17 @@ class SeedNodeAPI(BaseNodeAPI):
         """Upload a new asset."""
 
         # 1. Has to contain valid upload asset transaction
-        # transaction: Transaction = BeezUtils.decode(values["transaction"])
-        # BEEZ_NODE.handle_transaction(transaction)
+
+        if 'transaction' not in request.files:
+            print("transaction is missing")
+            return "Missing transaction", 400
+        
+        transaction = request.files["transaction"]
+
+        transaction.save("/tmp/transaction.json")
+        with open("/tmp/transaction.json") as infile:
+            tx = json.load(infile)
+            transaction_object: Transaction = BeezUtils.decode(tx["transaction"])
 
         # 2. Has to contain digital asset
         # check if the post request has the file part
@@ -85,6 +95,8 @@ class SeedNodeAPI(BaseNodeAPI):
         if file.filename == '':
             logger.info('file has no filname')
             return "Missing file", 400
+        
+        logger.info(f'Uploaded file {file.filename}')
         
         # 3. Only if the asset is pushed to the storage nodes successfully, the upload asset transaction is sent
         if file:
@@ -107,6 +119,7 @@ class SeedNodeAPI(BaseNodeAPI):
                             acknowledged_chunks += 1
                     if all_acknowledged:
                         BEEZ_NODE.pending_chunks.pop(asset_hash, None)
+                        BEEZ_NODE.broadcast_transaction(transaction_object)    # sending transaction to blockchain
                         return f"Uploaded file {filename}", 201
                     else:
                         logger.info(f'Currently acknowledged {acknowledged_chunks}')

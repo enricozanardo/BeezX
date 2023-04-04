@@ -8,7 +8,7 @@ from beez.socket.messages.message_push_chunk_reply import MessagePushChunkReply
 from beez.socket.messages.message_push_chunk import MessagePushChunk
 
 
-class DamPushReplyWorker():
+class DamChunkReplyWorker():
 
     def __init__(self, message_buffer, p2p_handler):
         self.message_buffer = message_buffer
@@ -25,20 +25,14 @@ class DamPushReplyWorker():
             _, message = self.message_buffer.messages.get()
 
             # process message
-            try:
-                chunk_id = str(message.chunk_id)
-                asset_hash = chunk_id.rsplit("-", 1)[0]
-                ack = message.ack
-                if ack:
-                    self.p2p_handler.beez_node.pending_chunks[asset_hash][chunk_id]["status"] = False
-            except Exception as ex:
-                logger.info(ex)
+            logger.info(100*'#')
+            logger.info(f'GOT CHUNK REPLY {message.chunk_name}')
+            chunk = message.chunk
+            chunk_name = message.chunk_name
+            file_name = message.file_name
+            self.p2p_handler.beez_node.add_asset_chunks(file_name, chunk_name, chunk)
 
             # mark task of working on message as done
             self.message_buffer.messages.task_done()
-
+            
             time.sleep(0.1)
-
-            
-            
-            

@@ -22,3 +22,6 @@ class TransactionType(Enum):
     CHALLENGE = "challenge"
     ACCEPT = "accept"
     UPDATE = "update"
+    DAMUPLOAD = "damupload"
+    DAMDOWNLOAD = "damdownload"
+    DAMTRANSFER = "damtransfer"

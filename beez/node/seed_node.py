@@ -20,8 +20,10 @@ from beez.beez_utils import BeezUtils
 from beez.api.node_api import SeedNodeAPI
 from beez.node.beez_node import BasicNode
 from beez.index.index_engine import DigitalAssetMetadataIndexEngine
-from beez.socket.messages.message_push_junk import MessagePushJunk
-from beez.socket.messages.message_pull_junk import MessagePullJunk
+from beez.socket.messages.message_transaction import MessageTransation
+from beez.socket.messages.message_type import MessageType
+from beez.socket.messages.message_push_chunk import MessagePushChunk
+from beez.socket.messages.message_pull_chunk import MessagePullChunk
 
 load_dotenv()  # load .env
 P_2_P_PORT = int(os.getenv("P_2_P_PORT", 8122))  # pylint: disable=invalid-envvar-default
@@ -51,10 +53,12 @@ class SeedNode(BasicNode):
         self.asset_parts = {}
         self.concatenated_files = {}
         self.pending_chunks = {}    # chunks without ack from storage node
+        self.pending_pull_chunks = {}
 
     def start_p2p(self):
         self.p2p.start_socket_communication(self)
         self.resend_pending_chunks()
+        self.repull_pending_chunks()
 
     def start_api(self, port=None):
         """Starts the nodes API."""
@@ -62,6 +66,27 @@ class SeedNode(BasicNode):
         # Inject Node to NodeAPI
         self.api.inject_node(self)
         self.api.start(self.ip_address, port)
+
+    def repull_pending_chunks(self):
+        repull_chunks_thread = threading.Thread(target=self.repull_chunks, args={})
+        repull_chunks_thread.daemon = True
+        repull_chunks_thread.start()
+
+    def repull_chunks(self):
+        while True:
+            current_pending_pull_chunks = copy.deepcopy(self.pending_pull_chunks)
+            for asset_hash in current_pending_pull_chunks.keys():
+                for chunk_id in current_pending_pull_chunks[asset_hash].keys():
+                    status_dict = current_pending_pull_chunks[asset_hash][chunk_id]
+                    if status_dict["status"] == True:
+                        now = datetime.now()
+                        if (now-status_dict["last_update"]).total_seconds() > 15 and (now-status_dict["last_update"]).total_seconds() < 600:
+                            for node in self.p2p.all_nodes:
+                                if f"{node.host}:{node.port}" == status_dict["node_identifier"]:
+                                    logger.info(f'REPULLING CHUNK {chunk_id}')
+                                    self.pull_chunk_from_node(node, chunk_id, status_dict["asset_name"])
+                                    status_dict["last_update"] = now
+            time.sleep(3)
 
     # TODO: resend chunks which i got no response from
     def resend_pending_chunks(self):
@@ -78,12 +103,12 @@ class SeedNode(BasicNode):
                     status_dict = current_pending_chunks[asset_hash][chunk_id]
                     if status_dict["status"] == True:
                         now = datetime.now()
-                        if (now-status_dict["last_update"]).total_seconds() > 30 and (now-status_dict["last_update"]).total_seconds() < 300:
+                        if (now-status_dict["last_update"]).total_seconds() > 15 and (now-status_dict["last_update"]).total_seconds() < 300:
                             for node in self.p2p.all_nodes:
                                 if f"{node.host}:{node.port}" == status_dict["node_identifier"]:
                                     logger.info(f'RESENDING CHUNK {chunk_id}')
-                                    self.push_junk_to_node(node, chunk_id, status_dict["chunk"])
-            time.sleep(10)
+                                    self.push_chunk_to_node(node, chunk_id, status_dict["chunk"])
+            time.sleep(3)
 
     def start_available_peers_broadcast(self):
         self.p2p.available_peers_broadcast_thread()
@@ -105,9 +130,9 @@ class SeedNode(BasicNode):
 
     def process_uploaded_asset(self, filename, digital_asset):
         asset_hash = BeezUtils.hash(digital_asset).hexdigest()
-        parts = self.split_digital_asset_in_junks(digital_asset)
+        parts = self.split_digital_asset_in_chunks(digital_asset)
         chunks_assigned = self.assign_chunks_to_nodes(parts, self.p2p.all_nodes)
-        # get nodes to store asset junks
+        # get nodes to store asset chunks
         chunk_locations = {}
         # do not send all chunks of a node directly but mix it up for better performance and smaller message buffers on nodes
         mixed_chunk_tuples = []
@@ -122,7 +147,8 @@ class SeedNode(BasicNode):
             node = chunk_tuple[0]
             chunk_id = chunk_tuple[1]
             chunk = chunk_tuple[2]
-            self.push_junk_to_node(node, chunk_id, chunk)
+            chunk_ctr = chunk_id.split("-")[1].split(".")[0]
+            self.push_chunk_to_node(node, chunk_id, chunk)
             node_identifier = f"{node.host}:{node.port}"
             if asset_hash not in self.pending_chunks:
                 self.pending_chunks[asset_hash] = {}
@@ -187,20 +213,26 @@ class SeedNode(BasicNode):
         return 1
 
 
-    def split_digital_asset_in_junks(self, digital_asset):
+    def split_digital_asset_in_chunks(self, digital_asset):
         length = len(digital_asset)
         number_of_chunks = self.get_number_of_chunks_for_size(length)
         chunk_size = math.ceil(length/number_of_chunks)
         chunks = [digital_asset[i:i+chunk_size] for i in range(0, len(digital_asset), chunk_size)]
         return chunks
 
-    def push_junk_to_node(self, node, junk_id, digital_asset_junk):
-        junk_message = MessagePushJunk(self.p2p.socket_connector, "push_junk", junk_id=junk_id ,junk=digital_asset_junk, chunk_type='primary')
-        encoded_junk_message: str = BeezUtils.encode(junk_message)
-        if not "message_type" in encoded_junk_message or not "junk_id" in encoded_junk_message or not "chunk_type" in encoded_junk_message or not "junk" in encoded_junk_message:
+    def push_chunk_to_node(self, node, chunk_id, digital_asset_chunk):
+        chunk_message = MessagePushChunk(self.p2p.socket_connector, "push_chunk", chunk_id=chunk_id ,chunk=digital_asset_chunk, chunk_type='primary')
+        encoded_chunk_message: str = BeezUtils.encode(chunk_message)
+        if not "message_type" in encoded_chunk_message or not "chunk_id" in encoded_chunk_message or not "chunk_type" in encoded_chunk_message or not "chunk" in encoded_chunk_message:
             logger.info('COULD NOT ENCODE!!!!!!!!')
-            encoded_junk_message: str = BeezUtils.encode(junk_message)
-        self.p2p.send(node, encoded_junk_message)
+            encoded_chunk_message: str = BeezUtils.encode(chunk_message)
+        self.p2p.send(node, encoded_chunk_message)
+
+    def pull_chunk_from_node(self, node, chunk_id, asset_name):
+        pull_chunk_message = MessagePullChunk(self.p2p.socket_connector, "pull_chunk", chunk_id, asset_name)
+        encoded_pull_chunk_message: str = BeezUtils.encode(pull_chunk_message)
+        self.p2p.send(node, encoded_pull_chunk_message)
+
 
     def get_distributed_asset(self, asset_name):
         # get metadata for file
@@ -214,38 +246,56 @@ class SeedNode(BasicNode):
             if node_socket_connector_string in asset_node_socket_connector_strings:
                 chunks_on_node = asset_metadata['chunkLocations'][node_socket_connector_string]
                 for chunk_index in chunks_on_node:
-                    pull_junk_message = MessagePullJunk(self.p2p.socket_connector, "pull_junk", f"{asset_hash}-{chunk_index}.dap", asset_name)
-                    encoded_pull_junk_message: str = BeezUtils.encode(pull_junk_message)
-                    self.p2p.send(node, encoded_pull_junk_message)
-                    time.sleep(2)
+                    chunk_id = f"{asset_hash}-{chunk_index}.dap"
+                    node_identifier = f"{node.host}:{node.port}"
+                    self.pull_chunk_from_node(node, chunk_id, asset_name)
+                    if asset_hash not in self.pending_pull_chunks:
+                        self.pending_pull_chunks[asset_hash] = {}
+                    self.pending_pull_chunks[asset_hash][chunk_id] = {"status": True, "chunk_id": chunk_id, "last_update": datetime.now(), "node_identifier": node_identifier, "asset_name": asset_name}
+                    # pull_chunk_message = MessagePullChunk(self.p2p.socket_connector, "pull_chunk", f"{asset_hash}-{chunk_index}.dap", asset_name)
+                    # encoded_pull_chunk_message: str = BeezUtils.encode(pull_chunk_message)
+                    # self.p2p.send(node, encoded_pull_chunk_message)
+                    time.sleep(0.1)
         while asset_hash not in self.concatenated_files:
-            time.sleep(3)
+            time.sleep(1)
         return self.concatenated_files[asset_hash]
 
-    def add_asset_junks(self, file_name, chunk_name, junk):
+    def add_asset_chunks(self, file_name, chunk_name, chunk):
         logger.info('add asset chunk')
         digital_asset_hash = chunk_name.rsplit("-", 1)[0]
         if not digital_asset_hash in self.asset_parts:
-            self.asset_parts[digital_asset_hash] = {chunk_name: junk}
+            self.asset_parts[digital_asset_hash] = {chunk_name: chunk}
         else:
-            self.asset_parts[digital_asset_hash][chunk_name] = junk
+            self.asset_parts[digital_asset_hash][chunk_name] = chunk
+
+        self.pending_pull_chunks[digital_asset_hash][chunk_name]["status"] = False
 
         if len(self.asset_parts[digital_asset_hash]) == self.digital_asset_metadata[file_name]["numOfChunks"]:
-            concatenated_file = self.concatenate_junks(self.asset_parts[digital_asset_hash])
+            concatenated_file = self.concatenate_chunks(self.asset_parts[digital_asset_hash])
             self.concatenated_files[digital_asset_hash] = concatenated_file
 
         logger.info(chunk_name)
+
+        logger.info(f"GOT {len(self.asset_parts[digital_asset_hash])} chunks of {self.digital_asset_metadata[file_name]['numOfChunks']}")
         
 
-    def concatenate_junks(self, junks):
+    def concatenate_chunks(self, chunks):
         after_string = b""
-        chunk_names = sorted(junks.keys())
+        chunk_names = sorted(chunks.keys())
         for chunk_name in chunk_names:
-            after_string = after_string + junks[chunk_name]
+            after_string = after_string + chunks[chunk_name]
         return after_string
 
-    def get_junk_from_node(self, junk_id):
+    def get_chunk_from_node(self, chunk_id):
         pass
+
+    def broadcast_transaction(self, transaction):
+        # Propagate the transaction to other peers
+        message = MessageTransation(
+            self.p2p.socket_connector, MessageType.TRANSACTION, transaction
+        )
+        encoded_message = BeezUtils.encode(message)
+        self.p2p.broadcast(encoded_message)
 
     def stop(self):
         """Stops the p2p communication."""

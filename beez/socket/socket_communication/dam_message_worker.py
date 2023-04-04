@@ -1,11 +1,12 @@
+import os
 import time
 import threading
 from loguru import logger
 
 from beez.beez_utils import BeezUtils
-from beez.socket.messages.message_junk_reply import MessageJunkReply
-from beez.socket.messages.message_push_junk_reply import MessagePushJunkReply
-from beez.socket.messages.message_push_junk import MessagePushJunk
+from beez.socket.messages.message_chunk_reply import MessageChunkReply
+from beez.socket.messages.message_push_chunk_reply import MessagePushChunkReply
+from beez.socket.messages.message_push_chunk import MessagePushChunk
 
 
 class DamMessageWorker():
@@ -25,29 +26,36 @@ class DamMessageWorker():
             node, message = self.message_buffer.messages.get()
 
             # process message
-            junk_reply = MessagePushJunkReply(self.p2p_handler.socket_connector, "push_junk_reply", junk_id=message.junk_id, ack=True)
+            chunk_reply = MessagePushChunkReply(self.p2p_handler.socket_connector, "push_chunk_reply", chunk_id=message.chunk_id, ack=True)
             try:
-                with open(f"{self.p2p_handler.beez_node.dam_asset_path}{message.junk_id}", "w+b") as outfile:
-                    outfile.write(message.junk)
+                filename = f"{self.p2p_handler.beez_node.dam_asset_path}{message.chunk_id}"
+                with open(filename, "w+b") as outfile:
+                    outfile.write(message.chunk)
+                if not os.path.isfile(filename):
+                    exception_message = "Could not write chunk to filesystem file."
+                    logger.info(exception_message)
+                    raise Exception(exception_message)
                 if message.chunk_type == "primary":
                     logger.info(50*'#')
-                    logger.info(f'GOT PRIMARY CHUNK {message.junk_id.split("-")[1]}')
-                    if message.junk_id not in self.p2p_handler.beez_node.primary_chunks:
-                        self.p2p_handler.beez_node.primary_chunks.append(message.junk_id)
+                    logger.info(f'GOT PRIMARY CHUNK {message.chunk_id.split("-")[1]}')
+                    if message.chunk_id not in self.p2p_handler.beez_node.primary_chunks:
+                        self.p2p_handler.beez_node.primary_chunks.append(message.chunk_id)
                         # also push to backup node
-                        self.p2p_handler.push_chunk_to_neighbor(message.junk_id, message.junk)
+                        self.p2p_handler.push_chunk_to_neighbor(message.chunk_id, message.chunk)
                     else:
-                        logger.info(f'PRIMARY CHUNK {message.junk_id.split("-")[1]} is already stored')
+                        logger.info(f'PRIMARY CHUNK {message.chunk_id.split("-")[1]} is already stored')
                 elif message.chunk_type == "backup":
                     logger.info(50*'#')
-                    logger.info(f'GOT BACKUP CHUNK {message.junk_id.split("-")[1]}')
-                    if message.junk_id not in self.p2p_handler.beez_node.backup_chunks:
-                        self.p2p_handler.beez_node.backup_chunks.append(message.junk_id)
+                    logger.info(f'GOT BACKUP CHUNK {message.chunk_id.split("-")[1]}')
+                    if message.chunk_id not in self.p2p_handler.beez_node.backup_chunks:
+                        self.p2p_handler.beez_node.backup_chunks.append(message.chunk_id)
             except Exception as ex:
-                junk_reply = MessagePushJunkReply(self.p2p_handler.socket_connector, "push_junk_reply", junk_id=message.junk_id, ack=False)
-            encoded_junk_reply: str = BeezUtils.encode(junk_reply)
-            self.p2p_handler.send(node, encoded_junk_reply)
+                chunk_reply = MessagePushChunkReply(self.p2p_handler.socket_connector, "push_chunk_reply", chunk_id=message.chunk_id, ack=False)
+            encoded_chunk_reply: str = BeezUtils.encode(chunk_reply)
+            self.p2p_handler.send(node, encoded_chunk_reply)
 
             # mark task of working on message as done
             self.message_buffer.messages.task_done()
+
+            time.sleep(0.1)
             

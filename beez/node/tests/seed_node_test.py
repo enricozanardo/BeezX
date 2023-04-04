@@ -42,30 +42,30 @@ def test_communication_protocol():
 def test_split_digital_asset_in_chunks():
     """Tests splitting digital assets in chunks."""
     node = SeedNode(port=3501)
-    parts = node.split_digital_asset_in_junks(5000*"a")
+    parts = node.split_digital_asset_in_chunks(5000*"a")
     assert len(parts) == 1
     assert parts[0] == 5000*"a"
-    parts = node.split_digital_asset_in_junks(5001*"a")
+    parts = node.split_digital_asset_in_chunks(5001*"a")
     assert len(parts) == 2
     assert parts[0] == 2501*"a"
     assert parts[1] == 2500*"a"
-    parts = node.split_digital_asset_in_junks(10000*"a")
+    parts = node.split_digital_asset_in_chunks(10000*"a")
     assert len(parts) == 2
     assert parts[0] == 5000*"a"
     assert parts[1] == 5000*"a"
-    parts = node.split_digital_asset_in_junks(10001*"a")
+    parts = node.split_digital_asset_in_chunks(10001*"a")
     assert len(parts) == 5
-    parts = node.split_digital_asset_in_junks(100000*"a")
+    parts = node.split_digital_asset_in_chunks(100000*"a")
     assert len(parts) == 5
-    parts = node.split_digital_asset_in_junks(100001*"a")
+    parts = node.split_digital_asset_in_chunks(100001*"a")
     assert len(parts) == 10
-    parts = node.split_digital_asset_in_junks(1000000*"a")
+    parts = node.split_digital_asset_in_chunks(1000000*"a")
     assert len(parts) == 10
-    parts = node.split_digital_asset_in_junks(1000001*"a")
+    parts = node.split_digital_asset_in_chunks(1000001*"a")
     assert len(parts) == 25
-    parts = node.split_digital_asset_in_junks(10000000*"a")
+    parts = node.split_digital_asset_in_chunks(10000000*"a")
     assert len(parts) == 25
-    parts = node.split_digital_asset_in_junks(10000001*"a")
+    parts = node.split_digital_asset_in_chunks(10000001*"a")
     assert len(parts) == 50
 
 def test_assign_chunks_to_nodes():
