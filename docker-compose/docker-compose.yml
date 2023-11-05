@@ -2,7 +2,7 @@ version: "3.9"
 services:
   beez-node-genesis:
     environment:
-    - BEEZ_NODE_KEY_PATH=/beez/keys/genesisPrivateKey.pem
+    - BEEZ_NODE_KEY_PATH=/Users/antoniobruno/Documents/workspace/abacus/BeezX/beez/keys/genesisPrivateKey.pem
     - NODE_API_PORT=80
     - FIRST_SERVER_IP=10.5.0.6
     - P_2_P_PORT=5444
@@ -10,7 +10,7 @@ services:
     - API_STARTUP_DELAY=20
     - DISCONNECT_INTERVALS=300
     # image: beezblockchain/beez-node
-    image: beez-node
+    image: docker/dockerfile
     ports:
       - "5445:5445"
       - "5444:5444"

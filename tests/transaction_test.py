@@ -6,7 +6,7 @@ import requests
 import pathlib
 
 from beez.transaction.transaction_type import TransactionType
-from beez.wallet.wallet import Wallet
+from beez.wallet.wallet_new import Wallet
 from beez.beez_utils import BeezUtils
 
 load_dotenv()  # load .env
@@ -15,13 +15,16 @@ NODE_API_PORT = os.environ.get("NODE_API_PORT", default=5445)
 URI = os.environ.get("FIRST_SERVER_IP", default="127.0.0.1")
 
 
-def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType: TransactionType):
+def postTransaction(senderWallet: Wallet, receiverWallet: Wallet, amount, txType: TransactionType, public_key):
 
-    tx = senderWallet.create_transaction(receiverWallet.public_key_string(), amount, txType) 
+    tx = senderWallet.create_transaction(receiverWallet.public_key_string(), amount, txType, public_key)
     url = f"http://{URI}:{NODE_API_PORT}/transaction"
 
     package = {'transaction': BeezUtils.encode(tx)}
     request = requests.post(url, json=package)
+
+# CREA WALLET
+# CHIAMARE FUNZIONE EXCHANGE
 
 
 
@@ -40,8 +43,9 @@ def test_send_transaction():
     
     amount = 50
     typeTransfer = TransactionType.TRANSFER.name
-
-    postTransaction(AliceWallet, BobWallet, amount, typeTransfer)
+    # typeTransfer = TransactionType.EXCHANGE.name
+    public_key = ""
+    postTransaction(AliceWallet, BobWallet, amount, typeTransfer, public_key)
   
     # assert beezNode.ip == localIP
     assert 5 == 5

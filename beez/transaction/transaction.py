@@ -19,10 +19,11 @@ class Transaction:
 
     def __init__(
         self,
-        sender_address: str,
-        receiver_address: str,
+        sender_address: WalletAddress,
+        receiver_address: WalletAddress,
         amount: int,
         transaction_type: TransactionType,
+        public_key: PublicKeyString
     ):
         self.sender_address = sender_address
         self.receiver_address = receiver_address
@@ -30,6 +31,7 @@ class Transaction:
         self.transaction_type = transaction_type
         self.identifier = uuid.uuid1().hex
         self.timestamp = time.time()
+        self.public_key = public_key
         self.signature = ""  # guarantee that only the owner can perform this tx
 
     def sign(self, signature):
@@ -46,6 +48,7 @@ class Transaction:
         json_block["type"] = self.transaction_type
         json_block["timestamp"] = self.timestamp
         json_block["signature"] = self.signature
+        json_block["public_key"] = self.public_key
 
         return json_block
 
@@ -57,6 +60,7 @@ class Transaction:
             receiver_address=json_block["receiverAddress"],
             amount=json_block["amount"],
             transaction_type=json_block["type"],
+            public_key=json_block["public_key"],
         )
         transaction.identifier = json_block["id"]
         transaction.timestamp = json_block["timestamp"]
